@@ -1,5 +1,9 @@
 import subprocess
 import sys
+from pathlib import Path
+
+# Imposta il percorso base alla root del progetto (directory padre di server/)
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 def check_and_install_requirements():
     """Verifica e installa i pacchetti richiesti"""
@@ -73,6 +77,9 @@ def check_and_install_requirements():
 # Check and install requirements before importing
 check_and_install_requirements()
 
+# Aggiungi la root del progetto al sys.path per importare i moduli
+sys.path.insert(0, str(BASE_DIR))
+
 from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 import json
@@ -80,21 +87,25 @@ import os
 import shutil
 import logging
 from datetime import datetime
-from pathlib import Path
 from modules.export_utils import generate_doc, generate_pdf
 from modules.quiz_utils import QuizManager
 
-app = Flask(__name__, static_folder='static', static_url_path='/static')
+app = Flask(
+    __name__,
+    static_folder=str(BASE_DIR / 'static'),
+    static_url_path='/static',
+    template_folder=str(BASE_DIR / 'templates')
+)
 CORS(app)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Database file paths
-DATABASE_FILE = 'database.json'
-CATEGORIES_FILE = 'categories.json'
-BACKUP_DIR = 'backup'
+# Database file paths (tutti relativi alla root del progetto)
+DATABASE_FILE = str(BASE_DIR / 'database.json')
+CATEGORIES_FILE = str(BASE_DIR / 'categories.json')
+BACKUP_DIR = str(BASE_DIR / 'backup')
 
 def get_database_backup_dir():
     """Ottiene la directory di backup specifica per il database corrente"""

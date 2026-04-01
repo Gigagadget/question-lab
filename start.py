@@ -82,8 +82,8 @@ def main():
         print("🚀 AVVIO SERVER FLASK")
         print("=" * 50 + "\n")
 
-    # Esegui app.py
-    app_path = Path(__file__).parent / "app.py"
+    # Esegui server/app.py
+    app_path = Path(__file__).parent / "server" / "app.py"
     if not app_path.exists():
         print(f"❌ File app.py non trovato in: {app_path}")
         sys.exit(1)
