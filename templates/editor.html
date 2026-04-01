@@ -71,6 +71,18 @@
             <span class="close">&times;</span>
             <h3>💾 Backup</h3>
             <div id="backupContent"></div>
+            <div id="backupActions" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                        <input type="checkbox" id="selectAllBackups">
+                        <span>Seleziona tutti</span>
+                    </label>
+                    <span id="selectedBackupsCount" style="color: #6c757d; font-size: 0.85rem;">0 selezionati</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btnDeleteSelectedBackups" class="small-btn" style="background: #c44536; flex: 1;" disabled>🗑️ Elimina selezionati</button>
+                </div>
+            </div>
         </div>
     </div>
 

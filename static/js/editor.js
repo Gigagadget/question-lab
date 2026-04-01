@@ -1148,6 +1148,9 @@ async function showStats() {
     }
 }
 
+// Backup selection state
+let selectedBackups = new Set();
+
 async function showBackups() {
     try {
         const response = await fetch(`${API_BASE_URL}/backups`);
@@ -1156,27 +1159,117 @@ async function showBackups() {
         
         const modal = document.getElementById('backupModal');
         const content = document.getElementById('backupContent');
+        const actionsDiv = document.getElementById('backupActions');
+
+        // Reset selection
+        selectedBackups.clear();
+        updateBackupSelectionUI();
 
         if (data.backups.length === 0) {
             content.innerHTML = '<p>Nessun backup disponibile.</p>';
+            actionsDiv.style.display = 'none';
         } else {
             content.innerHTML = `
                 <ul style="list-style: none; padding: 0;">
                     ${data.backups.map(backup => `
-                        <li style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
-                            <strong>${backup.name}</strong><br>
-                            <small>Dimensione: ${(backup.size / 1024).toFixed(2)} KB | Modificato: ${new Date(backup.modified).toLocaleString()}</small>
-                            <button onclick="window.restoreBackup('${backup.name}')" style="margin-left: 10px; padding: 4px 12px;">Ripristina</button>
+                        <li style="padding: 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" class="backup-checkbox" data-name="${backup.name}" style="cursor: pointer;">
+                            <div style="flex: 1;">
+                                <strong>${backup.name}</strong><br>
+                                <small>Dimensione: ${(backup.size / 1024).toFixed(2)} KB | Modificato: ${new Date(backup.modified).toLocaleString()}</small>
+                            </div>
+                            <button onclick="window.restoreBackup('${backup.name}')" style="padding: 4px 12px;">Ripristina</button>
                         </li>
                     `).join('')}
                 </ul>
             `;
+            actionsDiv.style.display = 'block';
+
+            // Add event listeners for checkboxes
+            document.querySelectorAll('.backup-checkbox').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const name = e.target.getAttribute('data-name');
+                    toggleBackupSelection(name);
+                });
+            });
         }
         modal.style.display = 'block';
     } catch (err) {
         console.error(err);
         setStatus('Errore nel caricamento dei backup', true);
     }
+}
+
+function toggleBackupSelection(name) {
+    if (selectedBackups.has(name)) {
+        selectedBackups.delete(name);
+    } else {
+        selectedBackups.add(name);
+    }
+    updateBackupSelectionUI();
+}
+
+function updateBackupSelectionUI() {
+    const count = selectedBackups.size;
+    const countSpan = document.getElementById('selectedBackupsCount');
+    const deleteBtn = document.getElementById('btnDeleteSelectedBackups');
+    const selectAllCb = document.getElementById('selectAllBackups');
+    
+    if (countSpan) {
+        countSpan.textContent = `${count} selezionati`;
+    }
+    if (deleteBtn) {
+        deleteBtn.disabled = count === 0;
+    }
+    if (selectAllCb) {
+        // Check if all backups are selected
+        const allCheckboxes = document.querySelectorAll('.backup-checkbox');
+        selectAllCb.checked = allCheckboxes.length > 0 && allCheckboxes.length === count;
+    }
+}
+
+async function deleteSelectedBackups() {
+    const count = selectedBackups.size;
+    if (count === 0) return;
+
+    if (!confirm(`Eliminare ${count} backup selezionati?`)) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/backups`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ backups: Array.from(selectedBackups) })
+        });
+
+        if (!response.ok) throw new Error('Cancellazione backup fallita');
+
+        const result = await response.json();
+        setStatus(result.message);
+        
+        // Refresh backup list
+        showBackups();
+    } catch (err) {
+        console.error(err);
+        setStatus('Errore nella cancellazione dei backup', true);
+    }
+}
+
+function selectAllBackups() {
+    const selectAllCb = document.getElementById('selectAllBackups');
+    const isChecked = selectAllCb.checked;
+    const allCheckboxes = document.querySelectorAll('.backup-checkbox');
+    
+    allCheckboxes.forEach(cb => {
+        cb.checked = isChecked;
+        const name = cb.getAttribute('data-name');
+        if (isChecked) {
+            selectedBackups.add(name);
+        } else {
+            selectedBackups.delete(name);
+        }
+    });
+    
+    updateBackupSelectionUI();
 }
 
 async function restoreBackup(backupName) {
@@ -1469,6 +1562,10 @@ document.getElementById('btnBackup').addEventListener('click', showBackups);
 if (toggleDuplicatesBtn) {
     toggleDuplicatesBtn.addEventListener('click', toggleShowDuplicates);
 }
+
+// Backup actions
+document.getElementById('btnDeleteSelectedBackups')?.addEventListener('click', deleteSelectedBackups);
+document.getElementById('selectAllBackups')?.addEventListener('change', selectAllBackups);
 
 // Help button functionality
 const btnHelp = document.getElementById('btnHelp');

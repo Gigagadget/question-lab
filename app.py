@@ -96,14 +96,41 @@ DATABASE_FILE = 'database.json'
 CATEGORIES_FILE = 'categories.json'
 BACKUP_DIR = 'backup'
 
+def get_database_backup_dir():
+    """Ottiene la directory di backup specifica per il database corrente"""
+    db_name = Path(DATABASE_FILE).stem  # 'database' da 'database.json'
+    return os.path.join(BACKUP_DIR, db_name)
+
+def migrate_old_backups():
+    """Migra i backup dalla vecchia struttura alla nuova (sottocartelle per database)"""
+    if not os.path.exists(BACKUP_DIR):
+        return 0
+    
+    db_backup_dir = get_database_backup_dir()
+    if not os.path.exists(db_backup_dir):
+        os.makedirs(db_backup_dir)
+    
+    migrated_count = 0
+    for file in os.listdir(BACKUP_DIR):
+        if file.endswith('.json'):
+            old_path = os.path.join(BACKUP_DIR, file)
+            new_path = os.path.join(db_backup_dir, file)
+            if not os.path.exists(new_path):
+                shutil.move(old_path, new_path)
+                migrated_count += 1
+                logger.info(f"Backup migrato: {file}")
+    
+    return migrated_count
+
 def create_backup():
     """Crea un backup del database con timestamp"""
-    if not os.path.exists(BACKUP_DIR):
-        os.makedirs(BACKUP_DIR)
+    db_backup_dir = get_database_backup_dir()
+    if not os.path.exists(db_backup_dir):
+        os.makedirs(db_backup_dir)
     
     if os.path.exists(DATABASE_FILE):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        backup_file = os.path.join(BACKUP_DIR, f'database_{timestamp}.json')
+        backup_file = os.path.join(db_backup_dir, f'{Path(DATABASE_FILE).stem}_{timestamp}.json')
         shutil.copy2(DATABASE_FILE, backup_file)
         logger.info(f"Backup creato: {backup_file}")
         return backup_file
@@ -454,15 +481,16 @@ def rename_category():
 
 @app.route('/api/backups', methods=['GET'])
 def get_backups():
-    """Ottiene la lista dei backup disponibili"""
+    """Ottiene la lista dei backup disponibili per il database corrente"""
     try:
-        if not os.path.exists(BACKUP_DIR):
+        db_backup_dir = get_database_backup_dir()
+        if not os.path.exists(db_backup_dir):
             return jsonify({"backups": []}), 200
         
         backups = []
-        for file in os.listdir(BACKUP_DIR):
+        for file in os.listdir(db_backup_dir):
             if file.endswith('.json'):
-                file_path = os.path.join(BACKUP_DIR, file)
+                file_path = os.path.join(db_backup_dir, file)
                 stat = os.stat(file_path)
                 backups.append({
                     'name': file,
@@ -480,7 +508,8 @@ def get_backups():
 def restore_backup(backup_name):
     """Ripristina un backup"""
     try:
-        backup_path = os.path.join(BACKUP_DIR, backup_name)
+        db_backup_dir = get_database_backup_dir()
+        backup_path = os.path.join(db_backup_dir, backup_name)
         if not os.path.exists(backup_path):
             return jsonify({"error": "Backup non trovato"}), 404
         
@@ -495,6 +524,34 @@ def restore_backup(backup_name):
             return jsonify({"error": "Ripristino del backup fallito"}), 500
     except Exception as e:
         logger.error(f"Errore in POST /api/backups/{backup_name}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/backups', methods=['DELETE'])
+def delete_backups():
+    """Elimina uno o più backup"""
+    try:
+        data = request.get_json()
+        backup_names = data.get('backups', [])
+        
+        if not backup_names:
+            return jsonify({"error": "Nessun backup specificato"}), 400
+        
+        db_backup_dir = get_database_backup_dir()
+        deleted_count = 0
+        
+        for backup_name in backup_names:
+            backup_path = os.path.join(db_backup_dir, backup_name)
+            if os.path.exists(backup_path):
+                os.remove(backup_path)
+                deleted_count += 1
+                logger.info(f"Backup eliminato: {backup_name}")
+        
+        return jsonify({
+            "message": f"Eliminati {deleted_count} backup",
+            "deleted_count": deleted_count
+        }), 200
+    except Exception as e:
+        logger.error(f"Errore in DELETE /api/backups: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/stats', methods=['GET'])
@@ -772,5 +829,10 @@ if __name__ == '__main__':
     if not os.path.exists(CATEGORIES_FILE):
         load_categories()
         logger.info(f"Creato {CATEGORIES_FILE} iniziale")
+    
+    # Migra i backup dalla vecchia struttura alla nuova
+    migrated = migrate_old_backups()
+    if migrated > 0:
+        logger.info(f"Migrati {migrated} backup nella nuova struttura")
     
     app.run(debug=True, host='0.0.0.0', port=5015)
