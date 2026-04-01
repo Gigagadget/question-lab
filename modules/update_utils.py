@@ -259,6 +259,7 @@ def create_backup(verbose: bool = True) -> Optional[str]:
 def apply_update(zip_content: bytes, config: dict, verbose: bool = True) -> bool:
     """
     Estrae lo ZIP e applica l'aggiornamento, escludendo file/directory protetti.
+    Gestisce: nuovi file, file modificati, file eliminati, cambiamenti struttura.
     """
     protected_files = set(config.get("protected_files", []))
     protected_dirs = set(config.get("protected_dirs", []))
@@ -291,8 +292,8 @@ def apply_update(zip_content: bytes, config: dict, verbose: bool = True) -> bool
             if verbose:
                 print(f"  📂 File estratti da: {source_dir}")
 
-            # Copia i file sovrascrivendo, escludendo protetti
-            files_updated = 0
+            # Raccogli tutti i file presenti nel nuovo ZIP (relativi alla base dir)
+            new_files = set()
             for item in source_dir.rglob("*"):
                 relative_path = item.relative_to(source_dir)
 
@@ -308,15 +309,58 @@ def apply_update(zip_content: bytes, config: dict, verbose: bool = True) -> bool
                 if item.is_file() and item.parent == source_dir and item.name in protected_files:
                     continue
 
-                dest = BASE_DIR / relative_path
-
                 if item.is_file():
+                    new_files.add(relative_path)
+                    dest = BASE_DIR / relative_path
                     dest.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(item, dest)
-                    files_updated += 1
+
+            files_updated = len(new_files)
+
+            # Rimuovi file locali che non esistono più nel nuovo ZIP
+            files_removed = 0
+            for item in list(BASE_DIR.rglob("*")):
+                if not item.is_file():
+                    continue
+
+                relative_path = item.relative_to(BASE_DIR)
+
+                # Salta directory protette (e loro contenuti)
+                if relative_path.parts[0] in protected_dirs:
+                    continue
+
+                # Salta file protetti
+                if item.name in protected_files:
+                    continue
+
+                # Salta file nascosti e di sistema
+                if item.name.startswith("."):
+                    continue
+
+                # Se il file non è nel nuovo ZIP, eliminalo
+                if relative_path not in new_files:
+                    try:
+                        item.unlink()
+                        files_removed += 1
+                        if verbose:
+                            print(f"    🗑️  Rimosso file obsoleto: {relative_path}")
+                    except Exception as e:
+                        if verbose:
+                            print(f"    ⚠️  Impossibile rimuovere {relative_path}: {e}")
+
+            # Pulisci directory vuote (escluse quelle protette)
+            for item in sorted(BASE_DIR.rglob("*"), reverse=True):
+                if item.is_dir() and item.name not in protected_dirs:
+                    try:
+                        if not any(item.iterdir()):
+                            item.rmdir()
+                            if verbose:
+                                print(f"    🗑️  Rimossa directory vuota: {item.relative_to(BASE_DIR)}")
+                    except OSError:
+                        pass  # Directory non vuota o protetta
 
             if verbose:
-                print(f"  ✅ Aggiornamento applicato: {files_updated} file aggiornati")
+                print(f"  ✅ Aggiornamento applicato: {files_updated} file aggiornati, {files_removed} file obsoleti rimossi")
             return True
 
     except Exception as e:
