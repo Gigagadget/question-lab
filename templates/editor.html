@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista domande - Editor</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/editor.css">
+    <link rel="stylesheet" href="/static/css/theme.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>✏️ Editor Domande</h1>
+            <p>Gestione domande in <strong>database.json</strong></p>
+        </div>
+
+        <div class="toolbar">
+            <button id="btnHome" class="info">🏠 Home</button>
+            <button id="btnHelp" class="info">❓ Aiuto</button>
+            <button id="btnNew" class="primary">➕ Nuova</button>
+            <button id="btnSaveAll" class="success">💾 Salva</button>
+            <button id="btnReload" class="warning">🔄 Ricarica</button>
+            <button id="btnStats" class="info">📊 Stat</button>
+            <button id="btnBackup" class="info">💿 Backup</button>
+            <div class="status" id="statusMsg">Pronto</div>
+            <div class="auto-save-indicator" id="autoSaveIndicator">● Auto</div>
+        </div>
+
+        <div class="editor-layout">
+            <!-- Left panel -->
+            <div class="list-panel">
+                <div class="list-header">
+                    📋 Domande (<span id="questionCount">0</span>)
+                    <button id="toggleDuplicatesBtn" class="small-btn">🔍 Mostra Duplicati</button>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Cerca per ID o testo...">
+                    <div class="answer-filters">
+                        <label><input type="checkbox" id="filterNoAnswers"> Senza risposta</label>
+                        <label><input type="checkbox" id="filterWithAnswers"> Con risposte</label>
+                        <label><input type="checkbox" id="filterNoCorrect"> Senza risposta corretta</label>
+                    </div>
+                </div>
+                <div id="questionsList" class="questions-list">
+                    <div class="empty-list">Caricamento domande...</div>
+                </div>
+            </div>
+
+            <!-- Right panel -->
+            <div class="form-panel" id="formPanel">
+                <div id="formContent">
+                    <!-- dynamic form fields will appear here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for stats -->
+    <div id="statsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>📊 Statistiche</h3>
+            <div id="statsContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal for backups -->
+    <div id="backupModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>💾 Backup</h3>
+            <div id="backupContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal for categories management -->
+    <div id="categoriesModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>🏷️ Categorie</h3>
+            <div id="categoriesContent"></div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>ℹ️ Guida all'Editor Domande</h3>
+            <div class="help-content">
+                <h4>📋 Panoramica delle funzionalità</h4>
+                <ul>
+                    <li><strong>Nuova domanda</strong>: Clicca "➕ Nuova" per creare una nuova domanda</li>
+                    <li><strong>Modifica domanda</strong>: Seleziona una domanda dalla lista per modificarla nel pannello destro</li>
+                    <li><strong>Salvataggio automatico</strong>: Le modifiche vengono salvate automaticamente (indicatore "● Auto" in alto)</li>
+                    <li><strong>Salva manuale</strong>: Clicca "💾 Salva" per forzare il salvataggio</li>
+                    <li><strong>Ricarica</strong>: Clicca "🔄 Ricarica" per ricaricare le domande dal server</li>
+                </ul>
+                
+                <h4>🔍 Ricerca e Filtri</h4>
+                <ul>
+                    <li><strong>Barra di ricerca</strong>: Cerca per ID o testo della domanda</li>
+                    <li><strong>Filtri risposte</strong>: Filtra per "Senza risposta", "Con risposte", "Senza risposta corretta"</li>
+                    <li><strong>Mostra Duplicati</strong>: Visualizza solo le domande con duplicati</li>
+                </ul>
+                
+                <h4>🏷️ Categorie</h4>
+                <ul>
+                    <li><strong>Gestisci categorie</strong>: Clicca "🏷️ Categorie" per aggiungere, rimuovere o rinominare domini e sottodomini</li>
+                    <li><strong>Rinomina</strong>: Usa il pulsante "✏️ Rinomina" per cambiare nome a una categoria (aggiorna automaticamente le domande)</li>
+                </ul>
+                
+                <h4>📊 Statistiche</h4>
+                <ul>
+                    <li><strong>Panoramica</strong>: Visualizza il totale delle domande, duplicati e distribuzione per categoria</li>
+                    <li><strong>Statistiche risposte</strong>: Controlla domande con una sola risposta, senza risposte o senza risposte corrette</li>
+                </ul>
+                
+                <h4>💾 Backup</h4>
+                <ul>
+                    <li><strong>Backup automatici</strong>: Ogni salvataggio crea un backup automatico</li>
+                    <li><strong>Ripristina</strong>: Seleziona un backup dalla lista per ripristinare il database</li>
+                </ul>
+                
+                <h4>⌨️ Scorciatoie da tastiera</h4>
+                <ul>
+                    <li><strong>Frecce sinistra/destra</strong>: Naviga tra le domande</li>
+                </ul>
+                
+                <h4>💡 Suggerimenti</h4>
+                <ul>
+                    <li>Le domande con duplicati sono evidenziate in giallo nella lista</li>
+                    <li>Puoi selezionare più domande per azioni batch (elimina, cambia categoria)</li>
+                    <li>Il campo ID deve essere univoco: se lo cambi, viene verificato automaticamente</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/editor.js"></script>
+    <script src="/static/js/theme.js"></script>
+</body>
+</html>

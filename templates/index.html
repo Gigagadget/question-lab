@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista domande - Home</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/theme.css">
+    <style>
+        .home-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 20px;
+        }
+        
+        .cards-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 280px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .card h2 {
+            margin: 0 0 10px 0;
+            color: var(--card-title, #1e3c72);
+            font-size: 1.5rem;
+        }
+
+        .card p {
+            color: var(--card-text, #6c757d);
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .card.editor {
+            border-top: 4px solid var(--card-editor-border, #2c7da0);
+        }
+
+        .card.quiz {
+            border-top: 4px solid var(--card-quiz-border, #e67e22);
+        }
+
+        .card.view {
+            border-top: 4px solid var(--card-view-border, #2c6e2f);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: var(--footer-text, #94a3b8);
+            font-size: 0.8rem;
+        }
+
+        .header-small {
+            background: linear-gradient(135deg, var(--header-gradient-start, #1e3c72) 0%, var(--header-gradient-end, #2a5298) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .header-small h1 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+        
+        .header-small p {
+            margin: 0.3rem 0 0;
+            opacity: 0.8;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header-small">
+            <h1>📋 Lista domande</h1>
+            <p>Seleziona una modalità di lavoro</p>
+        </div>
+
+        <div class="server-info" style="background: linear-gradient(135deg, var(--server-info-bg-start, #2c7da0) 0%, var(--server-info-bg-end, #1e3c72) 100%); color: white; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; text-align: center;">
+            <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">🌐 Accesso da mobile/tablet:</p>
+            <p style="margin: 0.3rem 0 0; font-size: 1.1rem; font-weight: bold;">http://{{ server_ip }}:5015</p>
+            <p style="margin: 0.5rem 0 0; font-size: 0.8rem; opacity: 0.8;">(stessa rete Wi-Fi del PC)</p>
+        </div>
+        
+        <div class="home-container">
+            <div class="cards-container">
+                <a href="/editor" class="card editor">
+                    <div class="card-icon">✏️</div>
+                    <h2>Editor</h2>
+                    <p>Modifica, aggiungi e gestisci le domande del database. Visualizza statistiche e gestisci backup.</p>
+                </a>
+                
+                <a href="/quiz" class="card quiz">
+                    <div class="card-icon">🎯</div>
+                    <h2>Modalità Quiz</h2>
+                    <p>Metti alla prova le tue conoscenze. Rispondi alle domande e verifica le tue risposte.</p>
+                </a>
+                
+                <a href="/view" class="card view">
+                    <div class="card-icon">👁️</div>
+                    <h2>Modalità Visualizzazione</h2>
+                    <p>Visualizza e naviga tra le domande in una modalità ottimizzata per la lettura.</p>
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Database: <strong>database.json</strong> | Domande totali: <span id="totalQuestions">--</span></p>
+        </div>
+    </div>
+    
+    <script>
+        // Fetch total questions count for footer
+        fetch('/api/questions')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('totalQuestions').textContent = data.questions.length;
+            })
+            .catch(err => console.error('Error loading stats:', err));
+    </script>
+    <script src="/static/js/theme.js"></script>
+</body>
+</html>

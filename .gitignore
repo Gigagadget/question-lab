@@ -1,0 +1,77 @@
+# ============================================
+# Question Lab - File .gitignore
+# ============================================
+
+# Database e dati utente (NON tracciare)
+database.json
+categories.json
+
+# Log e backup utente
+Quiz_Log/
+backup/
+update_log.json
+
+# File di log
+*.log
+
+# Python - File compilati e cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Python - Ambienti virtuali
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# Python - Distribuzione
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Python - IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python - Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS - Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# OS - macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# OS - Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# Temp file
+*.tmp
+*.temp
+
+# File di configurazione locale (se contiene dati sensibili)
+# .env
+
+# Export generati dall'utente
+*.docx
+*.pdf
+
+# Documentazione locale
+istruzioni.txt
