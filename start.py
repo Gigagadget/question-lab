@@ -83,10 +83,24 @@ def main():
         print("=" * 50 + "\n")
 
     # Esegui server/app.py
-    app_path = Path(__file__).parent / "server" / "app.py"
+    base_dir = Path(__file__).parent
+    app_path = base_dir / "server" / "app.py"
+    
+    # Se server/app.py non esiste, prova a migrare dalla vecchia struttura
     if not app_path.exists():
-        print(f"❌ File app.py non trovato in: {app_path}")
-        sys.exit(1)
+        old_app = base_dir / "app.py"
+        server_dir = base_dir / "server"
+        
+        if old_app.exists():
+            print("🔄 Migrazione della struttura del progetto in corso...")
+            server_dir.mkdir(parents=True, exist_ok=True)
+            (server_dir / "__init__.py").write_text("# Server package\n")
+            import shutil
+            shutil.move(str(old_app), str(app_path))
+            print(f"✅ app.py spostato in server/app.py")
+        else:
+            print(f"❌ File app.py non trovato in: {app_path}")
+            sys.exit(1)
 
     try:
         # Usa subprocess per eseguire app.py

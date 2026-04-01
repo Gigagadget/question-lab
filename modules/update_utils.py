@@ -256,6 +256,60 @@ def create_backup(verbose: bool = True) -> Optional[str]:
         return None
 
 
+def migrate_to_server_structure(verbose: bool = True) -> bool:
+    """
+    Migra la struttura del progetto spostando app.py nella cartella server/.
+    Gestisce la transizione dalla vecchia struttura (app.py nella root) alla nuova (server/app.py).
+    """
+    try:
+        old_app = BASE_DIR / "app.py"
+        server_dir = BASE_DIR / "server"
+        new_app = server_dir / "app.py"
+        init_file = server_dir / "__init__.py"
+
+        # Caso 1: Nuova struttura già presente (server/app.py esiste)
+        if new_app.exists():
+            # Rimuovi il vecchio app.py se esiste ancora
+            if old_app.exists():
+                if verbose:
+                    print(f"    🧹 Rimozione vecchio app.py dalla root...")
+                try:
+                    old_app.unlink()
+                    if verbose:
+                        print(f"    ✅ Vecchio app.py rimosso")
+                except Exception as e:
+                    if verbose:
+                        print(f"    ⚠️  Impossibile rimuovere vecchio app.py: {e}")
+            return True
+
+        # Caso 2: Vecchia struttura (app.py nella root, server/ non esiste)
+        if old_app.exists() and not server_dir.exists():
+            if verbose:
+                print(f"    🔄 Migrazione a struttura server/...")
+            server_dir.mkdir(parents=True, exist_ok=True)
+            init_file.write_text("# Server package\n")
+            shutil.move(str(old_app), str(new_app))
+            if verbose:
+                print(f"    ✅ app.py spostato in server/app.py")
+            return True
+
+        # Caso 3: Situazione ibrida
+        if old_app.exists() and server_dir.exists() and not new_app.exists():
+            if verbose:
+                print(f"    🔄 Completamento migrazione a struttura server/...")
+            shutil.move(str(old_app), str(new_app))
+            if verbose:
+                print(f"    ✅ app.py spostato in server/app.py")
+            return True
+
+        return True
+
+    except Exception as e:
+        if verbose:
+            print(f"    ❌ Errore nella migrazione: {e}")
+        return False
+
+
 def apply_update(zip_content: bytes, config: dict, verbose: bool = True) -> bool:
     """
     Estrae lo ZIP e applica l'aggiornamento, escludendo file/directory protetti.
@@ -473,6 +527,11 @@ def check_and_update(verbose: bool = True) -> bool:
         success = apply_update(zip_content, config, verbose)
 
         if success:
+            # Migra la struttura a server/ se necessario
+            if verbose:
+                print(f"  🔄 Verifica struttura del progetto...")
+            migrate_to_server_structure(verbose)
+            
             # Aggiorna version.json (ma non sovrascrivere se è protetto!)
             # version.json è protetto, quindi lo aggiorniamo manualmente
             update_version_file(remote_version, "success")
