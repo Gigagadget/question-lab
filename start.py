@@ -64,10 +64,11 @@ def main():
         sys.exit(1)
 
     # Controllo aggiornamenti
+    updated = False
     if not args.no_update:
         try:
             from modules.update_utils import check_and_update
-            check_and_update(verbose=verbose)
+            updated = check_and_update(verbose=verbose)
         except Exception as e:
             if verbose:
                 print(f"⚠️  Errore nel controllo aggiornamenti: {e}")
@@ -75,6 +76,13 @@ def main():
     else:
         if verbose:
             print("ℹ️  Controllo aggiornamenti saltato (--no-update)")
+    
+    # Se l'aggiornamento è riuscito, riavvia start.py per usare il nuovo codice
+    if updated:
+        if verbose:
+            print("\n🔄 Riavvio per applicare l'aggiornamento...")
+        import os
+        os.execv(sys.executable, [sys.executable, str(Path(__file__).absolute())] + sys.argv[1:])
 
     # Avvia il server Flask
     if verbose:
