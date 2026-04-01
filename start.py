@@ -85,11 +85,11 @@ def main():
     # Esegui server/app.py
     base_dir = Path(__file__).parent
     app_path = base_dir / "server" / "app.py"
+    server_dir = base_dir / "server"
     
     # Se server/app.py non esiste, prova a migrare dalla vecchia struttura
     if not app_path.exists():
         old_app = base_dir / "app.py"
-        server_dir = base_dir / "server"
         
         if old_app.exists():
             print("🔄 Migrazione della struttura del progetto in corso...")
@@ -99,7 +99,8 @@ def main():
             shutil.move(str(old_app), str(app_path))
             print(f"✅ app.py spostato in server/app.py")
         else:
-            print(f"❌ File app.py non trovato in: {app_path}")
+            # Controlla se c'è un app.py nella cartella server/ con nome diverso
+            print(f"❌ File app.py non trovato. Assicurati che il progetto sia installato correttamente.")
             sys.exit(1)
 
     try:

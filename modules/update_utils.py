@@ -413,6 +413,20 @@ def apply_update(zip_content: bytes, config: dict, verbose: bool = True) -> bool
                     except OSError:
                         pass  # Directory non vuota o protetta
 
+            # Gestione speciale per migrazione a struttura server/
+            # Se server/app.py è stato copiato ma app.py nella root esiste ancora, rimuovilo
+            old_app = BASE_DIR / "app.py"
+            new_app = BASE_DIR / "server" / "app.py"
+            if new_app.exists() and old_app.exists():
+                try:
+                    old_app.unlink()
+                    if verbose:
+                        print(f"    🧹 Rimosso vecchio app.py dalla root (migrato in server/)")
+                    files_removed += 1
+                except Exception as e:
+                    if verbose:
+                        print(f"    ⚠️  Impossibile rimuovere vecchio app.py: {e}")
+
             if verbose:
                 print(f"  ✅ Aggiornamento applicato: {files_updated} file aggiornati, {files_removed} file obsoleti rimossi")
             return True
