@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista domande - Gestione Database</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/theme.css">
+    <link rel="stylesheet" href="/static/css/databases.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>🗃️ Gestione Database</h1>
+            <p>Seleziona, crea e gestisci i tuoi database di domande</p>
+        </div>
+
+        <div class="toolbar">
+            <button id="btnHome" class="info">🏠 Home</button>
+            <button id="btnHelp" class="info">❓ Aiuto</button>
+            <button id="btnNew" class="primary">➕ Nuovo Database</button>
+            <button id="btnUpload" class="secondary">📤 Upload JSON</button>
+            <button id="btnScan" class="info">🔄 Aggiorna</button>
+            <div class="status" id="statusMsg">Pronto</div>
+        </div>
+
+        <div class="databases-layout">
+            <!-- Lista Database -->
+            <div class="databases-list-panel">
+                <div class="list-header">
+                    <span class="databases-title">📊 Database Disponibili (<span id="dbCount">0</span>)</span>
+                </div>
+                <div id="databasesList" class="databases-list">
+                    <div class="empty-list">Caricamento database...</div>
+                </div>
+            </div>
+
+            <!-- Dettaglio Database -->
+            <div class="database-detail-panel" id="detailPanel">
+                <div class="detail-placeholder">
+                    <div class="placeholder-icon">📖</div>
+                    <h3>Seleziona un database</h3>
+                    <p>Scegli un database dalla lista per visualizzarne i dettagli</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per creazione nuovo database -->
+    <div id="newDbModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>➕ Nuovo Database</h3>
+            <div class="form-group">
+                <label for="newDbName">Nome database:</label>
+                <input type="text" id="newDbName" placeholder="es. esame_oncologia" maxlength="50">
+                <small>Il nome verrà sanitizzato automaticamente (minuscolo, senza spazi)</small>
+            </div>
+            <div class="modal-actions">
+                <button id="btnCreateDb" class="primary">Crea Database</button>
+                <button id="btnCancelNew" class="secondary">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per upload database -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>📤 Upload Database</h3>
+            <div class="form-group">
+                <label for="uploadFile">File JSON:</label>
+                <input type="file" id="uploadFile" accept=".json">
+            </div>
+            <div class="form-group">
+                <label for="uploadName">Nome database (opzionale):</label>
+                <input type="text" id="uploadName" placeholder="Lascia vuoto per usare il nome del file">
+            </div>
+            <div class="modal-actions">
+                <button id="btnDoUpload" class="primary">Carica</button>
+                <button id="btnCancelUpload" class="secondary">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per rinomina database -->
+    <div id="renameModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>✏️ Rinomina Database</h3>
+            <div class="form-group">
+                <label for="renameNewName">Nuovo nome:</label>
+                <input type="text" id="renameNewName" maxlength="50">
+                <input type="hidden" id="renameOldName">
+            </div>
+            <div class="modal-actions">
+                <button id="btnDoRename" class="primary">Rinomina</button>
+                <button id="btnCancelRename" class="secondary">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per conferma eliminazione -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>⚠️ Conferma Eliminazione</h3>
+            <p id="deleteMessage"></p>
+            <div class="modal-actions">
+                <button id="btnDoDelete" class="danger">Elimina</button>
+                <button id="btnCancelDelete" class="secondary">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal per seconda conferma eliminazione -->
+    <div id="deleteConfirm2Modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>🚨 Ultima Conferma</h3>
+            <p>Questa azione eliminerà anche <strong>tutti i backup</strong> del database. Sei <strong>assolutamente sicuro</strong>?</p>
+            <div class="modal-actions">
+                <button id="btnDoDelete2" class="danger">Sì, elimina tutto</button>
+                <button id="btnCancelDelete2" class="secondary">Annulla</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>ℹ️ Guida alla Gestione Database</h3>
+            <div class="help-content">
+                <h4>📊 Panoramica</h4>
+                <p>Questa pagina permette di gestire multipli database di domande. Ogni database è indipendente con le sue domande, categorie e backup.</p>
+                
+                <h4>➕ Creare un Database</h4>
+                <ul>
+                    <li>Clicca "➕ Nuovo Database" per creare un database vuoto</li>
+                    <li>Clicca "📤 Upload JSON" per importare un file JSON esistente</li>
+                </ul>
+                
+                <h4>✅ Selezionare un Database</h4>
+                <ul>
+                    <li>Clicca "✅ Seleziona" su un database per lavorare con quello</li>
+                    <li>Il database attivo è evidenziato con un bordo verde</li>
+                </ul>
+                
+                <h4>✏️ Rinominare un Database</h4>
+                <ul>
+                    <li>Clicca "✏️ Rinomina" per cambiare il nome</li>
+                    <li>Il nome viene sanitizzato automaticamente</li>
+                    <li>I backup vengono spostati insieme al database</li>
+                </ul>
+                
+                <h4>🗑️ Eliminare un Database</h4>
+                <ul>
+                    <li>Clicca "🗑️ Elimina" per rimuovere un database</li>
+                    <li>Verranno chieste due conferme per sicurezza</li>
+                    <li>L'eliminazione include anche tutti i backup</li>
+                </ul>
+                
+                <h4>🔄 Aggiornamento Dinamico</h4>
+                <ul>
+                    <li>Clicca "🔄 Aggiorna" per scansionare nuovi database nella cartella</li>
+                    <li>Il refresh avviene anche automaticamente ogni 10 secondi</li>
+                </ul>
+                
+                <h4>📥 Download</h4>
+                <ul>
+                    <li>Clicca "⬇️ Download" per scaricare il database come file JSON</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/databases.js"></script>
+    <script src="/static/js/theme.js"></script>
+</body>
+</html>

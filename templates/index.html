@@ -139,6 +139,10 @@
             border-top: 4px solid var(--card-view-border, #2c6e2f);
         }
 
+        .card.databases {
+            border-top: 4px solid var(--card-databases-border, #8b5cf6);
+        }
+
         .footer {
             text-align: center;
             margin-top: auto;
@@ -181,11 +185,17 @@
                     <h2>Modalità Visualizzazione</h2>
                     <p>Visualizza e naviga tra le domande in una modalità ottimizzata per la lettura.</p>
                 </a>
+                
+                <a href="/databases" class="card databases">
+                    <div class="card-icon">🗃️</div>
+                    <h2>Gestione Database</h2>
+                    <p>Seleziona, crea e gestisci i tuoi database di domande.</p>
+                </a>
             </div>
         </div>
         
         <div class="footer">
-            <p>Database: <strong>database.json</strong> | Domande totali: <span id="totalQuestions">--</span> | versione: <strong>{{ app_version }}</strong></p>
+            <p>Database: <strong id="activeDbName">--</strong> | Domande totali: <span id="totalQuestions">--</span> | versione: <strong>{{ app_version }}</strong></p>
         </div>
     </div>
     
@@ -197,6 +207,14 @@
                 document.getElementById('totalQuestions').textContent = data.questions.length;
             })
             .catch(err => console.error('Error loading stats:', err));
+        
+        // Fetch active database name for footer
+        fetch('/api/databases/active')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('activeDbName').textContent = data.active_database || 'Nessuno';
+            })
+            .catch(err => console.error('Error loading active database:', err));
     </script>
     <script src="/static/js/theme.js"></script>
 </body>

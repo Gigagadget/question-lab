@@ -52,7 +52,7 @@ def get_config() -> dict:
         return {
             "github_api": "https://api.github.com/repos/Gigagadget/question-lab",
             "protected_files": ["database.json", "categories.json", "version.json", "config.json"],
-            "protected_dirs": ["Quiz_Log", "backup"],
+            "protected_dirs": ["Quiz_Log", "backup", "databases"],
             "update_settings": {"max_retries": 3, "timeout_seconds": 30},
         }
 
@@ -317,6 +317,11 @@ def apply_update(zip_content: bytes, config: dict, verbose: bool = True) -> bool
     """
     protected_files = set(config.get("protected_files", []))
     protected_dirs = set(config.get("protected_dirs", []))
+    
+    # Protezione hardcoded aggiuntiva per sicurezza
+    protected_dirs.add("databases")
+    protected_dirs.add("backup")
+    protected_dirs.add("Quiz_Log")
 
     if verbose:
         print(f"  📂 Applicazione aggiornamento...")

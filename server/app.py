@@ -89,6 +89,7 @@ import logging
 from datetime import datetime
 from modules.export_utils import generate_doc, generate_pdf
 from modules.quiz_utils import QuizManager
+from server.databases import databases_bp, get_active_database_path, get_active_categories_path, get_database_backup_dir as get_db_backup_dir
 
 app = Flask(
     __name__,
@@ -97,6 +98,9 @@ app = Flask(
     template_folder=str(BASE_DIR / 'templates')
 )
 CORS(app)
+
+# Registra il blueprint per la gestione database
+app.register_blueprint(databases_bp)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -135,70 +139,98 @@ def migrate_old_backups():
     return migrated_count
 
 def create_backup():
-    """Crea un backup del database con timestamp"""
-    db_backup_dir = get_database_backup_dir()
+    """Crea un backup del database con timestamp (usa database attivo se disponibile)"""
+    # Usa il database attivo dalla cartella databases/ se disponibile
+    active_db_path = get_active_database_path()
+    db_path = str(active_db_path) if active_db_path and active_db_path.exists() else DATABASE_FILE
+    
+    # Ottieni la directory di backup corretta
+    if active_db_path and active_db_path.exists():
+        # Backup nella cartella del database attivo
+        db_backup_dir = active_db_path.parent / "backup"
+    else:
+        # Backup nella cartella backup/database/
+        db_backup_dir = get_database_backup_dir()
+    
     if not os.path.exists(db_backup_dir):
         os.makedirs(db_backup_dir)
     
-    if os.path.exists(DATABASE_FILE):
+    if os.path.exists(db_path):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        backup_file = os.path.join(db_backup_dir, f'{Path(DATABASE_FILE).stem}_{timestamp}.json')
-        shutil.copy2(DATABASE_FILE, backup_file)
+        db_name = Path(db_path).stem
+        backup_file = os.path.join(db_backup_dir, f'{db_name}_{timestamp}.json')
+        shutil.copy2(db_path, backup_file)
         logger.info(f"Backup creato: {backup_file}")
         return backup_file
     return None
 
 def load_database():
-    """Carica il database JSON da file"""
-    if not os.path.exists(DATABASE_FILE):
+    """Carica il database JSON da file (usa database attivo se disponibile)"""
+    # Usa il database attivo dalla cartella databases/ se disponibile
+    active_db_path = get_active_database_path()
+    db_path = str(active_db_path) if active_db_path and active_db_path.exists() else DATABASE_FILE
+    
+    if not os.path.exists(db_path):
         save_database([])
         return []
     
     try:
-        with open(DATABASE_FILE, 'r', encoding='utf-8') as f:
+        with open(db_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     except json.JSONDecodeError as e:
-        logger.error(f"Errore nel parsing di database.json: {e}")
+        logger.error(f"Errore nel parsing del database: {e}")
         return []
     except Exception as e:
         logger.error(f"Errore nel caricamento del database: {e}")
         return []
 
 def save_database(data, create_backup_file=True):
-    """Salva il database JSON su file con backup"""
+    """Salva il database JSON su file con backup (usa database attivo se disponibile)"""
+    # Usa il database attivo dalla cartella databases/ se disponibile
+    active_db_path = get_active_database_path()
+    db_path = str(active_db_path) if active_db_path and active_db_path.exists() else DATABASE_FILE
+    
     try:
-        if create_backup_file and os.path.exists(DATABASE_FILE):
+        if create_backup_file and os.path.exists(db_path):
             create_backup()
         
-        with open(DATABASE_FILE, 'w', encoding='utf-8') as f:
+        with open(db_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
-        logger.info(f"Database salvato con successo con {len(data)} elementi")
+        logger.info(f"Database salvato con successo con {len(data)} elementi in {db_path}")
         return True
     except Exception as e:
         logger.error(f"Errore nel salvataggio del database: {e}")
         return False
 
 def load_categories():
-    """Carica le categorie da file separato"""
+    """Carica le categorie da file separato (usa database attivo se disponibile)"""
     default_categories = {
         "primary_domains": ["indefinito", "tumori snc", "tumori testa-collo", "tumori apparato riproduttore femminile"],
         "subdomains": ["indefinito", "generale", "specifico"]
     }
     
-    if not os.path.exists(CATEGORIES_FILE):
+    # Usa il categories.json del database attivo se disponibile
+    active_categories_path = get_active_categories_path()
+    categories_path = str(active_categories_path) if active_categories_path and active_categories_path.exists() else CATEGORIES_FILE
+    
+    if not os.path.exists(categories_path):
         save_categories(default_categories)
         return default_categories
     
     try:
-        with open(CATEGORIES_FILE, 'r', encoding='utf-8') as f:
+        with open(categories_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     except:
         return default_categories
 
 def save_categories(categories):
-    """Salva le categorie su file separato"""
+    """Salva le categorie su file separato (usa database attivo se disponibile)"""
+    # Usa il categories.json del database attivo se disponibile
+    active_categories_path = get_active_categories_path()
+    categories_path = str(active_categories_path) if active_categories_path and active_categories_path.exists() else CATEGORIES_FILE
+    
     try:
-        with open(CATEGORIES_FILE, 'w', encoding='utf-8') as f:
+        with open(categories_path, 'w', encoding='utf-8') as f:
             json.dump(categories, f, indent=2, ensure_ascii=False)
         return True
     except Exception as e:
@@ -297,6 +329,11 @@ def quiz():
 def view():
     """Pagina modalità visualizzazione"""
     return render_template('view.html')
+
+@app.route('/databases')
+def databases_page():
+    """Pagina gestione database"""
+    return render_template('databases.html')
 
 # ==================== API PREFERENZE ====================
 
@@ -695,7 +732,7 @@ def get_stats():
 
 @app.route('/api/export/doc', methods=['POST'])
 def export_doc():
-    """Esporta le domande in formato DOC"""
+    """Esporta le domande in formato DOC (usa database attivo se disponibile)"""
     try:
         data = request.get_json()
         questions = data.get('questions', [])
@@ -706,7 +743,9 @@ def export_doc():
         
         # Generate filename with database name and timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        db_name = Path(DATABASE_FILE).stem  # Get 'database' from 'database.json'
+        # Usa il nome del database attivo se disponibile
+        active_db_path = get_active_database_path()
+        db_name = active_db_path.stem if active_db_path and active_db_path.exists() else Path(DATABASE_FILE).stem
         filename = f"{db_name}_{timestamp}.docx"
         
         # Generate DOC with sorting
@@ -725,7 +764,7 @@ def export_doc():
 
 @app.route('/api/export/pdf', methods=['POST'])
 def export_pdf():
-    """Esporta le domande in formato PDF"""
+    """Esporta le domande in formato PDF (usa database attivo se disponibile)"""
     try:
         data = request.get_json()
         questions = data.get('questions', [])
@@ -736,7 +775,9 @@ def export_pdf():
         
         # Generate filename with database name and timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        db_name = Path(DATABASE_FILE).stem  # Get 'database' from 'database.json'
+        # Usa il nome del database attivo se disponibile
+        active_db_path = get_active_database_path()
+        db_name = active_db_path.stem if active_db_path and active_db_path.exists() else Path(DATABASE_FILE).stem
         filename = f"{db_name}_{timestamp}.pdf"
         
         # Generate PDF with sorting
@@ -755,12 +796,17 @@ def export_pdf():
 
 # ==================== QUIZ API ====================
 
-quiz_manager = QuizManager(DATABASE_FILE)
+def get_quiz_manager():
+    """Restituisce un QuizManager per il database attivo"""
+    active_db_path = get_active_database_path()
+    db_path = str(active_db_path) if active_db_path and active_db_path.exists() else DATABASE_FILE
+    return QuizManager(db_path)
 
 @app.route('/api/quiz/categories', methods=['GET'])
 def get_quiz_categories():
     """Ottiene le categorie con il conteggio delle domande per il quiz"""
     try:
+        quiz_manager = get_quiz_manager()
         categories = quiz_manager.get_categories_with_counts()
         return jsonify(categories), 200
     except Exception as e:
@@ -771,6 +817,7 @@ def get_quiz_categories():
 def start_quiz():
     """Avvia una nuova sessione quiz"""
     try:
+        quiz_manager = get_quiz_manager()
         data = request.get_json()
         categories = data.get('categories', ['all'])
         num_questions = data.get('num_questions', 10)
@@ -817,6 +864,7 @@ def start_quiz():
 def validate_quiz_answer():
     """Valida la risposta per una singola domanda"""
     try:
+        quiz_manager = get_quiz_manager()
         data = request.get_json()
         question_id = data.get('question_id')
         user_answers = data.get('user_answers', [])
@@ -835,6 +883,7 @@ def validate_quiz_answer():
 def save_quiz_result():
     """Salva il log del quiz completato"""
     try:
+        quiz_manager = get_quiz_manager()
         data = request.get_json()
         
         if not data:
@@ -855,6 +904,7 @@ def save_quiz_result():
 def get_quiz_logs():
     """Ottiene la lista di tutti i log dei quiz"""
     try:
+        quiz_manager = get_quiz_manager()
         logs = quiz_manager.get_quiz_logs()
         return jsonify({"logs": logs}), 200
     except Exception as e:
@@ -865,6 +915,7 @@ def get_quiz_logs():
 def get_quiz_log_detail(log_id):
     """Ottiene il dettaglio di un log specifico del quiz"""
     try:
+        quiz_manager = get_quiz_manager()
         log_data = quiz_manager.get_quiz_log_detail(log_id)
         
         if log_data is None:
@@ -880,6 +931,7 @@ def get_quiz_log_detail(log_id):
 def delete_quiz_log(log_id):
     """Elimina un log specifico del quiz"""
     try:
+        quiz_manager = get_quiz_manager()
         success = quiz_manager.delete_quiz_log(log_id)
         
         if success:
@@ -895,6 +947,7 @@ def delete_quiz_log(log_id):
 def delete_all_quiz_logs():
     """Elimina tutti i log dei quiz"""
     try:
+        quiz_manager = get_quiz_manager()
         deleted_count = quiz_manager.delete_all_quiz_logs()
         
         return jsonify({
@@ -906,14 +959,108 @@ def delete_all_quiz_logs():
         logger.error(f"Errore in DELETE /api/quiz/logs: {e}")
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    if not os.path.exists(DATABASE_FILE):
-        save_database([])
-        logger.info(f"Creato {DATABASE_FILE} iniziale")
+def migrate_old_database_to_databases_folder():
+    """
+    Migra il vecchio database.json dalla root alla cartella databases/.
+    Crea la struttura databases/database_legacy/ con data.json, categories.json e backup/.
+    """
+    old_db_file = BASE_DIR / "database.json"
+    old_categories_file = BASE_DIR / "categories.json"
+    legacy_dir = BASE_DIR / "databases" / "database_legacy"
+    legacy_data_file = legacy_dir / "data.json"
+    legacy_categories_file = legacy_dir / "categories.json"
+    legacy_backup_dir = legacy_dir / "backup"
     
-    if not os.path.exists(CATEGORIES_FILE):
-        load_categories()
-        logger.info(f"Creato {CATEGORIES_FILE} iniziale")
+    # Se il database legacy esiste già, non fare nulla
+    if legacy_data_file.exists():
+        return False
+    
+    # Se non esiste il vecchio database.json, non fare nulla
+    if not old_db_file.exists():
+        return False
+    
+    try:
+        logger.info("🔄 Migrazione database esistente nella cartella databases/...")
+        
+        # Crea la directory legacy
+        legacy_dir.mkdir(parents=True, exist_ok=True)
+        legacy_backup_dir.mkdir(exist_ok=True)
+        
+        # Sposta database.json -> databases/database_legacy/data.json
+        shutil.move(str(old_db_file), str(legacy_data_file))
+        logger.info(f"  ✅ Spostato database.json in {legacy_data_file}")
+        
+        # Copia categories.json se esiste
+        if old_categories_file.exists():
+            shutil.copy2(str(old_categories_file), str(legacy_categories_file))
+            logger.info(f"  ✅ Copiato categories.json in {legacy_categories_file}")
+        
+        # Migra i backup dalla vecchia struttura
+        old_backup_dir = BASE_DIR / "backup" / "database"
+        if old_backup_dir.exists():
+            migrated_count = 0
+            for backup_file in old_backup_dir.glob("*.json"):
+                dest = legacy_backup_dir / backup_file.name
+                if not dest.exists():
+                    shutil.move(str(backup_file), str(dest))
+                    migrated_count += 1
+            if migrated_count > 0:
+                logger.info(f"  ✅ Migrati {migrated_count} backup nella cartella databases/database_legacy/backup/")
+        
+        # Aggiorna il file di configurazione dei database
+        from server.databases import get_databases_config, save_databases_config
+        config = get_databases_config()
+        
+        # Aggiungi il database legacy alla lista
+        now = datetime.now().isoformat()
+        config["databases"].append({
+            "name": "database_legacy",
+            "question_count": len(load_json_file(legacy_data_file)) if legacy_data_file.exists() else 0,
+            "created": now,
+            "last_modified": now
+        })
+        config["active_database"] = "database_legacy"
+        save_databases_config(config)
+        
+        logger.info("  ✅ Migrazione completata con successo!")
+        return True
+        
+    except Exception as e:
+        logger.error(f"  ❌ Errore nella migrazione: {e}")
+        return False
+
+
+def load_json_file(filepath):
+    """Carica un file JSON e restituisce il contenuto."""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except:
+        return []
+
+
+if __name__ == '__main__':
+    # Migra il database esistente nella cartella databases/
+    migration_done = migrate_old_database_to_databases_folder()
+    
+    # Crea database.json e categories.json nella root SOLO se non è stata fatta migrazione
+    # e se non esiste già un database attivo nella cartella databases/
+    from server.databases import get_active_database_path
+    active_db_path = get_active_database_path()
+    
+    if not migration_done and active_db_path is None:
+        # Nessuna migrazione e nessun database attivo: crea i file nella root
+        if not os.path.exists(DATABASE_FILE):
+            save_database([])
+            logger.info(f"Creato {DATABASE_FILE} iniziale")
+        
+        if not os.path.exists(CATEGORIES_FILE):
+            load_categories()
+            logger.info(f"Creato {CATEGORIES_FILE} iniziale")
+    elif migration_done:
+        logger.info("✅ Migrazione completata: non creo database.json nella root")
+    elif active_db_path is not None:
+        logger.info(f"✅ Database attivo esistente: {active_db_path}")
     
     # Migra i backup dalla vecchia struttura alla nuova
     migrated = migrate_old_backups()
