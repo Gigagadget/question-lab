@@ -88,6 +88,15 @@
     gap: 10px;
 }
 
+/* Titolo del conteggio domande - tiene parentesi vicine al numero */
+.questions-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
 /* Container azioni batch */
 #batchActionsDiv {
     display: none;

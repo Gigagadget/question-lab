@@ -42,51 +42,51 @@
     --status-warning-border: #fde68a;
 }
 
-/* Variabili per il tema scuro - Ispirato a Catppuccin Mocha */
+/* Variabili per il tema scuro - Ispirato a Samsung UI + VS Code Modern Dark */
 [data-theme="dark"] {
-    /* Sfondo - tonalità calde e morbide */
-    --bg-primary: #1e1e2e;
-    --bg-secondary: #252536;
-    --bg-tertiary: #313244;
-    --bg-hover: #45475a;
+    /* Sfondo - molto scuro, quasi nero ma con sfumatura grigia */
+    --bg-primary: #0f1113;
+    --bg-secondary: #1a1a1d;
+    --bg-tertiary: #242427;
+    --bg-hover: #2d2d31;
     
-    /* Testo - più chiaro per migliore leggibilità */
-    --text-primary: #e8ecf4;
-    --text-secondary: #cdd6f4;
-    --text-muted: #7f849c;
-    --text-light: #6c7086;
+    /* Testo - grigio-azzurrognolo chiaro, ottimo per lettura prolungata */
+    --text-primary: #e0e8f0;
+    --text-secondary: #c8d0e0;
+    --text-muted: #7a8294;
+    --text-light: #62707c;
     
     /* Bordi */
-    --border-color: #45475a;
-    --border-light: #313244;
-    --shadow-color: rgba(0, 0, 0, 0.4);
-    --shadow-hover: rgba(0, 0, 0, 0.6);
+    --border-color: #2d2d31;
+    --border-light: #242427;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --shadow-hover: rgba(0, 0, 0, 0.7);
     
-    /* Colori accent - Catppuccin Mocha style */
-    --accent-primary: #89b4fa;
-    --accent-secondary: #74c7ec;
-    --accent-blue: #89b4fa;
-    --accent-blue-hover: #74c7ec;
-    --accent-green: #a6e3a1;
-    --accent-orange: #fab387;
-    --accent-red: #f38ba8;
-    --accent-gray: #6c7086;
+    /* Colori accent - vivaci come Samsung/VS Code pero non eccessivi */
+    --accent-primary: #5ba3dd;
+    --accent-secondary: #4a95d8;
+    --accent-blue: #5ba3dd;
+    --accent-blue-hover: #4a95d8;
+    --accent-green: #6ba896;
+    --accent-orange: #d39b5e;
+    --accent-red: #d85d6f;
+    --accent-gray: #7a8294;
     
-    /* Stati - colori morbidi e rilassanti */
-    --status-correct-bg: rgba(166, 227, 161, 0.1);
-    --status-correct-border: rgba(166, 227, 161, 0.3);
-    --status-correct-text: #a6e3a1;
-    --status-wrong-bg: rgba(243, 139, 168, 0.1);
-    --status-wrong-border: rgba(243, 139, 168, 0.3);
-    --status-wrong-text: #f38ba8;
-    --status-partial-bg: rgba(250, 179, 135, 0.1);
-    --status-partial-border: rgba(250, 179, 135, 0.3);
-    --status-partial-text: #fab387;
-    --status-info-bg: rgba(137, 180, 250, 0.1);
-    --status-info-text: #89b4fa;
-    --status-warning-bg: rgba(249, 226, 175, 0.1);
-    --status-warning-text: #f9e2af;
-    --status-warning-border: rgba(249, 226, 175, 0.3);
+    /* Stati - colori ben definiti ma morbidi */
+    --status-correct-bg: rgba(107, 168, 150, 0.15);
+    --status-correct-border: rgba(107, 168, 150, 0.35);
+    --status-correct-text: #6ba896;
+    --status-wrong-bg: rgba(216, 93, 111, 0.15);
+    --status-wrong-border: rgba(216, 93, 111, 0.35);
+    --status-wrong-text: #d85d6f;
+    --status-partial-bg: rgba(211, 155, 94, 0.15);
+    --status-partial-border: rgba(211, 155, 94, 0.35);
+    --status-partial-text: #d39b5e;
+    --status-info-bg: rgba(91, 163, 221, 0.15);
+    --status-info-text: #5ba3dd;
+    --status-warning-bg: rgba(211, 155, 94, 0.15);
+    --status-warning-text: #d39b5e;
+    --status-warning-border: rgba(211, 155, 94, 0.35);
 }
 
 /* ==================== STILI GLOBALI CON VARIABILI ==================== */

@@ -622,7 +622,6 @@ function renderFormForId(id) {
     // Action buttons row
     const actionButtonsRowHtml = `
         <div class="action-buttons-row">
-            <button id="btnUpdateQuestion" class="primary">💾 Aggiorna</button>
             <button id="btnDeleteQuestion" class="danger">🗑️ Elimina</button>
             <button id="btnDuplicate" class="warning">📑 Duplica</button>
             <button id="manageCategoriesBtn" class="info small-btn" style="margin-left: auto;">🏷️ Categorie</button>
@@ -674,7 +673,6 @@ function renderFormForId(id) {
         });
     });
     
-    document.getElementById('btnUpdateQuestion')?.addEventListener('click', () => saveCurrentQuestion(id, true));
     document.getElementById('btnDeleteQuestion')?.addEventListener('click', () => deleteQuestionById(id));
     document.getElementById('btnDuplicate')?.addEventListener('click', () => duplicateQuestion(id));
     document.getElementById('manageCategoriesBtn')?.addEventListener('click', showCategoriesModal);
