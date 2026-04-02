@@ -104,6 +104,13 @@ class QuizManagerFrontend {
             this.applyCustomCount();
         });
 
+        // Handle Enter key for custom count input
+        document.getElementById('customCount').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.applyCustomCount();
+            }
+        });
+
         // Quiz actions
         document.getElementById('btnStartQuiz').addEventListener('click', () => {
             this.startQuiz();
@@ -272,18 +279,26 @@ class QuizManagerFrontend {
 
     applyCustomCount() {
         const customInput = document.getElementById('customCount');
-        const value = parseInt(customInput.value);
-        
-        if (value && value > 0) {
+        const value = parseInt(customInput.value, 10);
+
+        if (value && value > 0 && value <= 1000) {
             this.selectedCount = value;
-            
+
             // Remove selection from preset buttons
             document.querySelectorAll('.count-btn').forEach(b => {
                 b.classList.remove('selected');
             });
-            
+
             this.updateCountDisplay();
             this.updateAvailableQuestions();
+        } else {
+            // Invalid input - clear and show feedback
+            customInput.style.borderColor = '#dc3545';
+            customInput.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.15)';
+            setTimeout(() => {
+                customInput.style.borderColor = '#cbd5e1';
+                customInput.style.boxShadow = 'none';
+            }, 2000);
         }
     }
 
