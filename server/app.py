@@ -106,6 +106,7 @@ logger = logging.getLogger(__name__)
 DATABASE_FILE = str(BASE_DIR / 'database.json')
 CATEGORIES_FILE = str(BASE_DIR / 'categories.json')
 BACKUP_DIR = str(BASE_DIR / 'backup')
+USER_PREFS_FILE = str(BASE_DIR / 'preferences.json')
 
 def get_database_backup_dir():
     """Ottiene la directory di backup specifica per il database corrente"""
@@ -204,6 +205,31 @@ def save_categories(categories):
         logger.error(f"Errore nel salvataggio delle categorie: {e}")
         return False
 
+def load_user_prefs():
+    """Carica le preferenze utente da file JSON"""
+    default_prefs = {"theme": "light"}
+    
+    if not os.path.exists(USER_PREFS_FILE):
+        save_user_prefs(default_prefs)
+        return default_prefs
+    
+    try:
+        with open(USER_PREFS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Errore nel caricamento delle preferenze: {e}")
+        return default_prefs
+
+def save_user_prefs(prefs):
+    """Salva le preferenze utente su file JSON"""
+    try:
+        with open(USER_PREFS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(prefs, f, indent=2, ensure_ascii=False)
+        return True
+    except Exception as e:
+        logger.error(f"Errore nel salvataggio delle preferenze: {e}")
+        return False
+
 def get_unique_categories(questions):
     """Estrae i valori unici di primary_domain e subdomain dalle domande E dal file categorie"""
     saved_categories = load_categories()
@@ -271,6 +297,41 @@ def quiz():
 def view():
     """Pagina modalità visualizzazione"""
     return render_template('view.html')
+
+# ==================== API PREFERENZE ====================
+
+@app.route('/api/preferences', methods=['GET'])
+def get_preferences():
+    """Ottiene le preferenze utente"""
+    try:
+        prefs = load_user_prefs()
+        return jsonify(prefs), 200
+    except Exception as e:
+        logger.error(f"Errore in GET /api/preferences: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/preferences', methods=['POST'])
+def save_preferences():
+    """Salva le preferenze utente"""
+    try:
+        data = request.get_json()
+        if not isinstance(data, dict):
+            return jsonify({"error": "Formato dati non valido"}), 400
+        
+        # Assicura che abbia almeno la chiave 'theme'
+        if 'theme' not in data:
+            return jsonify({"error": "Campo 'theme' obbligatorio"}), 400
+        
+        if save_user_prefs(data):
+            return jsonify({
+                "message": "Preferenze salvate con successo",
+                "preferences": data
+            }), 200
+        else:
+            return jsonify({"error": "Salvataggio delle preferenze fallito"}), 500
+    except Exception as e:
+        logger.error(f"Errore in POST /api/preferences: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # ==================== API ====================
 

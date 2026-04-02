@@ -1,23 +1,26 @@
 /**
  * Theme Manager - Gestione tema scuro/chiaro
- * Salva la preferenza dell'utente nel localStorage
+ * Salva la preferenza dell'utente su file server tramite API
  */
 
 (function() {
     'use strict';
 
-    const THEME_KEY = 'ap_manager_theme';
     const DARK_THEME = 'dark';
     const LIGHT_THEME = 'light';
 
     /**
-     * Ottiene il tema corrente dal localStorage o dal sistema
+     * Ottiene il tema corrente dal server o dal sistema
      */
-    function getPreferredTheme() {
-        const savedTheme = localStorage.getItem(THEME_KEY);
-        
-        if (savedTheme) {
-            return savedTheme;
+    async function getPreferredTheme() {
+        try {
+            const response = await fetch('/api/preferences');
+            if (response.ok) {
+                const data = await response.json();
+                return data.theme || LIGHT_THEME;
+            }
+        } catch (err) {
+            console.warn('Errore nel caricamento preferenze dal server:', err);
         }
         
         // Fallback: preferenza del sistema
@@ -31,7 +34,7 @@
     /**
      * Applica il tema al documento
      */
-    function applyTheme(theme) {
+    async function applyTheme(theme) {
         if (theme === DARK_THEME) {
             document.documentElement.setAttribute('data-theme', DARK_THEME);
         } else {
@@ -41,8 +44,21 @@
         // Aggiorna tutti i toggle button nella pagina
         updateToggleButtons(theme);
         
-        // Salva nel localStorage
-        localStorage.setItem(THEME_KEY, theme);
+        // Salva sul server
+        try {
+            const response = await fetch('/api/preferences', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ theme: theme })
+            });
+            if (!response.ok) {
+                console.warn('Errore nel salvataggio del tema sul server');
+            }
+        } catch (err) {
+            console.warn('Errore nella comunicazione con il server:', err);
+        }
     }
 
     /**
@@ -123,9 +139,9 @@
     /**
      * Inizializza il theme manager
      */
-    function init() {
+    async function init() {
         // Applica il tema preferito
-        const preferredTheme = getPreferredTheme();
+        const preferredTheme = await getPreferredTheme();
         applyTheme(preferredTheme);
         
         // Crea il toggle button
@@ -133,9 +149,10 @@
         
         // Ascolta i cambiamenti della preferenza di sistema
         if (window.matchMedia) {
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                // Solo se l'utente non ha impostato una preferenza esplicita
-                if (!localStorage.getItem(THEME_KEY)) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async (e) => {
+                // Solo se il server ritorna il tema di default
+                const prefs = await getPreferredTheme();
+                if (prefs === LIGHT_THEME || prefs === DARK_THEME) {
                     applyTheme(e.matches ? DARK_THEME : LIGHT_THEME);
                 }
             });

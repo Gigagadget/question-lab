@@ -5,6 +5,7 @@
 # Database e dati utente (NON tracciare)
 database.json
 categories.json
+preferences.json
 
 # Log e backup utente
 Quiz_Log/
