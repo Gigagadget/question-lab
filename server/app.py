@@ -238,11 +238,24 @@ def get_local_ip():
     except Exception:
         return "localhost"
 
+
+def get_app_version():
+    """Restituisce la versione corrente da version.json."""
+    version_file = BASE_DIR / "version.json"
+    try:
+        with open(version_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get("version", "N/D")
+    except Exception:
+        return "N/D"
+
+
 @app.route('/')
 def home():
     """Pagina principale di navigazione"""
     server_ip = get_local_ip()
-    return render_template('index.html', server_ip=server_ip)
+    app_version = get_app_version()
+    return render_template('index.html', server_ip=server_ip, app_version=app_version)
 
 @app.route('/editor')
 def editor():
