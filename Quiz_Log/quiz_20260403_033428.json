@@ -1,0 +1,38 @@
+{
+  "categories_selected": [
+    "all"
+  ],
+  "total_questions_requested": 5,
+  "total_questions_available": 1,
+  "total_questions_used": 1,
+  "correct_answers": 1,
+  "partial_answers": 0,
+  "wrong_answers": 0,
+  "unanswered_questions": 0,
+  "score_percentage": 100,
+  "total_time_seconds": 12,
+  "average_time_per_question": 12,
+  "interrupted": false,
+  "questions": [
+    {
+      "id": "Q1",
+      "text": "Nuova domanda",
+      "all_answers": {
+        "A": "abc"
+      },
+      "correct_answers": [
+        "A"
+      ],
+      "user_answers": [
+        "A"
+      ],
+      "is_correct": true,
+      "is_partial": false,
+      "is_unanswered": false,
+      "time_spent_seconds": 12,
+      "feedback": "corretto"
+    }
+  ],
+  "id": "quiz_20260403_033428",
+  "date": "2026-04-03T03:34:28.524126"
+}

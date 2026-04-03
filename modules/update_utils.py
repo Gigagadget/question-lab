@@ -52,7 +52,7 @@ def get_config() -> dict:
         return {
             "github_api": "https://api.github.com/repos/Gigagadget/question-lab",
             "protected_files": ["database.json", "categories.json", "version.json", "config.json"],
-            "protected_dirs": ["Quiz_Log", "backup", "databases"],
+            "protected_dirs": ["databases"],
             "update_settings": {"max_retries": 3, "timeout_seconds": 30},
         }
 
@@ -208,7 +208,7 @@ def create_backup(verbose: bool = True) -> Optional[str]:
     Esclude file/directory protetti.
     """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_dir = BASE_DIR / "backup" / "update_backups"
+    backup_dir = BASE_DIR / "update_backups"
     backup_dir.mkdir(parents=True, exist_ok=True)
     backup_path = backup_dir / f"backup_{timestamp}"
 
@@ -317,11 +317,10 @@ def apply_update(zip_content: bytes, config: dict, verbose: bool = True) -> bool
     """
     protected_files = set(config.get("protected_files", []))
     protected_dirs = set(config.get("protected_dirs", []))
-    
+
     # Protezione hardcoded aggiuntiva per sicurezza
     protected_dirs.add("databases")
-    protected_dirs.add("backup")
-    protected_dirs.add("Quiz_Log")
+    protected_dirs.add("update_backups")
 
     if verbose:
         print(f"  📂 Applicazione aggiornamento...")

@@ -106,9 +106,7 @@ app.register_blueprint(databases_bp)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Database file paths (tutti relativi alla root del progetto)
-DATABASE_FILE = str(BASE_DIR / 'database.json')
-CATEGORIES_FILE = str(BASE_DIR / 'categories.json')
+# Directory per backup e preferenze
 BACKUP_DIR = str(BASE_DIR / 'backup')
 USER_PREFS_FILE = str(BASE_DIR / 'preferences.json')
 
@@ -791,14 +789,13 @@ def export_doc():
         if not questions:
             return jsonify({"error": "Nessuna domanda fornita"}), 400
         
-        # Generate filename with database name and timestamp
+        # Generate filename con nome del database attivo
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        # Usa il nome del database attivo (nome cartella, non nome file)
         active_db_path = get_active_database_path()
         if active_db_path and active_db_path.exists():
             db_name = active_db_path.parent.name  # Nome della cartella del database
         else:
-            db_name = Path(DATABASE_FILE).stem
+            db_name = "database"
         filename = f"{db_name}_{timestamp}.docx"
         
         # Generate DOC with sorting
@@ -826,14 +823,13 @@ def export_pdf():
         if not questions:
             return jsonify({"error": "Nessuna domanda fornita"}), 400
         
-        # Generate filename with database name and timestamp
+        # Generate filename con nome del database attivo
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        # Usa il nome del database attivo (nome cartella, non nome file)
         active_db_path = get_active_database_path()
         if active_db_path and active_db_path.exists():
             db_name = active_db_path.parent.name  # Nome della cartella del database
         else:
-            db_name = Path(DATABASE_FILE).stem
+            db_name = "database"
         filename = f"{db_name}_{timestamp}.pdf"
         
         # Generate PDF with sorting
@@ -858,7 +854,9 @@ def get_quiz_manager():
     if not active_db_path or not active_db_path.exists():
         return None  # Nessun database selezionato
     db_path = str(active_db_path)
-    return QuizManager(db_path)
+    # Usa la cartella quiz/ dentro la cartella del database attivo
+    quiz_log_dir = str(active_db_path.parent / "quiz")
+    return QuizManager(db_path, quiz_log_dir=quiz_log_dir)
 
 @app.route('/api/quiz/categories', methods=['GET'])
 def get_quiz_categories():
@@ -1114,6 +1112,13 @@ def load_json_file(filepath):
 
 
 if __name__ == '__main__':
+    # Migrazione automatica da versione legacy (quiz log, backup/, file root)
+    try:
+        from modules.migrate_legacy import run_migration
+        run_migration()
+    except Exception as e:
+        logger.warning(f"Migrazione legacy fallita: {e}")
+
     # Migra il database esistente nella cartella databases/
     migration_done = migrate_old_database_to_databases_folder()
 

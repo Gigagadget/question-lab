@@ -2,8 +2,8 @@
   "github_repo": "https://github.com/Gigagadget/question-lab",
   "github_api": "https://api.github.com/repos/Gigagadget/question-lab",
   "branch": "master",
-  "protected_files": ["database.json", "categories.json", "version.json", "config.json"],
-  "protected_dirs": ["Quiz_Log", "backup"],
+  "protected_files": ["version.json", "config.json"],
+  "protected_dirs": ["databases", "update_backups"],
   "update_settings": {
     "max_retries": 3,
     "timeout_seconds": 30

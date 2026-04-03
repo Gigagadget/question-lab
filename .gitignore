@@ -8,10 +8,11 @@ categories.json
 preferences.json
 
 # Log e backup utente
-Quiz_Log/
-backup/
 databases/
 update_log.json
+
+# Backup pre-aggiornamento app
+update_backups/
 
 # File di log
 *.log

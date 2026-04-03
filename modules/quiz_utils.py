@@ -7,11 +7,14 @@ from pathlib import Path
 
 class QuizManager:
     """Gestore della logica del quiz"""
-    
-    def __init__(self, database_file: str = 'database.json'):
+
+    def __init__(self, database_file: str = 'database.json', quiz_log_dir: str = None):
         self.database_file = database_file
-        self.quiz_log_dir = Path('Quiz_Log')
-        self.quiz_log_dir.mkdir(exist_ok=True)
+        if quiz_log_dir:
+            self.quiz_log_dir = Path(quiz_log_dir)
+        else:
+            raise ValueError("quiz_log_dir è obbligatorio. Specifica il percorso della cartella quiz/ del database.")
+        self.quiz_log_dir.mkdir(parents=True, exist_ok=True)
     
     def load_database(self) -> List[Dict]:
         """Carica il database delle domande"""
