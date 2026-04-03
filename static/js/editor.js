@@ -1059,7 +1059,7 @@ async function createNewQuestion() {
         primary_domain: categories.primary_domains[0] || "indefinito",
         subdomain: categories.subdomains[0] || "indefinito",
         question_type: "",
-        answers: { A: "", B: "", C: "", D: "", E: "", F: "" },
+        answers: { A: "" },
         correct: ["null"],
         notes: "",
         embedding_vector: "",
