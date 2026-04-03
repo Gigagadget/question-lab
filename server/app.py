@@ -88,10 +88,22 @@ import shutil
 import logging
 from datetime import datetime
 from modules.export_utils import generate_doc, generate_pdf
-from server.databases import databases_bp, get_active_database_path, get_active_categories_path, get_database_backup_dir as get_db_backup_dir
+from server.databases import databases_bp, get_active_database_path
 from server.quiz import quiz_bp
 from server.categories import categories_bp as categories_blueprint
 from server.backups import backups_bp
+from server.utils import (
+    get_database_backup_dir,
+    create_backup,
+    load_database,
+    save_database,
+    load_categories,
+    save_categories,
+    load_user_prefs,
+    save_user_prefs,
+    get_unique_categories,
+    migrate_old_backups
+)
 
 app = Flask(
     __name__,
@@ -110,210 +122,6 @@ app.register_blueprint(backups_bp)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Directory per backup e preferenze
-BACKUP_DIR = str(BASE_DIR / 'backup')
-USER_PREFS_FILE = str(BASE_DIR / 'preferences.json')
-
-def get_database_backup_dir():
-    """Ottiene la directory di backup specifica per il database corrente"""
-    active_db_path = get_active_database_path()
-    if active_db_path and active_db_path.exists():
-        # Usa la cartella backup/ dentro la cartella del database attivo
-        return str(active_db_path.parent / "backup")
-    # Nessun database attivo: restituisci None
-    return None
-
-def migrate_old_backups():
-    """Migra i backup dalla vecchia struttura alla nuova (sottocartelle per database)"""
-    if not os.path.exists(BACKUP_DIR):
-        return 0
-
-    db_backup_dir = get_database_backup_dir()
-    if db_backup_dir is None:
-        # Nessun database attivo: salta la migrazione dei backup
-        logger.info("⚠️ Nessun database attivo: migrazione backup saltata")
-        return 0
-
-    if not os.path.exists(db_backup_dir):
-        os.makedirs(db_backup_dir)
-
-    migrated_count = 0
-    for file in os.listdir(BACKUP_DIR):
-        if file.endswith('.json'):
-            old_path = os.path.join(BACKUP_DIR, file)
-            new_path = os.path.join(db_backup_dir, file)
-            if not os.path.exists(new_path):
-                shutil.move(old_path, new_path)
-                migrated_count += 1
-                logger.info(f"Backup migrato: {file}")
-
-    return migrated_count
-
-def create_backup():
-    """Crea un backup del database con timestamp (usa database attivo se disponibile)"""
-    # Usa il database attivo dalla cartella databases/ se disponibile
-    active_db_path = get_active_database_path()
-    if not active_db_path or not active_db_path.exists():
-        logger.warning("Tentativo di backup senza database attivo")
-        return None  # Nessun database attivo
-
-    db_path = str(active_db_path)
-
-    # Backup nella cartella del database attivo
-    db_backup_dir = active_db_path.parent / "backup"
-
-    if not os.path.exists(db_backup_dir):
-        os.makedirs(db_backup_dir)
-
-    if os.path.exists(db_path):
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        db_name = Path(db_path).stem
-        backup_file = os.path.join(db_backup_dir, f'{db_name}_{timestamp}.json')
-        shutil.copy2(db_path, backup_file)
-        logger.info(f"Backup creato: {backup_file}")
-        return backup_file
-    return None
-
-def load_database():
-    """Carica il database JSON da file (usa database attivo se disponibile)"""
-    # Usa il database attivo dalla cartella databases/ se disponibile
-    active_db_path = get_active_database_path()
-
-    # Se nessun database attivo, restituisci errore
-    if not active_db_path or not active_db_path.exists():
-        return None  # Segnala che nessun database è selezionato
-
-    db_path = str(active_db_path)
-
-    if not os.path.exists(db_path):
-        # Non creare file automaticamente: il database dovrebbe esistere
-        return []
-
-    try:
-        with open(db_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except json.JSONDecodeError as e:
-        logger.error(f"Errore nel parsing del database: {e}")
-        return []
-    except Exception as e:
-        logger.error(f"Errore nel caricamento del database: {e}")
-        return []
-
-def save_database(data, create_backup_file=True):
-    """Salva il database JSON su file con backup (usa database attivo se disponibile)"""
-    # Usa il database attivo dalla cartella databases/ se disponibile
-    active_db_path = get_active_database_path()
-
-    # Se nessun database attivo, non salvare
-    if not active_db_path or not active_db_path.exists():
-        logger.warning("Tentativo di salvataggio senza database attivo")
-        return False
-
-    db_path = str(active_db_path)
-
-    try:
-        if create_backup_file and os.path.exists(db_path):
-            create_backup()
-
-        with open(db_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-        logger.info(f"Database salvato con successo con {len(data)} elementi in {db_path}")
-        return True
-    except Exception as e:
-        logger.error(f"Errore nel salvataggio del database: {e}")
-        return False
-
-def load_categories():
-    """Carica le categorie da file separato (usa database attivo se disponibile)"""
-    default_categories = {
-        "primary_domains": ["indefinito"],
-        "subdomains": ["indefinito"]
-    }
-
-    # Usa il categories.json del database attivo se disponibile
-    active_categories_path = get_active_categories_path()
-
-    # Se nessun database attivo, restituisci None
-    if not active_categories_path or not active_categories_path.exists():
-        return None  # Segnala che nessun database è selezionato
-
-    categories_path = str(active_categories_path)
-
-    if not os.path.exists(categories_path):
-        # Non creare file automaticamente: le categorie dovrebbero esistere
-        return default_categories
-
-    try:
-        with open(categories_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except:
-        return default_categories
-
-def save_categories(categories):
-    """Salva le categorie su file separato (usa database attivo se disponibile)"""
-    # Usa il categories.json del database attivo se disponibile
-    active_categories_path = get_active_categories_path()
-
-    # Se nessun database attivo, non salvare
-    if not active_categories_path or not active_categories_path.exists():
-        logger.warning("Tentativo di salvataggio categorie senza database attivo")
-        return False
-
-    categories_path = str(active_categories_path)
-
-    try:
-        with open(categories_path, 'w', encoding='utf-8') as f:
-            json.dump(categories, f, indent=2, ensure_ascii=False)
-        return True
-    except Exception as e:
-        logger.error(f"Errore nel salvataggio delle categorie: {e}")
-        return False
-
-def load_user_prefs():
-    """Carica le preferenze utente da file JSON"""
-    default_prefs = {"theme": "light"}
-    
-    if not os.path.exists(USER_PREFS_FILE):
-        save_user_prefs(default_prefs)
-        return default_prefs
-    
-    try:
-        with open(USER_PREFS_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        logger.error(f"Errore nel caricamento delle preferenze: {e}")
-        return default_prefs
-
-def save_user_prefs(prefs):
-    """Salva le preferenze utente su file JSON"""
-    try:
-        with open(USER_PREFS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(prefs, f, indent=2, ensure_ascii=False)
-        return True
-    except Exception as e:
-        logger.error(f"Errore nel salvataggio delle preferenze: {e}")
-        return False
-
-def get_unique_categories(questions):
-    """Estrae i valori unici di primary_domain e subdomain dalle domande E dal file categorie"""
-    saved_categories = load_categories()
-    primary_domains = set(saved_categories.get("primary_domains", []))
-    subdomains = set(saved_categories.get("subdomains", []))
-    
-    for q in questions:
-        if q.get('primary_domain') and q['primary_domain'].strip():
-            primary_domains.add(q['primary_domain'].strip())
-        if q.get('subdomain') and q['subdomain'].strip():
-            subdomains.add(q['subdomain'].strip())
-    
-    merged_categories = {
-        "primary_domains": sorted(list(primary_domains)),
-        "subdomains": sorted(list(subdomains))
-    }
-    save_categories(merged_categories)
-    
-    return sorted(list(primary_domains)), sorted(list(subdomains))
 
 # ==================== PAGINE ====================
 
