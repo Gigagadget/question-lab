@@ -1360,9 +1360,6 @@ async function showCategoriesModal() {
             <input type="text" id="newSubdomain" placeholder="Nuovo sottodominio" onkeypress="if(event.key==='Enter') window.addCategory('subdomain')">
             <button onclick="window.addCategory('subdomain')" class="primary small-btn">Aggiungi</button>
         </div>
-        <div style="margin-top: 15px; font-size: 0.8rem; color: #27ae60; text-align: center; padding: 10px; background: #e8f5e9; border-radius: 8px;">
-            💡 Suggerimento: Le categorie vengono salvate in un file separato e appariranno immediatamente nei menu a tendina!
-        </div>
     `;
     
     modal.style.display = 'block';
