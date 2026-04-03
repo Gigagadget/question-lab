@@ -572,9 +572,20 @@ def get_version_from_zip(zip_content: bytes, verbose: bool = True) -> Optional[s
             zip_path.write_bytes(zip_content)
 
             with zipfile.ZipFile(zip_path, "r") as zf:
-                # Trova il file version.json dentro lo ZIP
-                # La struttura è tipicamente repo-branch/version.json
-                version_entries = [n for n in zf.namelist() if n.endswith("version.json")]
+                # Debug: mostra tutti i file nello ZIP
+                all_names = zf.namelist()
+                if verbose:
+                    print(f"  🔍 Debug: {len(all_names)} file nello ZIP")
+                    # Mostra i primi 10 file per capire la struttura
+                    for n in all_names[:10]:
+                        print(f"     - {n}")
+                    if len(all_names) > 10:
+                        print(f"     ... e altri {len(all_names) - 10}")
+
+                # Trova version.json
+                version_entries = [n for n in all_names if n.endswith("version.json")]
+                if verbose:
+                    print(f"  🔍 Debug: version.json trovati: {version_entries}")
 
                 if not version_entries:
                     if verbose:
@@ -583,18 +594,24 @@ def get_version_from_zip(zip_content: bytes, verbose: bool = True) -> Optional[s
 
                 # Prendi il primo (di solito c'è un solo version.json nella root)
                 version_entry = version_entries[0]
+                if verbose:
+                    print(f"  📄 Leggendo: {version_entry}")
                 content = zf.read(version_entry).decode("utf-8")
+                if verbose:
+                    print(f"  📄 Contenuto: {content.strip()}")
                 data = json.loads(content)
                 version = data.get("version")
 
                 if version and verbose:
-                    print(f"  📄 Versione dallo ZIP: v{version} (dal file version.json)")
+                    print(f"  📄 Versione dallo ZIP: v{version}")
 
                 return version
 
     except Exception as e:
         if verbose:
+            import traceback
             print(f"  ⚠️  Errore leggendo version.json dallo ZIP: {e}")
+            traceback.print_exc()
         return None
 
 
