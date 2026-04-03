@@ -81,7 +81,6 @@ def main():
     if updated:
         if verbose:
             print("\n🔄 Riavvio per applicare l'aggiornamento...")
-        import subprocess
         # Su Windows os.execv() non è affidabile, usa subprocess.Popen + exit
         subprocess.Popen(
             [sys.executable, str(Path(__file__).absolute())] + sys.argv[1:],
