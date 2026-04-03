@@ -95,37 +95,48 @@ def migrate_quiz_logs(base_dir):
 
 
 def remove_old_backup_folder(base_dir):
-    """Rimuove la vecchia cartella backup/ dalla root (non più utilizzata)."""
+    """
+    Migra eventuali backup dalla vecchia cartella backup/ a update_backups/,
+    poi rimuove la vecchia cartella backup/ dalla root.
+    """
     old_backup = base_dir / "backup"
-    if old_backup.exists() and old_backup.is_dir():
-        try:
-            shutil.rmtree(str(old_backup))
-            return True
-        except Exception as e:
-            print(f"  ⚠️  Impossibile rimuovere backup/: {e}")
-    return False
+    if not old_backup.exists() or not old_backup.is_dir():
+        return False
 
+    new_backup = base_dir / "update_backups"
 
-def remove_old_update_backups_folder(base_dir):
-    """Rimuove la vecchia cartella backup/update_backups/ se esiste ancora dentro backup/."""
-    # La vecchia struttura era backup/update_backups/, ora è update_backups/ nella root
-    # Se esiste ancora la vecchia cartella backup/ (con update_backups dentro), verrà rimossa da remove_old_backup_folder
-    # Se esiste la nuova update_backups/ va tenuta perché è quella attuale
-    pass
+    # Migra file dalla vecchia cartella backup/ alla nuova update_backups/
+    try:
+        if new_backup.exists():
+            # Migra file individuali
+            for f in old_backup.iterdir():
+                if f.is_file():
+                    dest = new_backup / f.name
+                    if not dest.exists():
+                        import shutil
+                        shutil.copy2(str(f), str(dest))
+            # Migra sottocartelle (es. database/)
+            for sub in old_backup.iterdir():
+                if sub.is_dir():
+                    dest_dir = new_backup / sub.name
+                    if not dest_dir.exists():
+                        import shutil
+                        shutil.copytree(str(sub), str(dest_dir))
+        else:
+            # Se update_backups non esiste, rinomina direttamente
+            old_backup.rename(new_backup)
+            return True  # La vecchia cartella non esiste più, è stata rinominata
+    except Exception as e:
+        print(f"  ⚠️  Migrazione backup fallita: {e}")
 
-
-def remove_root_database_files(base_dir):
-    """Rimuove database.json e categories.json dalla root (non più utilizzati)."""
-    removed = []
-    for filename in ("database.json", "categories.json"):
-        filepath = base_dir / filename
-        if filepath.exists() and filepath.is_file():
-            try:
-                filepath.unlink()
-                removed.append(filename)
-            except Exception as e:
-                print(f"  ⚠️  Impossibile rimuovere {filename}: {e}")
-    return removed
+    # Ora che i contenuti sono migrati, rimuovi la vecchia cartella
+    try:
+        import shutil
+        shutil.rmtree(str(old_backup))
+        return True
+    except Exception as e:
+        print(f"  ⚠️  Impossibile rimuovere backup/: {e}")
+        return False
 
 
 def update_config_json(base_dir):
@@ -181,22 +192,19 @@ def run_migration():
         print(f"  ✅ Migrati {count} quiz log nella cartella del database")
         any_migration_done = True
 
-    # 2. Rimozione vecchia cartella backup/
+    # 2. Migrazione backup legacy -> update_backups
     if remove_old_backup_folder(base_dir):
-        print("  🗑️  Rimossa vecchia cartella backup/ dalla root")
+        print("  🗑️  Rimossa/migrata vecchia cartella backup/ dalla root")
         any_migration_done = True
 
-    # 3. Rimozione database.json e categories.json dalla root
-    removed_files = remove_root_database_files(base_dir)
-    if removed_files:
-        for f in removed_files:
-            print(f"  🗑️  Rimosso {f} dalla root")
-        any_migration_done = True
-
-    # 4. Aggiornamento config.json
+    # 3. Aggiornamento config.json
     if update_config_json(base_dir):
         print("  ✅ Aggiornato config.json")
         any_migration_done = True
+
+    # NOTA: database.json e categories.json NON vengono rimossi qui.
+    # Vengono rimossi da migrate_old_database_to_databases_folder() in app.py
+    # SOLO quando la migrazione avviene con successo.
 
     if any_migration_done:
         print("  🔄 Migrazione da versione legacy completata")

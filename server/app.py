@@ -461,7 +461,7 @@ def migrate_old_database_to_databases_folder():
         # Aggiorna il file di configurazione dei database
         from server.databases import get_databases_config, save_databases_config
         config = get_databases_config()
-        
+
         # Aggiungi il database legacy alla lista
         now = datetime.now().isoformat()
         config["databases"].append({
@@ -472,7 +472,16 @@ def migrate_old_database_to_databases_folder():
         })
         config["active_database"] = "database_legacy"
         save_databases_config(config)
-        
+
+        # Pulisci i file root SOLO dopo migrazione riuscita
+        # categories.json nella root (se esiste ancora)
+        if old_categories_file.exists():
+            try:
+                old_categories_file.unlink()
+                logger.info(f"  🗑️  Rimosso categories.json dalla root (già migrato)")
+            except Exception as e:
+                logger.warning(f"  ⚠️  Impossibile rimuovere categories.json: {e}")
+
         logger.info("  ✅ Migrazione completata con successo!")
         return True
         

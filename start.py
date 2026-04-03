@@ -81,8 +81,13 @@ def main():
     if updated:
         if verbose:
             print("\n🔄 Riavvio per applicare l'aggiornamento...")
-        import os
-        os.execv(sys.executable, [sys.executable, str(Path(__file__).absolute())] + sys.argv[1:])
+        import subprocess
+        # Su Windows os.execv() non è affidabile, usa subprocess.Popen + exit
+        subprocess.Popen(
+            [sys.executable, str(Path(__file__).absolute())] + sys.argv[1:],
+            cwd=str(Path(__file__).parent)
+        )
+        sys.exit(0)
 
     # Avvia il server Flask
     if verbose:
