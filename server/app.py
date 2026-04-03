@@ -1119,20 +1119,23 @@ if __name__ == '__main__':
     except Exception as e:
         logger.warning(f"Migrazione legacy fallita: {e}")
 
-    # Migra il database esistente nella cartella databases/
+    # Migra il vecchio database.json nella cartella databases/
     migration_done = migrate_old_database_to_databases_folder()
-
-    # NON creare più database.json e categories.json nella root
-    # Se nessun database è selezionato, le modalità editor/quiz/view saranno bloccate
-    from server.databases import get_active_database_path
-    active_db_path = get_active_database_path()
-
     if migration_done:
-        logger.info("✅ Migrazione completata: non creo database.json nella root")
-    if active_db_path is not None:
-        logger.info(f"✅ Database attivo esistente: {active_db_path}")
-    else:
-        logger.info("⚠️ Nessun database attivo: editor/quiz/view saranno bloccati")
+        logger.info("✅ Migrazione database legacy completata")
+
+    # Riconcilia la configurazione dei database con il filesystem
+    # (rileva cartelle rinominate, orfane, o con nome non sanitizzato)
+    try:
+        from server.databases import update_config_from_scan
+        config = update_config_from_scan()
+        active = config.get("active_database")
+        if active:
+            logger.info(f"✅ Database attivo: '{active}'")
+        else:
+            logger.info("⚠️ Nessun database attivo: editor/quiz/view saranno bloccati")
+    except Exception as e:
+        logger.warning(f"Errore nella riconciliazione dei database: {e}")
 
     # Migra i backup dalla vecchia struttura alla nuova
     migrated = migrate_old_backups()

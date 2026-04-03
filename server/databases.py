@@ -90,82 +90,196 @@ def get_database_backup_dir(db_name: str) -> Path:
     return DATABASES_DIR / db_name / "backup"
 
 
+def _sanitize_and_rename_folder(old_name: str) -> str:
+    """
+    Sanitizza il nome della cartella e, se necessario, rinomina la cartella su disco.
+    Restituisce il nome sanitizzato (eventualmente dopo rinomina fisica).
+    """
+    sanitized = sanitize_db_name(old_name)
+
+    # Se il nome non necessita di modifiche, ritorna così
+    if sanitized == old_name:
+        return old_name
+
+    # Se il nome sanitizzato è vuoto o troppo corto, usa un fallback
+    if not sanitized:
+        sanitized = f"db_{int(datetime.now().timestamp())}"
+
+    old_path = DATABASES_DIR / old_name
+    new_path = DATABASES_DIR / sanitized
+
+    # Se la destinazione esiste già (caso raro), aggiungi un suffisso numerico
+    if new_path.exists() and new_path != old_path:
+        counter = 1
+        candidate = f"{sanitized}_{counter}"
+        new_path = DATABASES_DIR / candidate
+        while new_path.exists():
+            counter += 1
+            candidate = f"{sanitized}_{counter}"
+            new_path = DATABASES_DIR / candidate
+        sanitized = candidate
+
+    try:
+        old_path.rename(new_path)
+        return sanitized
+    except Exception as e:
+        # Se la rinomina fallisce, usa il nome originale (meglio che niente)
+        print(f"⚠️  Impossibile rinominare cartella '{old_name}' in '{sanitized}': {e}")
+        return old_name
+
+
 def scan_databases() -> list:
     """
     Scansiona la cartella databases/ e restituisce la lista dei database trovati.
     Ogni database è una cartella con un file data.json.
+    Le cartelle con nome non sanitizzato vengono automaticamente rinominate.
     """
     databases = []
-    
+
     if not DATABASES_DIR.exists():
         return databases
-    
-    for item in DATABASES_DIR.iterdir():
-        if item.is_dir() and item.name != "backup":
-            data_file = item / "data.json"
-            if data_file.exists():
-                try:
-                    # Carica il database per contare le domande
-                    questions = load_json(data_file)
-                    question_count = len(questions) if isinstance(questions, list) else 0
-                except:
-                    question_count = 0
-                
-                # Ottieni info sul file
-                stat = data_file.stat()
-                
-                databases.append({
-                    "name": item.name,
-                    "question_count": question_count,
-                    "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
-                    "last_modified": datetime.fromtimestamp(stat.st_mtime).isoformat()
-                })
-    
+
+    # Prima pass: sanitizza e rinomina le cartelle se necessario
+    items_to_scan = list(DATABASES_DIR.iterdir())
+    for item in items_to_scan:
+        if not item.is_dir():
+            continue
+        if item.name == "backup" or item.name == "update_backups":
+            continue
+
+        data_file = item / "data.json"
+        if not data_file.exists():
+            continue
+
+        # Sanitizza il nome della cartella (eventualmente rinomina)
+        actual_name = _sanitize_and_rename_folder(item.name)
+        actual_path = DATABASES_DIR / actual_name
+
+        # Se la cartella è stata rinominata, aggiorna data_file path
+        if actual_name != item.name:
+            data_file = actual_path / "data.json"
+
+        try:
+            questions = load_json(data_file)
+            question_count = len(questions) if isinstance(questions, list) else 0
+        except:
+            question_count = 0
+
+        stat = data_file.stat()
+        categories_file = actual_path / "categories.json"
+        has_categories = categories_file.exists() if categories_file else False
+
+        databases.append({
+            "name": actual_name,
+            "question_count": question_count,
+            "created": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+            "last_modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+            "has_categories": has_categories
+        })
+
     return databases
 
 
 def update_config_from_scan() -> dict:
     """
     Aggiorna la configurazione basandosi sulla scansione della cartella.
-    Mantiene il database attivo se ancora esiste.
+    - Rileva e rinomina cartelle con nome non sanitizzato
+    - Rimuove dal config i database orfani (cartella eliminata)
+    - Se il database attivo è stato rinominato, lo ritrova e aggiorna il nome
+    - Se il database attivo non esiste più, seleziona il primo disponibile
     """
     config = get_databases_config()
     scanned = scan_databases()
-    
-    # Crea un dict dei database scansionati
+
+    # Crea un dict dei database scansionati per nome
     scanned_dict = {db["name"]: db for db in scanned}
-    
+
+    # Mappa: vecchio nome config -> nuovo nome (se rinominato)
+    # Per rilevare le rinomine, confrontiamo i timestamp di creazione
+    old_name_to_new = {}
+    for old_db in config.get("databases", []):
+        old_name = old_db["name"]
+        if old_name in scanned_dict:
+            continue  # Esiste ancora, nessun cambiamento
+
+        # Cerca il database scansionato con lo stesso created timestamp
+        # (significa che è la stessa cartella, solo rinominata)
+        for new_db in scanned:
+            if new_db["name"] not in [db["name"] for db in config.get("databases", [])]:
+                # È un "nuovo" nome non ancora nel config
+                # Confronta i created timestamps (entro 1 secondo di tolleranza)
+                try:
+                    old_ts = datetime.fromisoformat(old_db.get("created", "")).timestamp()
+                    new_ts = datetime.fromisoformat(new_db.get("created", "")).timestamp()
+                    if abs(old_ts - new_ts) < 2:
+                        old_name_to_new[old_name] = new_db["name"]
+                        break
+                except:
+                    pass
+
     # Aggiorna la lista mantenendo i metadati esistenti
     updated_databases = []
-    for db in config.get("databases", []):
-        if db["name"] in scanned_dict:
-            # Aggiorna con dati dalla scansione
-            scanned_db = scanned_dict[db["name"]]
-            db["question_count"] = scanned_db["question_count"]
-            db["last_modified"] = scanned_db["last_modified"]
-            updated_databases.append(db)
-            del scanned_dict[db["name"]]
-    
-    # Aggiungi nuovi database trovati dalla scansione
-    for name, db_info in scanned_dict.items():
-        updated_databases.append({
-            "name": name,
-            "question_count": db_info["question_count"],
-            "created": db_info["created"],
-            "last_modified": db_info["last_modified"]
-        })
-    
+    seen_new_names = set()
+
+    for old_db in config.get("databases", []):
+        old_name = old_db["name"]
+
+        # Caso 1: nome ancora valido
+        if old_name in scanned_dict:
+            scanned_db = scanned_dict[old_name]
+            old_db["question_count"] = scanned_db["question_count"]
+            old_db["last_modified"] = scanned_db["last_modified"]
+            old_db["has_categories"] = scanned_db.get("has_categories", False)
+            updated_databases.append(old_db)
+            seen_new_names.add(old_name)
+            continue
+
+        # Caso 2: nome è stato rinominato
+        if old_name in old_name_to_new:
+            new_name = old_name_to_new[old_name]
+            new_db = scanned_dict.get(new_name)
+            if new_db:
+                old_db["name"] = new_name
+                old_db["question_count"] = new_db["question_count"]
+                old_db["last_modified"] = new_db["last_modified"]
+                old_db["has_categories"] = new_db.get("has_categories", False)
+                updated_databases.append(old_db)
+                seen_new_names.add(new_name)
+            continue
+
+        # Caso 3: database orfano (cartella eliminata) → salta
+        print(f"⚠️  Database orfano rimosso dal config: '{old_name}'")
+
+    # Aggiungi nuovi database trovati dalla scansione (non mappati dal config)
+    for new_db in scanned:
+        if new_db["name"] not in seen_new_names:
+            updated_databases.append({
+                "name": new_db["name"],
+                "question_count": new_db["question_count"],
+                "created": new_db["created"],
+                "last_modified": new_db["last_modified"],
+                "has_categories": new_db.get("has_categories", False)
+            })
+            seen_new_names.add(new_db["name"])
+
     config["databases"] = updated_databases
-    
-    # Verifica che il database attivo esista ancora
+
+    # Verifica che il database attivo esista ancora (con il nome aggiornato)
     active = config.get("active_database")
-    if active and active not in scanned_dict and active not in [db["name"] for db in updated_databases]:
-        # Il database attivo non esiste più, seleziona il primo disponibile
-        if updated_databases:
-            config["active_database"] = updated_databases[0]["name"]
-        else:
-            config["active_database"] = None
-    
+    if active:
+        # Se è stato rinominato, aggiorna il riferimento
+        if active in old_name_to_new:
+            config["active_database"] = old_name_to_new[active]
+            print(f"🔄 Database attivo rinominato: '{active}' → '{old_name_to_new[active]}'")
+        elif active not in seen_new_names:
+            # Il database attivo non esiste più, seleziona il primo disponibile
+            if updated_databases:
+                config["active_database"] = updated_databases[0]["name"]
+                print(f"⚠️  Database attivo '{active}' non trovato. Selezionato: '{updated_databases[0]['name']}'")
+            else:
+                config["active_database"] = None
+                print(f"⚠️  Database attivo '{active}' non trovato. Nessun database disponibile.")
+
     save_databases_config(config)
     return config
 
