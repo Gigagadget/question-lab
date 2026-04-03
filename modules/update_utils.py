@@ -560,6 +560,44 @@ def log_update(from_version: str, to_version: str, status: str, details: str = "
         print(f"  ⚠️  Errore nel salvataggio del log: {e}")
 
 
+def get_version_from_zip(zip_content: bytes, verbose: bool = True) -> Optional[str]:
+    """
+    Estrae version.json dallo ZIP e legge la versione dal file.
+    Questo bypassa la protezione di version.json e legge la versione REALE
+    dal pacchetto scaricato, non dal tag GitHub.
+    """
+    try:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            zip_path = Path(temp_dir) / "temp.zip"
+            zip_path.write_bytes(zip_content)
+
+            with zipfile.ZipFile(zip_path, "r") as zf:
+                # Trova il file version.json dentro lo ZIP
+                # La struttura è tipicamente repo-branch/version.json
+                version_entries = [n for n in zf.namelist() if n.endswith("version.json")]
+
+                if not version_entries:
+                    if verbose:
+                        print(f"  ⚠️  Nessun version.json trovato nello ZIP")
+                    return None
+
+                # Prendi il primo (di solito c'è un solo version.json nella root)
+                version_entry = version_entries[0]
+                content = zf.read(version_entry).decode("utf-8")
+                data = json.loads(content)
+                version = data.get("version")
+
+                if version and verbose:
+                    print(f"  📄 Versione dallo ZIP: v{version} (dal file version.json)")
+
+                return version
+
+    except Exception as e:
+        if verbose:
+            print(f"  ⚠️  Errore leggendo version.json dallo ZIP: {e}")
+        return None
+
+
 def update_version_file(version: str, status: str) -> None:
     """Aggiorna il file version.json con la nuova versione."""
     try:
@@ -647,13 +685,19 @@ def check_and_update(verbose: bool = True) -> bool:
             if verbose:
                 print(f"  🔄 Verifica struttura del progetto...")
             migrate_to_server_structure(verbose)
-            
-            # Aggiorna version.json (ma non sovrascrivere se è protetto!)
-            # version.json è protetto, quindi lo aggiorniamo manualmente
-            update_version_file(remote_version, "success")
-            log_update(local_version, remote_version, "success", f"Aggiornamento a v{remote_version} completato")
+
+            # Leggi la versione REALE dal version.json nello ZIP (approccio ibrido)
+            zip_version = get_version_from_zip(zip_content, verbose)
+
+            # Fallback al tag se non riusciamo a leggere dallo ZIP
+            actual_version = zip_version or remote_version
+
+            # Aggiorna version.json con la versione reale dal pacchetto
+            update_version_file(actual_version, "success")
+            log_update(local_version, actual_version, "success", f"Aggiornamento completato")
             if verbose:
-                print(f"  🎉 Aggiornamento completato: v{local_version} → v{remote_version}")
+                tag_note = f" (tag: v{remote_version})" if zip_version and zip_version != remote_version else ""
+                print(f"  🎉 Aggiornamento completato: v{local_version} → v{actual_version}{tag_note}")
             return True
         else:
             if verbose:
