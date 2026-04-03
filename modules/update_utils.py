@@ -259,9 +259,18 @@ def download_zip(repo_url: str, branch: str, config: dict, verbose: bool = True)
     Scarica lo ZIP del repository dal branch specificato.
     URL formato: https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip
     """
+    if not repo_url or not repo_url.strip():
+        if verbose:
+            print(f"  ❌ github_repo non configurato in config.json")
+        return None
+
     # Estrai owner e repo dall'URL
     repo_url = repo_url.rstrip("/")
     parts = repo_url.rstrip(".git").split("/")
+    if len(parts) < 2:
+        if verbose:
+            print(f"  ❌ github_repo non valido: '{repo_url}'")
+        return None
     owner, repo = parts[-2], parts[-1]
     zip_url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip"
 
@@ -572,20 +581,8 @@ def get_version_from_zip(zip_content: bytes, verbose: bool = True) -> Optional[s
             zip_path.write_bytes(zip_content)
 
             with zipfile.ZipFile(zip_path, "r") as zf:
-                # Debug: mostra tutti i file nello ZIP
-                all_names = zf.namelist()
-                if verbose:
-                    print(f"  🔍 Debug: {len(all_names)} file nello ZIP")
-                    # Mostra i primi 10 file per capire la struttura
-                    for n in all_names[:10]:
-                        print(f"     - {n}")
-                    if len(all_names) > 10:
-                        print(f"     ... e altri {len(all_names) - 10}")
-
                 # Trova version.json
-                version_entries = [n for n in all_names if n.endswith("version.json")]
-                if verbose:
-                    print(f"  🔍 Debug: version.json trovati: {version_entries}")
+                version_entries = [n for n in zf.namelist() if n.endswith("version.json")]
 
                 if not version_entries:
                     if verbose:
@@ -594,11 +591,7 @@ def get_version_from_zip(zip_content: bytes, verbose: bool = True) -> Optional[s
 
                 # Prendi il primo (di solito c'è un solo version.json nella root)
                 version_entry = version_entries[0]
-                if verbose:
-                    print(f"  📄 Leggendo: {version_entry}")
                 content = zf.read(version_entry).decode("utf-8")
-                if verbose:
-                    print(f"  📄 Contenuto: {content.strip()}")
                 data = json.loads(content)
                 version = data.get("version")
 
@@ -609,19 +602,20 @@ def get_version_from_zip(zip_content: bytes, verbose: bool = True) -> Optional[s
 
     except Exception as e:
         if verbose:
-            import traceback
             print(f"  ⚠️  Errore leggendo version.json dallo ZIP: {e}")
-            traceback.print_exc()
         return None
 
 
-def update_version_file(version: str, status: str) -> None:
-    """Aggiorna il file version.json con la nuova versione."""
+def update_version_file(version: str, status: str, source: str = "tag") -> None:
+    """Aggiorna il file version.json con la nuova versione.
+    source: 'tag' (da tag GitHub) o 'zip' (da version.json nello ZIP)
+    """
     try:
         data = {
             "version": version,
             "last_update": datetime.now().isoformat(),
             "last_update_status": status,
+            "version_source": source,
         }
         save_json(VERSION_FILE, data)
     except Exception as e:
@@ -666,8 +660,41 @@ def check_and_update(verbose: bool = True) -> bool:
 
     elif comparison == 0:
         # Locale == Remoto
-        if verbose:
-            print(f"  ✅ La versione è aggiornata (v{local_version})")
+        # Verifica se la versione locale proviene da un tag (vecchio codice) o da ZIP (nuovo codice)
+        # Se proviene da un tag, estraiamo comunque dallo ZIP per correggere la versione
+        try:
+            ver_data = load_json(VERSION_FILE)
+            version_source = ver_data.get("version_source", "tag")
+        except:
+            version_source = "tag"
+
+        if version_source == "tag":
+            if verbose:
+                print(f"  🔍 Versione da tag: verifica versione reale dallo ZIP...")
+            repo_url = config.get("github_repo", "")
+            branch = config.get("branch", "main")
+            zip_content = download_zip(repo_url, branch, config, verbose)
+            if zip_content:
+                zip_version = get_version_from_zip(zip_content, verbose)
+                if zip_version and zip_version != local_version:
+                    update_version_file(zip_version, "version_corrected", source="zip")
+                    if verbose:
+                        print(f"  ✅ Versione corretta: v{local_version} → v{zip_version}")
+                    # Rilancia il server con la versione corretta
+                    return False  # Non serve riavviare, la versione è stata corretta
+                elif zip_version:
+                    if verbose:
+                        print(f"  ✅ La versione è confermata (v{local_version})")
+                else:
+                    if verbose:
+                        print(f"  ℹ️  Versione da ZIP non disponibile, mantengo v{local_version}")
+            else:
+                if verbose:
+                    print(f"  ℹ️  Download ZIP fallito, mantengo v{local_version}")
+        else:
+            if verbose:
+                print(f"  ✅ La versione è aggiornata (v{local_version})")
+
         log_update(local_version, remote_version, "up_to_date", "Nessun aggiornamento necessario")
         return False
 
@@ -706,11 +733,12 @@ def check_and_update(verbose: bool = True) -> bool:
             # Leggi la versione REALE dal version.json nello ZIP (approccio ibrido)
             zip_version = get_version_from_zip(zip_content, verbose)
 
-            # Fallback al tag se non riusciamo a leggere dallo ZIP
+            # Usa la versione dallo ZIP se disponibile, altrimenti fallback al tag
             actual_version = zip_version or remote_version
+            version_source = "zip" if zip_version else "tag"
 
-            # Aggiorna version.json con la versione reale dal pacchetto
-            update_version_file(actual_version, "success")
+            # Aggiorna version.json con la versione reale
+            update_version_file(actual_version, "success", source=version_source)
             log_update(local_version, actual_version, "success", f"Aggiornamento completato")
             if verbose:
                 tag_note = f" (tag: v{remote_version})" if zip_version and zip_version != remote_version else ""
