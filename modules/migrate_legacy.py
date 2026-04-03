@@ -140,7 +140,7 @@ def remove_old_backup_folder(base_dir):
 
 
 def update_config_json(base_dir):
-    """Aggiorna config.json rimuovendo Quiz_Log e backup da protected_dirs."""
+    """Aggiorna config.json rimuovendo vecchie voci e aggiungendo nuove impostazioni."""
     config_file = base_dir / "config.json"
     if not config_file.exists():
         return False
@@ -157,12 +157,22 @@ def update_config_json(base_dir):
                 protected_dirs.remove(item)
                 changed = True
 
-        # Rimuovi anche database.json e categories.json da protected_files
+        # Rimuovi database.json e categories.json da protected_files
         protected_files = config.get("protected_files", [])
         for item in ("database.json", "categories.json"):
             if item in protected_files:
                 protected_files.remove(item)
                 changed = True
+
+        # Rimuovi database.json e categories.json da protected_files nel fallback di update_utils
+        # (non serve azione qui, è hardcoded in update_utils.py)
+
+        # Aggiungi allow_prerelease se manca
+        update_settings = config.get("update_settings", {})
+        if "allow_prerelease" not in update_settings:
+            update_settings["allow_prerelease"] = False
+            config["update_settings"] = update_settings
+            changed = True
 
         if changed:
             config["protected_dirs"] = protected_dirs
