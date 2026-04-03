@@ -7,8 +7,19 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/quiz.css">
     <link rel="stylesheet" href="/static/css/theme.css">
+    <link rel="stylesheet" href="/static/css/no-db-blocker.css">
 </head>
 <body>
+    <!-- Overlay di blocco quando nessun database è selezionato -->
+    <div id="noDbBlocker" class="no-db-blocker" style="display: none;">
+        <div class="block-message">
+            <div class="icon">🗃️</div>
+            <h2>Nessun Database Selezionato</h2>
+            <p>Per avviare un quiz, devi prima selezionare o creare un database.</p>
+            <a href="/databases" class="btn-go-to-databases">📂 Vai alla Gestione Database</a>
+        </div>
+    </div>
+
     <div class="app-container">
         <div class="header">
             <h1>🎯 Modalità Quiz</h1>

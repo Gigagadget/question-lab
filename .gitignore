@@ -10,6 +10,7 @@ preferences.json
 # Log e backup utente
 Quiz_Log/
 backup/
+databases/
 update_log.json
 
 # File di log

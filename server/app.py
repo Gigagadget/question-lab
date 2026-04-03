@@ -114,18 +114,27 @@ USER_PREFS_FILE = str(BASE_DIR / 'preferences.json')
 
 def get_database_backup_dir():
     """Ottiene la directory di backup specifica per il database corrente"""
-    db_name = Path(DATABASE_FILE).stem  # 'database' da 'database.json'
-    return os.path.join(BACKUP_DIR, db_name)
+    active_db_path = get_active_database_path()
+    if active_db_path and active_db_path.exists():
+        # Usa la cartella backup/ dentro la cartella del database attivo
+        return str(active_db_path.parent / "backup")
+    # Nessun database attivo: restituisci None
+    return None
 
 def migrate_old_backups():
     """Migra i backup dalla vecchia struttura alla nuova (sottocartelle per database)"""
     if not os.path.exists(BACKUP_DIR):
         return 0
-    
+
     db_backup_dir = get_database_backup_dir()
+    if db_backup_dir is None:
+        # Nessun database attivo: salta la migrazione dei backup
+        logger.info("⚠️ Nessun database attivo: migrazione backup saltata")
+        return 0
+
     if not os.path.exists(db_backup_dir):
         os.makedirs(db_backup_dir)
-    
+
     migrated_count = 0
     for file in os.listdir(BACKUP_DIR):
         if file.endswith('.json'):
@@ -135,26 +144,25 @@ def migrate_old_backups():
                 shutil.move(old_path, new_path)
                 migrated_count += 1
                 logger.info(f"Backup migrato: {file}")
-    
+
     return migrated_count
 
 def create_backup():
     """Crea un backup del database con timestamp (usa database attivo se disponibile)"""
     # Usa il database attivo dalla cartella databases/ se disponibile
     active_db_path = get_active_database_path()
-    db_path = str(active_db_path) if active_db_path and active_db_path.exists() else DATABASE_FILE
-    
-    # Ottieni la directory di backup corretta
-    if active_db_path and active_db_path.exists():
-        # Backup nella cartella del database attivo
-        db_backup_dir = active_db_path.parent / "backup"
-    else:
-        # Backup nella cartella backup/database/
-        db_backup_dir = get_database_backup_dir()
-    
+    if not active_db_path or not active_db_path.exists():
+        logger.warning("Tentativo di backup senza database attivo")
+        return None  # Nessun database attivo
+
+    db_path = str(active_db_path)
+
+    # Backup nella cartella del database attivo
+    db_backup_dir = active_db_path.parent / "backup"
+
     if not os.path.exists(db_backup_dir):
         os.makedirs(db_backup_dir)
-    
+
     if os.path.exists(db_path):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         db_name = Path(db_path).stem
@@ -168,12 +176,17 @@ def load_database():
     """Carica il database JSON da file (usa database attivo se disponibile)"""
     # Usa il database attivo dalla cartella databases/ se disponibile
     active_db_path = get_active_database_path()
-    db_path = str(active_db_path) if active_db_path and active_db_path.exists() else DATABASE_FILE
-    
+
+    # Se nessun database attivo, restituisci errore
+    if not active_db_path or not active_db_path.exists():
+        return None  # Segnala che nessun database è selezionato
+
+    db_path = str(active_db_path)
+
     if not os.path.exists(db_path):
-        save_database([])
+        # Non creare file automaticamente: il database dovrebbe esistere
         return []
-    
+
     try:
         with open(db_path, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -188,12 +201,18 @@ def save_database(data, create_backup_file=True):
     """Salva il database JSON su file con backup (usa database attivo se disponibile)"""
     # Usa il database attivo dalla cartella databases/ se disponibile
     active_db_path = get_active_database_path()
-    db_path = str(active_db_path) if active_db_path and active_db_path.exists() else DATABASE_FILE
-    
+
+    # Se nessun database attivo, non salvare
+    if not active_db_path or not active_db_path.exists():
+        logger.warning("Tentativo di salvataggio senza database attivo")
+        return False
+
+    db_path = str(active_db_path)
+
     try:
         if create_backup_file and os.path.exists(db_path):
             create_backup()
-        
+
         with open(db_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
         logger.info(f"Database salvato con successo con {len(data)} elementi in {db_path}")
@@ -205,18 +224,23 @@ def save_database(data, create_backup_file=True):
 def load_categories():
     """Carica le categorie da file separato (usa database attivo se disponibile)"""
     default_categories = {
-        "primary_domains": ["indefinito", "tumori snc", "tumori testa-collo", "tumori apparato riproduttore femminile"],
-        "subdomains": ["indefinito", "generale", "specifico"]
+        "primary_domains": ["indefinito"],
+        "subdomains": ["indefinito"]
     }
-    
+
     # Usa il categories.json del database attivo se disponibile
     active_categories_path = get_active_categories_path()
-    categories_path = str(active_categories_path) if active_categories_path and active_categories_path.exists() else CATEGORIES_FILE
-    
+
+    # Se nessun database attivo, restituisci None
+    if not active_categories_path or not active_categories_path.exists():
+        return None  # Segnala che nessun database è selezionato
+
+    categories_path = str(active_categories_path)
+
     if not os.path.exists(categories_path):
-        save_categories(default_categories)
+        # Non creare file automaticamente: le categorie dovrebbero esistere
         return default_categories
-    
+
     try:
         with open(categories_path, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -227,8 +251,14 @@ def save_categories(categories):
     """Salva le categorie su file separato (usa database attivo se disponibile)"""
     # Usa il categories.json del database attivo se disponibile
     active_categories_path = get_active_categories_path()
-    categories_path = str(active_categories_path) if active_categories_path and active_categories_path.exists() else CATEGORIES_FILE
-    
+
+    # Se nessun database attivo, non salvare
+    if not active_categories_path or not active_categories_path.exists():
+        logger.warning("Tentativo di salvataggio categorie senza database attivo")
+        return False
+
+    categories_path = str(active_categories_path)
+
     try:
         with open(categories_path, 'w', encoding='utf-8') as f:
             json.dump(categories, f, indent=2, ensure_ascii=False)
@@ -377,6 +407,8 @@ def get_questions():
     """Ottiene tutte le domande dal database"""
     try:
         questions = load_database()
+        if questions is None:
+            return jsonify({"error": "Nessun database selezionato. Seleziona un database dalla Gestione Database."}), 400
         categories = get_unique_categories(questions)
         return jsonify({
             'questions': questions,
@@ -396,7 +428,7 @@ def save_questions():
         data = request.get_json()
         if not isinstance(data, list):
             return jsonify({"error": "Formato dati non valido, previsto un array"}), 400
-        
+
         if save_database(data):
             categories = get_unique_categories(data)
             return jsonify({
@@ -408,7 +440,7 @@ def save_questions():
                 }
             }), 200
         else:
-            return jsonify({"error": "Salvataggio del database fallito"}), 500
+            return jsonify({"error": "Salvataggio del database fallito. Nessun database selezionato."}), 400
     except Exception as e:
         logger.error(f"Errore in POST /api/questions: {e}")
         return jsonify({"error": str(e)}), 500
@@ -418,17 +450,19 @@ def update_question(question_id):
     """Aggiorna una singola domanda per ID"""
     try:
         questions = load_database()
+        if questions is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
         updated_question = request.get_json()
-        
+
         if not updated_question:
             return jsonify({"error": "Nessun dato fornito"}), 400
-        
+
         new_id = updated_question.get('id')
         if new_id != question_id and any(q.get('id') == new_id for q in questions):
             return jsonify({"error": "ID già esistente"}), 400
-        
+
         index = next((i for i, q in enumerate(questions) if q.get('id') == question_id), None)
-        
+
         if index is not None:
             questions[index] = updated_question
             if save_database(questions):
@@ -446,6 +480,8 @@ def get_categories():
     """Ottiene tutte le categorie"""
     try:
         categories_data = load_categories()
+        if categories_data is None:
+            return jsonify({"error": "Nessun database selezionato. Seleziona un database dalla Gestione Database."}), 400
         return jsonify(categories_data), 200
     except Exception as e:
         logger.error(f"Errore in GET /api/categories: {e}")
@@ -459,13 +495,15 @@ def update_categories():
         action = data.get('action')
         category_type = data.get('type')
         value = data.get('value')
-        
+
         if not value or not value.strip():
             return jsonify({"error": "Il nome della categoria non può essere vuoto"}), 400
-        
+
         value = value.strip()
         categories_data = load_categories()
-        
+        if categories_data is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
+
         if action == 'add':
             if category_type == 'primary_domain':
                 if value not in categories_data["primary_domains"]:
@@ -479,7 +517,7 @@ def update_categories():
                     categories_data["subdomains"].sort()
                 else:
                     return jsonify({"error": "Categoria già esistente"}), 400
-            
+
             if save_categories(categories_data):
                 questions = load_database()
                 categories = get_unique_categories(questions)
@@ -492,7 +530,7 @@ def update_categories():
                 }), 200
             else:
                 return jsonify({"error": "Salvataggio delle categorie fallito"}), 500
-                
+
         elif action == 'remove':
             if category_type == 'primary_domain':
                 if value in categories_data["primary_domains"]:
@@ -514,7 +552,7 @@ def update_categories():
                     save_database(questions, create_backup_file=False)
                 else:
                     return jsonify({"error": "Categoria non trovata"}), 404
-            
+
             if save_categories(categories_data):
                 questions = load_database()
                 categories = get_unique_categories(questions)
@@ -527,9 +565,9 @@ def update_categories():
                 }), 200
             else:
                 return jsonify({"error": "Salvataggio delle categorie fallito"}), 500
-        
+
         return jsonify({"error": "Azione non valida"}), 400
-        
+
     except Exception as e:
         logger.error(f"Errore in POST /api/categories: {e}")
         return jsonify({"error": str(e)}), 500
@@ -542,15 +580,17 @@ def rename_category():
         category_type = data.get('type')  # 'primary_domain' o 'subdomain'
         old_value = data.get('old_value', '').strip()
         new_value = data.get('new_value', '').strip()
-        
+
         if not old_value or not new_value:
             return jsonify({"error": "Nome categoria non valido"}), 400
-        
+
         if old_value == new_value:
             return jsonify({"error": "Il nuovo nome è uguale al vecchio"}), 400
-        
+
         categories_data = load_categories()
-        
+        if categories_data is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
+
         # Verifica che la categoria esista
         if category_type == 'primary_domain':
             if old_value not in categories_data["primary_domains"]:
@@ -562,7 +602,7 @@ def rename_category():
                 return jsonify({"error": "Categoria non trovata"}), 404
             if new_value in categories_data["subdomains"]:
                 return jsonify({"error": "Categoria già esistente"}), 400
-        
+
         # Aggiorna la categoria nel file categories.json
         if category_type == 'primary_domain':
             idx = categories_data["primary_domains"].index(old_value)
@@ -572,11 +612,13 @@ def rename_category():
             idx = categories_data["subdomains"].index(old_value)
             categories_data["subdomains"][idx] = new_value
             categories_data["subdomains"].sort()
-        
+
         save_categories(categories_data)
-        
+
         # Aggiorna tutte le domande con la nuova categoria
         questions = load_database()
+        if questions is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
         updated_count = 0
         for q in questions:
             if category_type == 'primary_domain' and q.get('primary_domain') == old_value:
@@ -585,9 +627,9 @@ def rename_category():
             elif category_type == 'subdomain' and q.get('subdomain') == old_value:
                 q['subdomain'] = new_value
                 updated_count += 1
-        
+
         save_database(questions, create_backup_file=True)
-        
+
         return jsonify({
             "message": f"Categoria '{old_value}' rinominata in '{new_value}'",
             "updated_questions": updated_count,
@@ -596,7 +638,7 @@ def rename_category():
                 'subdomains': categories_data["subdomains"]
             }
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Errore in POST /api/categories/rename: {e}")
         return jsonify({"error": str(e)}), 500
@@ -606,9 +648,11 @@ def get_backups():
     """Ottiene la lista dei backup disponibili per il database corrente"""
     try:
         db_backup_dir = get_database_backup_dir()
+        if db_backup_dir is None:
+            return jsonify({"error": "Nessun database selezionato", "backups": []}), 400
         if not os.path.exists(db_backup_dir):
             return jsonify({"backups": []}), 200
-        
+
         backups = []
         for file in os.listdir(db_backup_dir):
             if file.endswith('.json'):
@@ -619,7 +663,7 @@ def get_backups():
                     'size': stat.st_size,
                     'modified': datetime.fromtimestamp(stat.st_mtime).isoformat()
                 })
-        
+
         backups.sort(key=lambda x: x['modified'], reverse=True)
         return jsonify({"backups": backups}), 200
     except Exception as e:
@@ -631,15 +675,17 @@ def restore_backup(backup_name):
     """Ripristina un backup"""
     try:
         db_backup_dir = get_database_backup_dir()
+        if db_backup_dir is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
         backup_path = os.path.join(db_backup_dir, backup_name)
         if not os.path.exists(backup_path):
             return jsonify({"error": "Backup non trovato"}), 404
-        
+
         create_backup()
-        
+
         with open(backup_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        
+
         if save_database(data, create_backup_file=False):
             return jsonify({"message": f"Ripristinato da {backup_name}"}), 200
         else:
@@ -654,20 +700,22 @@ def delete_backups():
     try:
         data = request.get_json()
         backup_names = data.get('backups', [])
-        
+
         if not backup_names:
             return jsonify({"error": "Nessun backup specificato"}), 400
-        
+
         db_backup_dir = get_database_backup_dir()
+        if db_backup_dir is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
         deleted_count = 0
-        
+
         for backup_name in backup_names:
             backup_path = os.path.join(db_backup_dir, backup_name)
             if os.path.exists(backup_path):
                 os.remove(backup_path)
                 deleted_count += 1
                 logger.info(f"Backup eliminato: {backup_name}")
-        
+
         return jsonify({
             "message": f"Eliminati {deleted_count} backup",
             "deleted_count": deleted_count
@@ -681,41 +729,43 @@ def get_stats():
     """Ottiene le statistiche del database"""
     try:
         questions = load_database()
-        
+        if questions is None:
+            return jsonify({"error": "Nessun database selezionato", "total_questions": 0, "total_duplicates": 0, "primary_domain_count": {}, "subdomain_count": {}, "questions_with_one_answer": 0, "questions_with_no_answers": 0, "questions_with_no_correct": 0}), 400
+
         # Count per primary domain
         primary_domain_count = {}
         for q in questions:
             domain = q.get('primary_domain', 'indefinito')
             primary_domain_count[domain] = primary_domain_count.get(domain, 0) + 1
-        
+
         # Count per subdomain
         subdomain_count = {}
         for q in questions:
             sub = q.get('subdomain', 'indefinito')
             subdomain_count[sub] = subdomain_count.get(sub, 0) + 1
-        
+
         # Nuove statistiche su risposte
         questions_with_one_answer = 0
         questions_with_no_answers = 0
         questions_with_no_correct = 0
-        
+
         for q in questions:
             answers = q.get('answers', {})
             # Conta risposte non vuote
             non_empty_answers = sum(1 for v in answers.values() if v and v.strip())
-            
+
             if non_empty_answers == 1:
                 questions_with_one_answer += 1
             elif non_empty_answers == 0:
                 questions_with_no_answers += 1
-            
+
             # Controlla risposte corrette
             correct = q.get('correct', [])
             # Filtra "null" e valori vuoti
             valid_correct = [c for c in correct if c and c != "null"]
             if len(valid_correct) == 0:
                 questions_with_no_correct += 1
-        
+
         stats = {
             "total_questions": len(questions),
             "total_duplicates": sum(1 for q in questions if q.get('duplicate_count', 0) > 0),
@@ -805,7 +855,9 @@ def export_pdf():
 def get_quiz_manager():
     """Restituisce un QuizManager per il database attivo"""
     active_db_path = get_active_database_path()
-    db_path = str(active_db_path) if active_db_path and active_db_path.exists() else DATABASE_FILE
+    if not active_db_path or not active_db_path.exists():
+        return None  # Nessun database selezionato
+    db_path = str(active_db_path)
     return QuizManager(db_path)
 
 @app.route('/api/quiz/categories', methods=['GET'])
@@ -813,6 +865,8 @@ def get_quiz_categories():
     """Ottiene le categorie con il conteggio delle domande per il quiz"""
     try:
         quiz_manager = get_quiz_manager()
+        if quiz_manager is None:
+            return jsonify({"error": "Nessun database selezionato. Seleziona un database prima di avviare il quiz."}), 400
         categories = quiz_manager.get_categories_with_counts()
         return jsonify(categories), 200
     except Exception as e:
@@ -824,25 +878,27 @@ def start_quiz():
     """Avvia una nuova sessione quiz"""
     try:
         quiz_manager = get_quiz_manager()
+        if quiz_manager is None:
+            return jsonify({"error": "Nessun database selezionato. Seleziona un database prima di avviare il quiz.", "available_count": 0, "used_count": 0}), 400
         data = request.get_json()
         categories = data.get('categories', ['all'])
         num_questions = data.get('num_questions', 10)
-        
+
         # Gestisci il caso "Tutte"
         if num_questions == -1 or num_questions == 'all':
             num_questions = -1
-        
+
         questions, available_count, used_count = quiz_manager.get_questions_for_quiz(
             categories, num_questions
         )
-        
+
         if not questions:
             return jsonify({
                 "error": "Nessuna domanda disponibile per le categorie selezionate",
                 "available_count": 0,
                 "used_count": 0
             }), 400
-        
+
         # Prepara le domande per il frontend (rimuovi risposte corrette)
         quiz_questions = []
         for q in questions:
@@ -853,7 +909,7 @@ def start_quiz():
                 'primary_domain': q.get('primary_domain', 'indefinito')
             }
             quiz_questions.append(quiz_q)
-        
+
         return jsonify({
             "questions": quiz_questions,
             "total_questions": len(quiz_questions),
@@ -861,7 +917,7 @@ def start_quiz():
             "used_count": used_count,
             "categories_selected": categories
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Errore in POST /api/quiz/start: {e}")
         return jsonify({"error": str(e)}), 500
@@ -871,16 +927,18 @@ def validate_quiz_answer():
     """Valida la risposta per una singola domanda"""
     try:
         quiz_manager = get_quiz_manager()
+        if quiz_manager is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
         data = request.get_json()
         question_id = data.get('question_id')
         user_answers = data.get('user_answers', [])
-        
+
         if not question_id:
             return jsonify({"error": "question_id è obbligatorio"}), 400
-        
+
         result = quiz_manager.validate_answer(question_id, user_answers)
         return jsonify(result), 200
-        
+
     except Exception as e:
         logger.error(f"Errore in POST /api/quiz/validate: {e}")
         return jsonify({"error": str(e)}), 500
@@ -890,18 +948,20 @@ def save_quiz_result():
     """Salva il log del quiz completato"""
     try:
         quiz_manager = get_quiz_manager()
+        if quiz_manager is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
         data = request.get_json()
-        
+
         if not data:
             return jsonify({"error": "Nessun dato fornito"}), 400
-        
+
         quiz_id = quiz_manager.save_quiz_log(data)
-        
+
         return jsonify({
             "message": "Log del quiz salvato con successo",
             "quiz_id": quiz_id
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Errore in POST /api/quiz/save: {e}")
         return jsonify({"error": str(e)}), 500
@@ -911,6 +971,8 @@ def get_quiz_logs():
     """Ottiene la lista di tutti i log dei quiz"""
     try:
         quiz_manager = get_quiz_manager()
+        if quiz_manager is None:
+            return jsonify({"error": "Nessun database selezionato", "logs": []}), 400
         logs = quiz_manager.get_quiz_logs()
         return jsonify({"logs": logs}), 200
     except Exception as e:
@@ -922,13 +984,15 @@ def get_quiz_log_detail(log_id):
     """Ottiene il dettaglio di un log specifico del quiz"""
     try:
         quiz_manager = get_quiz_manager()
+        if quiz_manager is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
         log_data = quiz_manager.get_quiz_log_detail(log_id)
-        
+
         if log_data is None:
             return jsonify({"error": "Log non trovato"}), 404
-        
+
         return jsonify(log_data), 200
-        
+
     except Exception as e:
         logger.error(f"Errore in GET /api/quiz/logs/{log_id}: {e}")
         return jsonify({"error": str(e)}), 500
@@ -938,13 +1002,15 @@ def delete_quiz_log(log_id):
     """Elimina un log specifico del quiz"""
     try:
         quiz_manager = get_quiz_manager()
+        if quiz_manager is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
         success = quiz_manager.delete_quiz_log(log_id)
-        
+
         if success:
             return jsonify({"message": f"Log {log_id} eliminato con successo"}), 200
         else:
             return jsonify({"error": "Log non trovato"}), 404
-        
+
     except Exception as e:
         logger.error(f"Errore in DELETE /api/quiz/logs/{log_id}: {e}")
         return jsonify({"error": str(e)}), 500
@@ -954,13 +1020,15 @@ def delete_all_quiz_logs():
     """Elimina tutti i log dei quiz"""
     try:
         quiz_manager = get_quiz_manager()
+        if quiz_manager is None:
+            return jsonify({"error": "Nessun database selezionato", "deleted_count": 0}), 400
         deleted_count = quiz_manager.delete_all_quiz_logs()
-        
+
         return jsonify({
             "message": f"Eliminati {deleted_count} log dei quiz",
             "deleted_count": deleted_count
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Errore in DELETE /api/quiz/logs: {e}")
         return jsonify({"error": str(e)}), 500
@@ -1048,29 +1116,22 @@ def load_json_file(filepath):
 if __name__ == '__main__':
     # Migra il database esistente nella cartella databases/
     migration_done = migrate_old_database_to_databases_folder()
-    
-    # Crea database.json e categories.json nella root SOLO se non è stata fatta migrazione
-    # e se non esiste già un database attivo nella cartella databases/
+
+    # NON creare più database.json e categories.json nella root
+    # Se nessun database è selezionato, le modalità editor/quiz/view saranno bloccate
     from server.databases import get_active_database_path
     active_db_path = get_active_database_path()
-    
-    if not migration_done and active_db_path is None:
-        # Nessuna migrazione e nessun database attivo: crea i file nella root
-        if not os.path.exists(DATABASE_FILE):
-            save_database([])
-            logger.info(f"Creato {DATABASE_FILE} iniziale")
-        
-        if not os.path.exists(CATEGORIES_FILE):
-            load_categories()
-            logger.info(f"Creato {CATEGORIES_FILE} iniziale")
-    elif migration_done:
+
+    if migration_done:
         logger.info("✅ Migrazione completata: non creo database.json nella root")
-    elif active_db_path is not None:
+    if active_db_path is not None:
         logger.info(f"✅ Database attivo esistente: {active_db_path}")
-    
+    else:
+        logger.info("⚠️ Nessun database attivo: editor/quiz/view saranno bloccati")
+
     # Migra i backup dalla vecchia struttura alla nuova
     migrated = migrate_old_backups()
     if migrated > 0:
         logger.info(f"Migrati {migrated} backup nella nuova struttura")
-    
+
     app.run(debug=True, host='0.0.0.0', port=5015)

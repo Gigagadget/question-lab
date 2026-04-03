@@ -14,9 +14,33 @@ class QuizManagerFrontend {
         this.availableCount = 0;
         this.usedCount = 0;
         this.quizInProgress = false;
-        
-        this.initializeEventListeners();
-        this.loadCategories();
+
+        // Check for active database before initializing
+        this.checkDatabaseAndInit();
+    }
+
+    checkDatabaseAndInit() {
+        fetch('/api/databases/active')
+            .then(res => res.json())
+            .then(data => {
+                // Show/hide blocker based on active database
+                const blocker = document.getElementById('noDbBlocker');
+                if (blocker) {
+                    if (!data.active_database) {
+                        blocker.style.display = 'flex';
+                    } else {
+                        blocker.style.display = 'none';
+                        // Only initialize if database is active
+                        this.initializeEventListeners();
+                        this.loadCategories();
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Error loading active database:', err);
+                const blocker = document.getElementById('noDbBlocker');
+                if (blocker) blocker.style.display = 'flex';
+            });
     }
 
     initializeEventListeners() {

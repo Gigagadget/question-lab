@@ -590,6 +590,30 @@ async function exportToPdf() {
 btnExportDoc.addEventListener('click', exportToDoc);
 btnExportPdf.addEventListener('click', exportToPdf);
 
+// Check for active database and show/hide blocker
+function checkActiveDatabase() {
+    fetch('/api/databases/active')
+        .then(res => res.json())
+        .then(data => {
+            const blocker = document.getElementById('noDbBlocker');
+            if (blocker) {
+                if (!data.active_database) {
+                    blocker.style.display = 'flex';
+                } else {
+                    blocker.style.display = 'none';
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error loading active database:', err);
+            const blocker = document.getElementById('noDbBlocker');
+            if (blocker) blocker.style.display = 'flex';
+        });
+}
+
+// Check database on page load
+checkActiveDatabase();
+
 // Make functions global
 window.openInEditor = openInEditor;
 window.selectAllPrimary = selectAllPrimary;

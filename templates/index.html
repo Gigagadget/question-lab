@@ -183,24 +183,24 @@
         
         <div class="home-container">
             <div class="cards-container">
-                <a href="/editor" class="card editor">
+                <a href="/editor" class="card editor" id="cardEditor">
                     <div class="card-icon">✏️</div>
                     <h2>Editor</h2>
                     <p>Modifica, aggiungi e gestisci le domande del database. Visualizza statistiche e gestisci backup.</p>
                 </a>
-                
-                <a href="/quiz" class="card quiz">
+
+                <a href="/quiz" class="card quiz" id="cardQuiz">
                     <div class="card-icon">🎯</div>
                     <h2>Modalità Quiz</h2>
                     <p>Metti alla prova le tue conoscenze. Rispondi alle domande e verifica le tue risposte.</p>
                 </a>
-                
-                <a href="/view" class="card view">
+
+                <a href="/view" class="card view" id="cardView">
                     <div class="card-icon">👁️</div>
                     <h2>Modalità Visualizzazione</h2>
                     <p>Visualizza e naviga tra le domande in una modalità ottimizzata per la lettura.</p>
                 </a>
-                
+
                 <a href="/databases" class="card databases">
                     <div class="card-icon">🗃️</div>
                     <h2>Gestione Database</h2>
@@ -208,21 +208,45 @@
                 </a>
             </div>
         </div>
-        
+
         <div class="footer">
             <p>Database: <strong id="activeDbName">--</strong> | Domande totali: <span id="totalQuestions">--</span> | versione: <strong>{{ app_version }}</strong></p>
         </div>
     </div>
-    
+
+    <style>
+        .card.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            cursor: not-allowed;
+            filter: grayscale(50%);
+        }
+        .card.disabled::after {
+            content: '🔒 Nessun database selezionato';
+            display: block;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+
     <script>
         // Fetch total questions count for footer
         fetch('/api/questions')
             .then(res => res.json())
             .then(data => {
-                document.getElementById('totalQuestions').textContent = data.questions.length;
+                if (data.questions !== undefined) {
+                    document.getElementById('totalQuestions').textContent = data.questions.length;
+                } else {
+                    document.getElementById('totalQuestions').textContent = '--';
+                }
             })
-            .catch(err => console.error('Error loading stats:', err));
-        
+            .catch(err => {
+                console.error('Error loading stats:', err);
+                document.getElementById('totalQuestions').textContent = '--';
+            });
+
         // Fetch active database name for footer and badge
         fetch('/api/databases/active')
             .then(res => res.json())
@@ -230,8 +254,20 @@
                 const dbName = data.active_database || 'Nessuno';
                 document.getElementById('activeDbName').textContent = dbName;
                 document.getElementById('activeDbBadge').textContent = dbName;
+
+                // Disable editor, quiz, and view cards if no database is selected
+                const hasDb = !!data.active_database;
+                document.getElementById('cardEditor').classList.toggle('disabled', !hasDb);
+                document.getElementById('cardQuiz').classList.toggle('disabled', !hasDb);
+                document.getElementById('cardView').classList.toggle('disabled', !hasDb);
             })
-            .catch(err => console.error('Error loading active database:', err));
+            .catch(err => {
+                console.error('Error loading active database:', err);
+                // Disable cards on error
+                document.getElementById('cardEditor').classList.add('disabled');
+                document.getElementById('cardQuiz').classList.add('disabled');
+                document.getElementById('cardView').classList.add('disabled');
+            });
     </script>
     <script src="/static/js/theme.js"></script>
 </body>

@@ -8,13 +8,22 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '/';
         });
     }
-    
+
     // Load active database name
     fetch('/api/databases/active')
         .then(res => res.json())
         .then(data => {
             const dbName = data.active_database || 'Nessuno';
             document.getElementById('activeDbName').textContent = dbName;
+            // Show/hide blocker based on active database
+            const blocker = document.getElementById('noDbBlocker');
+            if (blocker) {
+                if (!data.active_database) {
+                    blocker.style.display = 'flex';
+                } else {
+                    blocker.style.display = 'none';
+                }
+            }
         })
         .catch(err => console.error('Error loading active database:', err));
 });
