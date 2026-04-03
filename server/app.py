@@ -743,9 +743,12 @@ def export_doc():
         
         # Generate filename with database name and timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        # Usa il nome del database attivo se disponibile
+        # Usa il nome del database attivo (nome cartella, non nome file)
         active_db_path = get_active_database_path()
-        db_name = active_db_path.stem if active_db_path and active_db_path.exists() else Path(DATABASE_FILE).stem
+        if active_db_path and active_db_path.exists():
+            db_name = active_db_path.parent.name  # Nome della cartella del database
+        else:
+            db_name = Path(DATABASE_FILE).stem
         filename = f"{db_name}_{timestamp}.docx"
         
         # Generate DOC with sorting
@@ -775,9 +778,12 @@ def export_pdf():
         
         # Generate filename with database name and timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        # Usa il nome del database attivo se disponibile
+        # Usa il nome del database attivo (nome cartella, non nome file)
         active_db_path = get_active_database_path()
-        db_name = active_db_path.stem if active_db_path and active_db_path.exists() else Path(DATABASE_FILE).stem
+        if active_db_path and active_db_path.exists():
+            db_name = active_db_path.parent.name  # Nome della cartella del database
+        else:
+            db_name = Path(DATABASE_FILE).stem
         filename = f"{db_name}_{timestamp}.pdf"
         
         # Generate PDF with sorting

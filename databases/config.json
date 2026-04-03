@@ -1,44 +1,4 @@
 {
-  "active_database": "test2",
-  "databases": [
-    {
-      "name": "anatomia_patologica",
-      "question_count": 867,
-      "created": "2026-04-02T17:37:19.465943",
-      "last_modified": "2026-04-02T14:27:39.243250",
-      "last_accessed": "2026-04-02T17:58:17.026352"
-    },
-    {
-      "name": "output_merged",
-      "question_count": 612,
-      "created": "2026-04-02T18:10:04.019769",
-      "last_modified": "2026-04-02T18:10:03.906806",
-      "last_accessed": "2026-04-02T18:11:59.616070"
-    },
-    {
-      "name": "test2",
-      "question_count": 1,
-      "created": "2026-04-02T18:18:36.276877",
-      "last_modified": "2026-04-02T18:21:39.250330",
-      "last_accessed": "2026-04-02T18:18:44.588065"
-    },
-    {
-      "name": "boh",
-      "question_count": 0,
-      "created": "2026-04-02T18:23:59.944990",
-      "last_modified": "2026-04-02T18:23:59.940942"
-    },
-    {
-      "name": "boh2",
-      "question_count": 0,
-      "created": "2026-04-02T18:24:32.520539",
-      "last_modified": "2026-04-02T18:24:32.514140"
-    },
-    {
-      "name": "boh3",
-      "question_count": 0,
-      "created": "2026-04-02T18:24:41.211737",
-      "last_modified": "2026-04-02T18:24:41.206760"
-    }
-  ]
+  "active_database": null,
+  "databases": []
 }

@@ -214,16 +214,105 @@ function showDatabaseDetail(name) {
     `;
 }
 
+// ==================== VALIDAZIONE NOMI ====================
+
+function validateDatabaseName(name) {
+    const errors = [];
+    
+    if (!name || name.trim() === '') {
+        errors.push('Il nome non può essere vuoto');
+        return { valid: false, errors };
+    }
+    
+    const trimmed = name.trim();
+    
+    if (trimmed.length < 2) {
+        errors.push('Il nome deve avere almeno 2 caratteri');
+    }
+    
+    if (trimmed.length > 50) {
+        errors.push('Il nome non può superare 50 caratteri');
+    }
+    
+    if (/[^a-zA-Z0-9\s\-_]/.test(trimmed)) {
+        errors.push('Il nome contiene caratteri non validi (solo lettere, numeri, spazi, trattini e underscore)');
+    }
+    
+    if (/^[\s\-_]+|[\s\-_]+$/.test(trimmed)) {
+        errors.push('Il nome non può iniziare o finire con spazi, trattini o underscore');
+    }
+    
+    if (/[\s\-_]{2,}/.test(trimmed)) {
+        errors.push('Il nome non può avere spazi, trattini o underscore consecutivi');
+    }
+    
+    return {
+        valid: errors.length === 0,
+        errors: errors,
+        sanitized: errors.length === 0 ? sanitizeName(trimmed) : null
+    };
+}
+
+function sanitizeName(name) {
+    return name
+        .toLowerCase()
+        .replace(/[^\w\s\-]/g, '')
+        .replace(/[\s]+/g, '_')
+        .replace(/[_\-]+/g, '_')
+        .replace(/^[_\-]+|[_\-]+$/g, '')
+        .substring(0, 50);
+}
+
+function showInputError(inputId, message) {
+    const input = document.getElementById(inputId);
+    const formGroup = input.closest('.form-group');
+    
+    // Rimuovi errore precedente
+    clearInputError(inputId);
+    
+    // Aggiungi classe errore all'input
+    input.classList.add('error');
+    
+    // Crea messaggio di errore
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    errorDiv.id = inputId + '-error';
+    
+    // Inserisci dopo l'input
+    input.parentNode.insertBefore(errorDiv, input.nextSibling);
+}
+
+function clearInputError(inputId) {
+    const input = document.getElementById(inputId);
+    const formGroup = input.closest('.form-group');
+    
+    // Rimuovi classe errore
+    input.classList.remove('error');
+    
+    // Rimuovi messaggio di errore se esiste
+    const existingError = document.getElementById(inputId + '-error');
+    if (existingError) {
+        existingError.remove();
+    }
+}
+
 // ==================== CREAZIONE DATABASE ====================
 
 async function createDatabase() {
     const nameInput = document.getElementById('newDbName');
     const name = nameInput.value.trim();
     
-    if (!name) {
-        showStatus('Inserisci un nome per il database', 'error');
+    // Valida il nome
+    const validation = validateDatabaseName(name);
+    
+    if (!validation.valid) {
+        showInputError('newDbName', validation.errors[0]);
         return;
     }
+    
+    // Pulisci eventuali errori precedenti
+    clearInputError('newDbName');
     
     try {
         showStatus('Creazione database in corso...', 'info');
@@ -242,6 +331,7 @@ async function createDatabase() {
             showStatus(`Database '${data.database.name}' creato con successo`, 'success');
             loadDatabases();
         } else {
+            showInputError('newDbName', data.error);
             showStatus('Errore: ' + data.error, 'error');
         }
     } catch (error) {
@@ -308,8 +398,11 @@ async function renameDatabase() {
     const newNameInput = document.getElementById('renameNewName');
     const newName = newNameInput.value.trim();
     
-    if (!newName) {
-        showStatus('Inserisci un nuovo nome', 'error');
+    // Valida il nome
+    const validation = validateDatabaseName(newName);
+    
+    if (!validation.valid) {
+        showInputError('renameNewName', validation.errors[0]);
         return;
     }
     
@@ -317,6 +410,9 @@ async function renameDatabase() {
         hideModal('renameModal');
         return;
     }
+    
+    // Pulisci eventuali errori precedenti
+    clearInputError('renameNewName');
     
     try {
         showStatus('Rinomina in corso...', 'info');
@@ -334,6 +430,7 @@ async function renameDatabase() {
             showStatus(`Database rinominato in '${data.new_name}'`, 'success');
             loadDatabases();
         } else {
+            showInputError('renameNewName', data.error);
             showStatus('Errore: ' + data.error, 'error');
         }
     } catch (error) {

@@ -8,6 +8,15 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '/';
         });
     }
+    
+    // Load active database name
+    fetch('/api/databases/active')
+        .then(res => res.json())
+        .then(data => {
+            const dbName = data.active_database || 'Nessuno';
+            document.getElementById('activeDbName').textContent = dbName;
+        })
+        .catch(err => console.error('Error loading active database:', err));
 });
 
 let questions = [];
