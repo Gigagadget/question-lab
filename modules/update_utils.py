@@ -57,21 +57,62 @@ def get_config() -> dict:
         }
 
 
-def parse_semver(version: str) -> Tuple[int, int, int]:
+def _prerelease_priority(suffix: str) -> int:
     """
-    Converte una stringa semver (es. '1.5.0') in tupla (1, 5, 0).
-    Rimuove il prefisso 'v' se presente.
+    Assegna una priorità al suffisso pre-release (SemVer 2.0.0).
+    Ordine: dev(0) < alpha(1) < beta(2) < rc(3) < release(4)
+    """
+    if not suffix:
+        return 4  # release
+    s = suffix.lower()
+    if "dev" in s:
+        return 0
+    if "alpha" in s or "a" == s:
+        return 1
+    if "beta" in s or "b" == s:
+        return 2
+    if "rc" in s:
+        return 3
+    # Sconosciuto: trattalo come dev
+    return 0
+
+
+def _extract_prerelease_number(suffix: str) -> int:
+    """
+    Estrae il numero dal suffisso (es: rc1 → 1, beta2 → 2).
+    Serve per confrontare rc1 vs rc2.
+    """
+    if not suffix:
+        return 0
+    match = re.search(r'(\d+)', suffix)
+    return int(match.group(1)) if match else 0
+
+
+def parse_semver(version: str) -> Tuple[int, int, int, str]:
+    """
+    Converte una stringa semver in tupla (major, minor, patch, prerelease_suffix).
+    Esempi:
+        '1.5.0'    → (1, 5, 0, '')
+        '1.6.0-dev' → (1, 6, 0, 'dev')
+        '1.6.0-rc1' → (1, 6, 0, 'rc1')
     """
     version = version.strip().lstrip("v")
-    match = re.match(r"(\d+)\.(\d+)\.(\d+)", version)
+    # Separa la parte numerica dal suffisso
+    match = re.match(r"(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.]+))?", version)
     if match:
-        return (int(match.group(1)), int(match.group(2)), int(match.group(3)))
-    return (0, 0, 0)
+        major = int(match.group(1))
+        minor = int(match.group(2))
+        patch = int(match.group(3))
+        suffix = match.group(4) or ""
+        return (major, minor, patch, suffix)
+    return (0, 0, 0, "")
 
 
 def compare_versions(local: str, remote: str) -> int:
     """
-    Confronta due versioni semver.
+    Confronta due versioni semver secondo SemVer 2.0.0.
+    Le pre-release sono SEMPRE più vecchie della release corrispondente.
+    Es: 1.6.0-dev < 1.6.0 < 1.6.0-rc1 < 1.6.1
     Returns:
         -1 se local < remote
          0 se local == remote
@@ -79,10 +120,46 @@ def compare_versions(local: str, remote: str) -> int:
     """
     local_tuple = parse_semver(local)
     remote_tuple = parse_semver(remote)
-    if local_tuple < remote_tuple:
+
+    # Confronta major.minor.patch
+    local_base = local_tuple[:3]
+    remote_base = remote_tuple[:3]
+
+    if local_base < remote_base:
         return -1
-    elif local_tuple > remote_tuple:
+    elif local_base > remote_base:
         return 1
+
+    # Stessa major.minor.patch: confronta il suffisso
+    local_suffix = local_tuple[3]
+    remote_suffix = remote_tuple[3]
+
+    # Nessuno dei due ha suffisso → uguali
+    if not local_suffix and not remote_suffix:
+        return 0
+
+    # Release (nessun suffisso) > pre-release
+    if not local_suffix and remote_suffix:
+        return 1  # local è release, remote è pre-release
+    if local_suffix and not remote_suffix:
+        return -1  # local è pre-release, remote è release
+
+    # Entrambi pre-release: confronta priorità e numero
+    local_pri = _prerelease_priority(local_suffix)
+    remote_pri = _prerelease_priority(remote_suffix)
+
+    if local_pri != remote_pri:
+        return -1 if local_pri < remote_pri else 1
+
+    # Stessa priorità: confronta numero (es: rc1 vs rc2)
+    local_num = _extract_prerelease_number(local_suffix)
+    remote_num = _extract_prerelease_number(remote_suffix)
+
+    if local_num < remote_num:
+        return -1
+    elif local_num > remote_num:
+        return 1
+
     return 0
 
 
@@ -90,15 +167,20 @@ def get_latest_github_tag(config: dict, verbose: bool = True) -> Optional[str]:
     """
     Ottiene l'ultimo tag semver da GitHub usando le API.
     Restituisce il nome del tag senza prefisso 'v'.
+    Di default ignora i tag pre-release (es: 1.6.0-dev).
+    Per includerli, impostare "allow_prerelease": true nel config.
     """
     api_url = config["github_api"]
     tags_url = f"{api_url}/tags"
     max_retries = config.get("update_settings", {}).get("max_retries", 3)
     timeout = config.get("update_settings", {}).get("timeout_seconds", 30)
+    allow_prerelease = config.get("update_settings", {}).get("allow_prerelease", False)
 
     if verbose:
         print(f"  🔄 Controllo aggiornamenti su GitHub...")
         print(f"  📡 URL API: {tags_url}")
+        if allow_prerelease:
+            print(f"  🧪 Modalità pre-release abilitata")
 
     for attempt in range(1, max_retries + 1):
         try:
@@ -113,14 +195,30 @@ def get_latest_github_tag(config: dict, verbose: bool = True) -> Optional[str]:
                     print(f"  ⚠️  Nessun tag trovato su GitHub.")
                 return None
 
-            # Filtra solo tag che sembrano semver (v1.5.0, 1.5.0, ecc.)
-            semver_pattern = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)$")
-            semver_tags = [t for t in tags if semver_pattern.match(t.get("name", ""))]
+            # Filtra tag che sembrano semver (con o senza suffisso pre-release)
+            # Pure semver: v1.5.0, 1.5.0
+            # Pre-release: v1.6.0-dev, v1.6.0-rc1, v1.6.0-beta.2
+            semver_pattern = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.]+))?$")
+            matched_tags = [t for t in tags if semver_pattern.match(t.get("name", ""))]
 
-            if not semver_tags:
+            if not matched_tags:
                 if verbose:
                     print(f"  ⚠️  Nessun tag semver trovato su GitHub.")
                 return None
+
+            # Se allow_prerelease è disabilitato, filtra via i tag con suffisso
+            if not allow_prerelease:
+                semver_tags = []
+                for t in matched_tags:
+                    parsed = parse_semver(t["name"])
+                    if not parsed[3]:  # Nessun suffisso pre-release
+                        semver_tags.append(t)
+                if not semver_tags:
+                    if verbose:
+                        print(f"  ℹ️  Solo tag pre-release disponibili. Abilita \"allow_prerelease\" nel config per scaricarli.")
+                    return None
+            else:
+                semver_tags = matched_tags
 
             # Ordina i tag per versione (più recente prima)
             semver_tags.sort(key=lambda t: parse_semver(t["name"]), reverse=True)
