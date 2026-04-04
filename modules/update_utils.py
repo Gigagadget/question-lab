@@ -334,6 +334,10 @@ def create_backup(verbose: bool = True) -> Optional[str]:
     protected_files = set(config.get("protected_files", []))
     protected_dirs = set(config.get("protected_dirs", []))
 
+    # Protezioni hardcoded: evita loop e protegge dati critici
+    protected_dirs.add("update_backups")  # Mai copiare il backup dentro se stesso
+    protected_dirs.add("databases")       # I database hanno i propri backup
+
     if verbose:
         print(f"  📦 Creazione backup in: {backup_path}")
 
@@ -341,7 +345,7 @@ def create_backup(verbose: bool = True) -> Optional[str]:
         backup_path.mkdir(parents=True, exist_ok=True)
 
         for item in BASE_DIR.iterdir():
-            # Salta il file di backup stesso
+            # Salta file nascosti
             if item.name.startswith("."):
                 continue
 
