@@ -94,6 +94,38 @@ def migrate_quiz_logs(base_dir):
     return migrated
 
 
+def _safe_copy(src: Path, dest: Path) -> None:
+    """Copia un file nella destinazione, aggiungendo suffisso se esiste già."""
+    if not dest.exists():
+        shutil.copy2(str(src), str(dest))
+        return
+
+    # File esiste già: aggiungi suffisso "_migrated"
+    stem = src.stem
+    suffix = src.suffix
+    new_dest = dest.parent / f"{stem}_migrated{suffix}"
+    counter = 1
+    while new_dest.exists():
+        new_dest = dest.parent / f"{stem}_migrated_{counter}{suffix}"
+        counter += 1
+    shutil.copy2(str(src), str(new_dest))
+
+
+def _safe_copytree(src: Path, dest: Path) -> None:
+    """Copia una cartella nella destinazione, evitando sovrascritture."""
+    if not dest.exists():
+        shutil.copytree(str(src), str(dest))
+        return
+
+    # Cartella esiste già: aggiungi suffisso "_migrated"
+    new_dest = dest.parent / f"{dest.name}_migrated"
+    counter = 1
+    while new_dest.exists():
+        new_dest = dest.parent / f"{dest.name}_migrated_{counter}"
+        counter += 1
+    shutil.copytree(str(src), str(new_dest))
+
+
 def remove_old_backup_folder(base_dir):
     """
     Migra eventuali backup dalla vecchia cartella backup/ a update_backups/,
@@ -105,37 +137,26 @@ def remove_old_backup_folder(base_dir):
 
     new_backup = base_dir / "update_backups"
 
-    # Migra file dalla vecchia cartella backup/ alla nuova update_backups/
     try:
         if new_backup.exists():
             # Migra file individuali
             for f in old_backup.iterdir():
                 if f.is_file():
                     dest = new_backup / f.name
-                    if not dest.exists():
-                        import shutil
-                        shutil.copy2(str(f), str(dest))
+                    _safe_copy(f, dest)
             # Migra sottocartelle (es. database/)
             for sub in old_backup.iterdir():
                 if sub.is_dir():
                     dest_dir = new_backup / sub.name
-                    if not dest_dir.exists():
-                        import shutil
-                        shutil.copytree(str(sub), str(dest_dir))
+                    _safe_copytree(sub, dest_dir)
+            # Rimuovi la vecchia cartella (contenuto migrato)
+            shutil.rmtree(str(old_backup))
         else:
             # Se update_backups non esiste, rinomina direttamente
             old_backup.rename(new_backup)
-            return True  # La vecchia cartella non esiste più, è stata rinominata
-    except Exception as e:
-        print(f"  ⚠️  Migrazione backup fallita: {e}")
-
-    # Ora che i contenuti sono migrati, rimuovi la vecchia cartella
-    try:
-        import shutil
-        shutil.rmtree(str(old_backup))
         return True
     except Exception as e:
-        print(f"  ⚠️  Impossibile rimuovere backup/: {e}")
+        print(f"  ⚠️  Migrazione backup fallita: {e}")
         return False
 
 
