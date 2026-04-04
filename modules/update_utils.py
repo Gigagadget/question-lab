@@ -254,10 +254,14 @@ def get_latest_github_tag(config: dict, verbose: bool = True) -> Optional[str]:
     return None
 
 
-def download_zip(repo_url: str, branch: str, config: dict, verbose: bool = True) -> Optional[bytes]:
+def download_zip(repo_url: str, config: dict, tag: str = None, verbose: bool = True) -> Optional[bytes]:
     """
-    Scarica lo ZIP del repository dal branch specificato.
-    URL formato: https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip
+    Scarica lo ZIP del repository.
+    Se viene fornito un tag, scarica dal tag specifico (consigliato).
+    Altrimenti fallback al branch configurato.
+
+    URL formato (tag): https://github.com/{owner}/{repo}/archive/refs/tags/{tag}.zip
+    URL formato (branch): https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip
     """
     if not repo_url or not repo_url.strip():
         if verbose:
@@ -272,13 +276,20 @@ def download_zip(repo_url: str, branch: str, config: dict, verbose: bool = True)
             print(f"  ❌ github_repo non valido: '{repo_url}'")
         return None
     owner, repo = parts[-2], parts[-1]
-    zip_url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip"
+
+    # Costruisci URL: priorità al tag, fallback al branch
+    if tag:
+        zip_url = f"https://github.com/{owner}/{repo}/archive/refs/tags/v{tag.lstrip('v')}.zip"
+        if verbose:
+            print(f"  📥 Download aggiornamento dal tag: v{tag.lstrip('v')}")
+    else:
+        branch = config.get("branch", "main")
+        zip_url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip"
+        if verbose:
+            print(f"  📥 Download aggiornamento dal branch: {branch}")
 
     max_retries = config.get("update_settings", {}).get("max_retries", 3)
     timeout = config.get("update_settings", {}).get("timeout_seconds", 30)
-
-    if verbose:
-        print(f"  📥 Download aggiornamento da: {zip_url}")
 
     for attempt in range(1, max_retries + 1):
         try:
@@ -672,8 +683,7 @@ def check_and_update(verbose: bool = True) -> bool:
             if verbose:
                 print(f"  🔍 Versione da tag: verifica versione reale dallo ZIP...")
             repo_url = config.get("github_repo", "")
-            branch = config.get("branch", "main")
-            zip_content = download_zip(repo_url, branch, config, verbose)
+            zip_content = download_zip(repo_url, config, tag=remote_version, verbose=verbose)
             if zip_content:
                 zip_version = get_version_from_zip(zip_content, verbose)
                 if zip_version and zip_version != local_version:
@@ -710,10 +720,9 @@ def check_and_update(verbose: bool = True) -> bool:
             if verbose:
                 print(f"  ⚠️  Backup fallito, ma procedo con l'update...")
 
-        # Scarica ZIP
+        # Scarica ZIP dal tag specifico
         repo_url = config.get("github_repo", "")
-        branch = config.get("branch", "main")
-        zip_content = download_zip(repo_url, branch, config, verbose)
+        zip_content = download_zip(repo_url, config, tag=remote_version, verbose=verbose)
 
         if not zip_content:
             if verbose:
