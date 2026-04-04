@@ -88,24 +88,30 @@ def _extract_prerelease_number(suffix: str) -> int:
     return int(match.group(1)) if match else 0
 
 
-def parse_semver(version: str) -> Tuple[int, int, int, str]:
+def parse_semver(version: str) -> Tuple[int, int, int, int, int]:
     """
-    Converte una stringa semver in tupla (major, minor, patch, prerelease_suffix).
+    Converte una stringa semver in tupla ordinabile correttamente.
+    Restituisce (major, minor, patch, priority, number) dove:
+    - priority: 0=dev, 1=alpha, 2=beta, 3=rc, 4=release
+    - number: numero del suffisso (es: rc1 → 1)
+    
     Esempi:
-        '1.5.0'    → (1, 5, 0, '')
-        '1.6.0-dev' → (1, 6, 0, 'dev')
-        '1.6.0-rc1' → (1, 6, 0, 'rc1')
+        '1.5.0'       → (1, 5, 0, 4, 0)
+        '1.6.0-dev'   → (1, 6, 0, 0, 0)
+        '1.6.0-rc1'   → (1, 6, 0, 3, 1)
+        '1.6.0-beta.2'→ (1, 6, 0, 2, 2)
     """
     version = version.strip().lstrip("v")
-    # Separa la parte numerica dal suffisso
     match = re.match(r"(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.]+))?", version)
     if match:
         major = int(match.group(1))
         minor = int(match.group(2))
         patch = int(match.group(3))
         suffix = match.group(4) or ""
-        return (major, minor, patch, suffix)
-    return (0, 0, 0, "")
+        priority = _prerelease_priority(suffix)
+        number = _extract_prerelease_number(suffix)
+        return (major, minor, patch, priority, number)
+    return (0, 0, 0, 0, 0)
 
 
 def compare_versions(local: str, remote: str) -> int:
@@ -121,45 +127,10 @@ def compare_versions(local: str, remote: str) -> int:
     local_tuple = parse_semver(local)
     remote_tuple = parse_semver(remote)
 
-    # Confronta major.minor.patch
-    local_base = local_tuple[:3]
-    remote_base = remote_tuple[:3]
-
-    if local_base < remote_base:
+    if local_tuple < remote_tuple:
         return -1
-    elif local_base > remote_base:
+    elif local_tuple > remote_tuple:
         return 1
-
-    # Stessa major.minor.patch: confronta il suffisso
-    local_suffix = local_tuple[3]
-    remote_suffix = remote_tuple[3]
-
-    # Nessuno dei due ha suffisso → uguali
-    if not local_suffix and not remote_suffix:
-        return 0
-
-    # Release (nessun suffisso) > pre-release
-    if not local_suffix and remote_suffix:
-        return 1  # local è release, remote è pre-release
-    if local_suffix and not remote_suffix:
-        return -1  # local è pre-release, remote è release
-
-    # Entrambi pre-release: confronta priorità e numero
-    local_pri = _prerelease_priority(local_suffix)
-    remote_pri = _prerelease_priority(remote_suffix)
-
-    if local_pri != remote_pri:
-        return -1 if local_pri < remote_pri else 1
-
-    # Stessa priorità: confronta numero (es: rc1 vs rc2)
-    local_num = _extract_prerelease_number(local_suffix)
-    remote_num = _extract_prerelease_number(remote_suffix)
-
-    if local_num < remote_num:
-        return -1
-    elif local_num > remote_num:
-        return 1
-
     return 0
 
 
@@ -211,7 +182,7 @@ def get_latest_github_tag(config: dict, verbose: bool = True) -> Optional[str]:
                 semver_tags = []
                 for t in matched_tags:
                     parsed = parse_semver(t["name"])
-                    if not parsed[3]:  # Nessun suffisso pre-release
+                    if parsed[3] == 4:  # priority 4 = release (nessun suffisso)
                         semver_tags.append(t)
                 if not semver_tags:
                     if verbose:
@@ -254,6 +225,40 @@ def get_latest_github_tag(config: dict, verbose: bool = True) -> Optional[str]:
     return None
 
 
+def validate_zip_content(content: bytes, verbose: bool = True) -> bool:
+    """
+    Verifica che il contenuto scaricato sia un ZIP valido.
+    Controlla i magic bytes e prova ad aprirlo.
+    """
+    # Controllo magic bytes ZIP (PK)
+    if len(content) < 2 or content[:2] != b'PK':
+        if verbose:
+            print(f"  ❌ Il contenuto non è un file ZIP valido (magic bytes mancanti)")
+        return False
+
+    # Controllo integrità aprendolo
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            zp = Path(td) / "test.zip"
+            zp.write_bytes(content)
+            with zipfile.ZipFile(zp, "r") as zf:
+                # Se non lancia eccezioni, è un ZIP valido
+                bad_file = zf.testzip()
+                if bad_file is not None:
+                    if verbose:
+                        print(f"  ❌ ZIP corrotto: file '{bad_file}' ha errori")
+                    return False
+        return True
+    except zipfile.BadZipFile:
+        if verbose:
+            print(f"  ❌ Il contenuto non è un archivio ZIP valido")
+        return False
+    except Exception as e:
+        if verbose:
+            print(f"  ❌ Errore verificando ZIP: {e}")
+        return False
+
+
 def download_zip(repo_url: str, config: dict, tag: str = None, verbose: bool = True) -> Optional[bytes]:
     """
     Scarica lo ZIP del repository.
@@ -279,9 +284,21 @@ def download_zip(repo_url: str, config: dict, tag: str = None, verbose: bool = T
 
     # Costruisci URL: priorità al tag, fallback al branch
     if tag:
-        zip_url = f"https://github.com/{owner}/{repo}/archive/refs/tags/v{tag.lstrip('v')}.zip"
+        # Normalizza il tag: rimuovi prefisso "v" o "V" se presente (case-insensitive)
+        normalized_tag = tag
+        if normalized_tag.lower().startswith('v'):
+            normalized_tag = normalized_tag[1:]
+        
+        # Verifica che il tag normalizzato non sia vuoto
+        if not normalized_tag:
+            if verbose:
+                print(f"  ❌ Tag non valido: '{tag}'")
+            return None
+        
+        # Costruisci URL con prefisso "v"
+        zip_url = f"https://github.com/{owner}/{repo}/archive/refs/tags/v{normalized_tag}.zip"
         if verbose:
-            print(f"  📥 Download aggiornamento dal tag: v{tag.lstrip('v')}")
+            print(f"  📥 Download aggiornamento dal tag: v{normalized_tag}")
     else:
         branch = config.get("branch", "main")
         zip_url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip"
@@ -621,9 +638,10 @@ def get_version_from_zip(zip_content: bytes, verbose: bool = True) -> Optional[s
         return None
 
 
-def update_version_file(version: str, status: str, source: str = "tag") -> None:
+def update_version_file(version: str, status: str, source: str = "tag") -> bool:
     """Aggiorna il file version.json con la nuova versione.
     source: 'tag' (da tag GitHub) o 'zip' (da version.json nello ZIP)
+    Returns: True se salvato con successo, False altrimenti.
     """
     try:
         data = {
@@ -633,8 +651,10 @@ def update_version_file(version: str, status: str, source: str = "tag") -> None:
             "version_source": source,
         }
         save_json(VERSION_FILE, data)
+        return True
     except Exception as e:
         print(f"  ⚠️  Errore nell'aggiornamento di version.json: {e}")
+        return False
 
 
 def check_and_update(verbose: bool = True) -> bool:
@@ -691,10 +711,12 @@ def check_and_update(verbose: bool = True) -> bool:
             if zip_content:
                 zip_version = get_version_from_zip(zip_content, verbose)
                 if zip_version and zip_version != local_version:
-                    update_version_file(zip_version, "version_corrected", source="zip")
-                    if verbose:
-                        print(f"  ✅ Versione corretta: v{local_version} → v{zip_version}")
-                    # Rilancia il server con la versione corretta
+                    if update_version_file(zip_version, "version_corrected", source="zip"):
+                        if verbose:
+                            print(f"  ✅ Versione corretta: v{local_version} → v{zip_version}")
+                    else:
+                        if verbose:
+                            print(f"  ❌ Impossibile correggere la versione")
                     return False  # Non serve riavviare, la versione è stata corretta
                 elif zip_version:
                     if verbose:
@@ -718,12 +740,6 @@ def check_and_update(verbose: bool = True) -> bool:
             print(f"  🔄 Nuova versione disponibile: v{local_version} → v{remote_version}")
             print(f"  📦 Preparazione aggiornamento...")
 
-        # Crea backup
-        backup_path = create_backup(verbose)
-        if not backup_path:
-            if verbose:
-                print(f"  ⚠️  Backup fallito, ma procedo con l'update...")
-
         # Scarica ZIP dal tag specifico
         repo_url = config.get("github_repo", "")
         zip_content = download_zip(repo_url, config, tag=remote_version, verbose=verbose)
@@ -733,6 +749,19 @@ def check_and_update(verbose: bool = True) -> bool:
                 print(f"  ❌ Download fallito. Avvio con versione corrente.")
             log_update(local_version, remote_version, "download_failed", "Download ZIP fallito")
             return False
+
+        # Verifica che il contenuto sia un ZIP valido PRIMA di creare il backup
+        if not validate_zip_content(zip_content, verbose):
+            if verbose:
+                print(f"  ❌ ZIP non valido. Avvio con versione corrente.")
+            log_update(local_version, remote_version, "invalid_zip", "ZIP scaricato non valido")
+            return False
+
+        # Crea backup (solo dopo aver verificato il ZIP)
+        backup_path = create_backup(verbose)
+        if not backup_path:
+            if verbose:
+                print(f"  ⚠️  Backup fallito, ma procedo con l'update...")
 
         # Applica aggiornamento
         success = apply_update(zip_content, config, verbose)
@@ -752,12 +781,18 @@ def check_and_update(verbose: bool = True) -> bool:
             version_source = "zip" if zip_version else "tag"
 
             # Aggiorna version.json con la versione effettiva
-            update_version_file(actual_version, "success", source=version_source)
-            log_update(local_version, actual_version, "success", f"Aggiornamento completato")
-            if verbose:
-                tag_note = f" (tag: v{remote_version})" if zip_version and actual_version != remote_version else ""
-                print(f"  🎉 Aggiornamento completato: v{local_version} → v{actual_version}{tag_note}")
-            return True
+            if update_version_file(actual_version, "success", source=version_source):
+                log_update(local_version, actual_version, "success", f"Aggiornamento completato")
+                if verbose:
+                    tag_note = f" (tag: v{remote_version})" if zip_version and actual_version != remote_version else ""
+                    print(f"  🎉 Aggiornamento completato: v{local_version} → v{actual_version}{tag_note}")
+                return True
+            else:
+                # Fallback: versione non aggiornata, non riavviare
+                if verbose:
+                    print(f"  ⚠️  Aggiornamento applicato ma impossibile aggiornare version.json")
+                log_update(local_version, actual_version, "partial", "version.json update failed")
+                return False
         else:
             if verbose:
                 print(f"  ❌ Aggiornamento fallito. Ripristino dal backup...")
