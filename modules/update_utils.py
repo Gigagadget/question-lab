@@ -733,15 +733,34 @@ def check_and_update(verbose: bool = True) -> bool:
             # Leggi la versione REALE dal version.json nello ZIP (approccio ibrido)
             zip_version = get_version_from_zip(zip_content, verbose)
 
-            # Usa la versione dallo ZIP se disponibile, altrimenti fallback al tag
-            actual_version = zip_version or remote_version
-            version_source = "zip" if zip_version else "tag"
+            # Determina la versione effettiva da usare
+            actual_version = remote_version  # default: usa il tag
+            version_source = "tag"
 
-            # Aggiorna version.json con la versione reale
+            if zip_version:
+                # Controlla se la versione dallo ZIP è una pre-release
+                zip_parsed = parse_semver(zip_version)
+                is_prerelease = bool(zip_parsed[3])
+                allow_prerelease = config.get("update_settings", {}).get("allow_prerelease", False)
+
+                if is_prerelease and not allow_prerelease:
+                    # Pre-release ma non abilitata: mantieni la versione del tag
+                    if verbose:
+                        print(f"  ℹ️  Versione ZIP è pre-release ({zip_version}), mantenuta versione tag (v{remote_version})")
+                    actual_version = remote_version
+                    version_source = "tag"
+                else:
+                    # Release stabile oppure pre-release abilitata: usa versione ZIP
+                    actual_version = zip_version
+                    version_source = "zip"
+                    if verbose and is_prerelease:
+                        print(f"  🧪 Pre-release abilitata, usata versione dallo ZIP: v{zip_version}")
+
+            # Aggiorna version.json con la versione determinata
             update_version_file(actual_version, "success", source=version_source)
             log_update(local_version, actual_version, "success", f"Aggiornamento completato")
             if verbose:
-                tag_note = f" (tag: v{remote_version})" if zip_version and zip_version != remote_version else ""
+                tag_note = f" (tag: v{remote_version})" if zip_version and actual_version != remote_version else ""
                 print(f"  🎉 Aggiornamento completato: v{local_version} → v{actual_version}{tag_note}")
             return True
         else:
