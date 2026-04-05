@@ -1079,9 +1079,12 @@ const CategoriesManager = (() => {
             // ===== TREE SEARCH =====
             let searchTimer;
             searchInput?.addEventListener('input', (e) => {
+                const currentValue = e.target.value;
+                const cursorPosition = e.target.selectionStart;
+                
                 clearTimeout(searchTimer);
                 searchTimer = setTimeout(() => {
-                    treeState.searchQuery = e.target.value.trim();
+                    treeState.searchQuery = currentValue.trim();
                     treeState.subPage = 1;
                     if (treeState.searchQuery) {
                         categories.primary_domains?.forEach(p => {
@@ -1091,6 +1094,17 @@ const CategoriesManager = (() => {
                         });
                     }
                     refreshManageTree(categories, onRefresh);
+                    
+                    // Restore focus and cursor position after re-render
+                    setTimeout(() => {
+                        const newInput = document.getElementById('cmTreeSearch');
+                        if (newInput) {
+                            newInput.focus();
+                            // Set cursor at the same position where user was typing
+                            const length = currentValue.length;
+                            newInput.setSelectionRange(length, length);
+                        }
+                    }, 10);
                 }, 300);
             });
 
@@ -1098,11 +1112,23 @@ const CategoriesManager = (() => {
             let subSearchTimer;
             const subSearchInput = document.getElementById('cmSubSearch');
             subSearchInput?.addEventListener('input', (e) => {
+                const currentValue = e.target.value;
+                
                 clearTimeout(subSearchTimer);
                 subSearchTimer = setTimeout(() => {
-                    treeState.searchSubQuery = e.target.value.trim();
+                    treeState.searchSubQuery = currentValue.trim();
                     treeState.subPage = 1;
                     refreshManageTree(categories, onRefresh);
+                    
+                    // Restore focus after re-render
+                    setTimeout(() => {
+                        const newInput = document.getElementById('cmSubSearch');
+                        if (newInput) {
+                            newInput.focus();
+                            const length = currentValue.length;
+                            newInput.setSelectionRange(length, length);
+                        }
+                    }, 10);
                 }, 300);
             });
 
@@ -1240,6 +1266,33 @@ const CategoriesManager = (() => {
         const detailPanel = document.getElementById('cmDetailPanel');
         if (detailPanel) {
             detailPanel.innerHTML = renderDetailPanel(categories);
+            
+            // Re-attach sub search handler after detail panel refresh
+            setTimeout(() => {
+                const subSearchInput = document.getElementById('cmSubSearch');
+                if (subSearchInput) {
+                    let subSearchTimer;
+                    subSearchInput.addEventListener('input', (e) => {
+                        const currentValue = e.target.value;
+                        
+                        clearTimeout(subSearchTimer);
+                        subSearchTimer = setTimeout(() => {
+                            treeState.searchSubQuery = currentValue.trim();
+                            treeState.subPage = 1;
+                            refreshManageTree(categories, onRefresh);
+                            
+                            setTimeout(() => {
+                                const newInput = document.getElementById('cmSubSearch');
+                                if (newInput) {
+                                    newInput.focus();
+                                    const length = currentValue.length;
+                                    newInput.setSelectionRange(length, length);
+                                }
+                            }, 10);
+                        }, 300);
+                    });
+                }
+            }, 10);
         }
     }
 
