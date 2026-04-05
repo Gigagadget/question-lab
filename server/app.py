@@ -214,6 +214,53 @@ def save_preferences():
 
 # ==================== API ====================
 
+def normalize_questions_with_report(questions, categories):
+    """
+    Normalizza le categorie delle domande e restituisce warning strutturati
+    quando avvengono riallineamenti (fallback).
+    """
+    changes = []
+
+    for q in questions:
+        if not isinstance(q, dict):
+            continue
+
+        before_primary = q.get('primary_domain')
+        before_subdomain = q.get('subdomain')
+
+        if normalize_question_categories(q, categories):
+            after_primary = q.get('primary_domain')
+            after_subdomain = q.get('subdomain')
+            changes.append({
+                "id": q.get('id'),
+                "before": {
+                    "primary_domain": before_primary,
+                    "subdomain": before_subdomain,
+                },
+                "after": {
+                    "primary_domain": after_primary,
+                    "subdomain": after_subdomain,
+                }
+            })
+
+    if not changes:
+        return None
+
+    examples = [c.get("id") for c in changes if c.get("id")][:5]
+    logger.warning(
+        "Normalizzazione categorie applicata a %s domande (esempi: %s)",
+        len(changes),
+        ", ".join(examples) if examples else "n/a"
+    )
+
+    return {
+        "category_normalization": {
+            "count": len(changes),
+            "examples": examples,
+            "changes": changes[:5]
+        }
+    }
+
 @app.route('/api/questions', methods=['GET'])
 def get_questions():
     """Ottiene tutte le domande dal database"""
@@ -226,17 +273,19 @@ def get_questions():
         if categories is None:
             return jsonify({"error": "Nessun database selezionato. Seleziona un database dalla Gestione Database."}), 400
 
-        questions_changed = False
-        for q in questions:
-            if normalize_question_categories(q, categories):
-                questions_changed = True
+        warnings = normalize_questions_with_report(questions, categories)
+        questions_changed = bool(warnings and warnings.get("category_normalization", {}).get("count", 0) > 0)
         if questions_changed:
             save_database(questions, create_backup_file=False)
 
-        return jsonify({
+        response_payload = {
             'questions': questions,
             'categories': categories
-        }), 200
+        }
+        if warnings:
+            response_payload['warnings'] = warnings
+
+        return jsonify(response_payload), 200
     except Exception as e:
         logger.error(f"Errore in GET /api/questions: {e}")
         return jsonify({"error": str(e)}), 500
@@ -254,17 +303,19 @@ def save_questions():
         if categories is None:
             return jsonify({"error": "Nessun database selezionato. Seleziona un database dalla Gestione Database."}), 400
 
-        # Enforce coerenza primary_domain/subdomain
-        for q in data:
-            normalize_question_categories(q, categories)
+        # Enforce coerenza primary_domain/subdomain + warning strutturati
+        warnings = normalize_questions_with_report(data, categories)
 
         if save_database(data):
             categories = get_unique_categories(data)
-            return jsonify({
+            response_payload = {
                 "message": f"Salvate con successo {len(data)} domande",
                 "count": len(data),
                 "categories": categories
-            }), 200
+            }
+            if warnings:
+                response_payload["warnings"] = warnings
+            return jsonify(response_payload), 200
         else:
             return jsonify({"error": "Salvataggio del database fallito. Nessun database selezionato."}), 400
     except Exception as e:
@@ -292,10 +343,15 @@ def update_question(question_id):
         if index is not None:
             questions[index] = updated_question
             categories = get_unique_categories(questions)
-            for q in questions:
-                normalize_question_categories(q, categories)
+            warnings = normalize_questions_with_report(questions, categories)
             if save_database(questions):
-                return jsonify(updated_question), 200
+                response_payload = {
+                    "question": updated_question,
+                    "categories": get_unique_categories(questions)
+                }
+                if warnings:
+                    response_payload["warnings"] = warnings
+                return jsonify(response_payload), 200
             else:
                 return jsonify({"error": "Salvataggio del database fallito"}), 500
         else:

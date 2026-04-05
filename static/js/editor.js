@@ -41,6 +41,8 @@ let saveInProgress = false;
 let showDuplicatesOnly = false;
 const DEFAULT_PRIMARY_DOMAIN = 'indefinito';
 const DEFAULT_SUBDOMAIN = 'indefinito';
+let lastNormalizationWarningSignature = '';
+let lastNormalizationWarningAt = 0;
 
 // Selezione multipla
 let selectedQuestionIds = new Set(); // ID delle domande selezionate per azioni batch
@@ -207,6 +209,28 @@ function clearDirty() {
     autoSaveIndicator.textContent = '● Auto';
 }
 
+function notifyCategoryNormalizationWarning(warnings) {
+    const info = warnings?.category_normalization;
+    if (!info || !info.count) return false;
+
+    const examples = Array.isArray(info.examples)
+        ? info.examples.filter(v => typeof v === 'string' && v.trim() !== '').slice(0, 5)
+        : [];
+
+    const signature = `${info.count}|${examples.join(',')}`;
+    const now = Date.now();
+    if (signature === lastNormalizationWarningSignature && (now - lastNormalizationWarningAt) < 15000) {
+        return false;
+    }
+
+    lastNormalizationWarningSignature = signature;
+    lastNormalizationWarningAt = now;
+
+    const details = examples.length ? ` (es: ${examples.join(', ')})` : '';
+    setStatus(`⚠️ ${info.count} domande riallineate a categorie valide${details}`, true);
+    return true;
+}
+
 // Fetch all questions
 async function loadQuestions() {
     try {
@@ -216,6 +240,7 @@ async function loadQuestions() {
         const data = await response.json();
         questions = data.questions;
         categories = normalizeCategoriesData(data.categories);
+        const warningShown = notifyCategoryNormalizationWarning(data.warnings);
 
         // Create filter UI
         createFilterUI();
@@ -243,7 +268,9 @@ async function loadQuestions() {
             selectQuestion(questions[0].id);
         }
 
-        setStatus(`Caricate ${questions.length} domande`);
+        if (!warningShown) {
+            setStatus(`Caricate ${questions.length} domande`);
+        }
         clearDirty();
     } catch (err) {
         console.error(err);
@@ -1042,8 +1069,9 @@ async function saveCurrentQuestion(existingId, showStatus = false) {
                 categories = normalizeCategoriesData(result.categories);
                 createFilterUI(); // This now preserves filter values
             }
+            const warningShown = notifyCategoryNormalizationWarning(result.warnings);
 
-            if (showStatus) {
+            if (showStatus && !warningShown) {
                 setStatus('Salvato!');
                 setTimeout(() => {
                     if (!isDirty) setStatus('Pronto');
@@ -1186,7 +1214,10 @@ async function saveAllToServer(refreshFilters = true) {
             categories = normalizeCategoriesData(result.categories);
             createFilterUI(); // Refresh filter UI only if needed
         }
-        setStatus(result.message || 'Tutte le modifiche sono state salvate con successo!');
+        const warningShown = notifyCategoryNormalizationWarning(result.warnings);
+        if (!warningShown) {
+            setStatus(result.message || 'Tutte le modifiche sono state salvate con successo!');
+        }
         clearDirty();
     } catch (err) {
         console.error(err);
