@@ -1076,61 +1076,50 @@ const CategoriesManager = (() => {
                 }
             });
 
-            // ===== TREE SEARCH =====
-            let searchTimer;
-            searchInput?.addEventListener('input', (e) => {
-                const currentValue = e.target.value;
-                const cursorPosition = e.target.selectionStart;
+            // Shared search handler
+            function setupSearchHandler(inputId, stateProperty, callback) {
+                let searchTimer;
+                const input = document.getElementById(inputId);
+                if (!input) return;
                 
-                clearTimeout(searchTimer);
-                searchTimer = setTimeout(() => {
-                    treeState.searchQuery = currentValue.trim();
-                    treeState.subPage = 1;
-                    if (treeState.searchQuery) {
-                        categories.primary_domains?.forEach(p => {
-                            if (p.toLowerCase().includes(treeState.searchQuery.toLowerCase())) {
-                                treeState.expandedPrimaries.add(p);
-                            }
-                        });
-                    }
-                    refreshManageTree(categories, onRefresh);
+                input.addEventListener('input', (e) => {
+                    const currentValue = e.target.value;
+                    const cursorPos = e.target.selectionStart;
                     
-                    // Restore focus and cursor position after re-render
-                    setTimeout(() => {
-                        const newInput = document.getElementById('cmTreeSearch');
-                        if (newInput) {
-                            newInput.focus();
-                            // Set cursor at the same position where user was typing
-                            const length = currentValue.length;
-                            newInput.setSelectionRange(length, length);
+                    clearTimeout(searchTimer);
+                    searchTimer = setTimeout(() => {
+                        treeState[stateProperty] = currentValue.trim();
+                        treeState.subPage = 1;
+                        
+                        if (callback) callback(currentValue);
+                        
+                        refreshManageTree(categories, onRefresh);
+                        
+                        setTimeout(() => {
+                            const newInput = document.getElementById(inputId);
+                            if (newInput) {
+                                newInput.focus();
+                                // Maintain EXACT cursor position, not just end
+                                newInput.setSelectionRange(cursorPos, cursorPos);
+                            }
+                        }, 10);
+                    }, 300);
+                });
+            }
+            
+            // ===== TREE SEARCH =====
+            setupSearchHandler('cmTreeSearch', 'searchQuery', (value) => {
+                if (value.trim()) {
+                    categories.primary_domains?.forEach(p => {
+                        if (p.toLowerCase().includes(value.toLowerCase().trim())) {
+                            treeState.expandedPrimaries.add(p);
                         }
-                    }, 10);
-                }, 300);
+                    });
+                }
             });
 
             // ===== SUB SEARCH =====
-            let subSearchTimer;
-            const subSearchInput = document.getElementById('cmSubSearch');
-            subSearchInput?.addEventListener('input', (e) => {
-                const currentValue = e.target.value;
-                
-                clearTimeout(subSearchTimer);
-                subSearchTimer = setTimeout(() => {
-                    treeState.searchSubQuery = currentValue.trim();
-                    treeState.subPage = 1;
-                    refreshManageTree(categories, onRefresh);
-                    
-                    // Restore focus after re-render
-                    setTimeout(() => {
-                        const newInput = document.getElementById('cmSubSearch');
-                        if (newInput) {
-                            newInput.focus();
-                            const length = currentValue.length;
-                            newInput.setSelectionRange(length, length);
-                        }
-                    }, 10);
-                }, 300);
-            });
+            setupSearchHandler('cmSubSearch', 'searchSubQuery');
 
             // ===== KEYBOARD NAVIGATION =====
             treeContent.addEventListener('keydown', (e) => {
@@ -1183,6 +1172,16 @@ const CategoriesManager = (() => {
             });
             if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
             const result = await res.json();
+            
+            // Update local cache immediately
+            if (window.categories) {
+                if (!window.categories.primary_domains) window.categories.primary_domains = [];
+                window.categories.primary_domains.push(name);
+                window.categories.primary_domains.sort();
+                if (!window.categories.subdomains_by_primary) window.categories.subdomains_by_primary = {};
+                window.categories.subdomains_by_primary[name] = ['indefinito'];
+            }
+            
             alert(`✅ Categoria "${name}" aggiunta con successo!`);
             return result;
         } catch (err) {
@@ -1201,6 +1200,16 @@ const CategoriesManager = (() => {
             if (!res.ok) { const err = await res.json(); throw new Error(err.error); }
             const result = await res.json();
             treeState.inlineAdd = null;
+            
+            // Force full state refresh and reindex
+            if (window.categories && window.categories.subdomains_by_primary) {
+                if (!window.categories.subdomains_by_primary[primary]) {
+                    window.categories.subdomains_by_primary[primary] = [];
+                }
+                window.categories.subdomains_by_primary[primary].push(name);
+                window.categories.subdomains_by_primary[primary].sort();
+            }
+            
             alert(`✅ Sottocategoria "${name}" aggiunta a "${primary}"!`);
             return result;
         } catch (err) {
@@ -1249,50 +1258,30 @@ const CategoriesManager = (() => {
     }
 
     function refreshManageTree(categories, onRefresh) {
-        // Save current tree state before re-rendering
+        // Remove ALL existing event listeners first to avoid duplicates
+        const treeContent = document.getElementById('cmTreeContent');
+        const detailPanel = document.getElementById('cmDetailPanel');
+        const searchInput = document.getElementById('cmTreeSearch');
+        
+        if (treeContent) treeContent.replaceWith(treeContent.cloneNode(true));
+        if (detailPanel) detailPanel.replaceWith(detailPanel.cloneNode(true));
+        if (searchInput) searchInput.replaceWith(searchInput.cloneNode(true));
+
+        // Save current tree state
         const expandedCopy = new Set(treeState.expandedPrimaries);
         const selectedCopy = treeState.selectedNode ? {...treeState.selectedNode} : null;
 
+        // Single render only
         const content = document.getElementById('categoriesContent');
         if (content) {
             content.innerHTML = renderManageTree(categories, window.questions || []);
-            // Restore state
+            // Restore state BEFORE final render
             treeState.expandedPrimaries = expandedCopy;
             treeState.selectedNode = selectedCopy;
-            // Re-render to apply restored state
             content.innerHTML = renderManageTree(categories, window.questions || []);
-            attachTreeHandlers(categories, onRefresh);
-        }
-        const detailPanel = document.getElementById('cmDetailPanel');
-        if (detailPanel) {
-            detailPanel.innerHTML = renderDetailPanel(categories);
             
-            // Re-attach sub search handler after detail panel refresh
-            setTimeout(() => {
-                const subSearchInput = document.getElementById('cmSubSearch');
-                if (subSearchInput) {
-                    let subSearchTimer;
-                    subSearchInput.addEventListener('input', (e) => {
-                        const currentValue = e.target.value;
-                        
-                        clearTimeout(subSearchTimer);
-                        subSearchTimer = setTimeout(() => {
-                            treeState.searchSubQuery = currentValue.trim();
-                            treeState.subPage = 1;
-                            refreshManageTree(categories, onRefresh);
-                            
-                            setTimeout(() => {
-                                const newInput = document.getElementById('cmSubSearch');
-                                if (newInput) {
-                                    newInput.focus();
-                                    const length = currentValue.length;
-                                    newInput.setSelectionRange(length, length);
-                                }
-                            }, 10);
-                        }, 300);
-                    });
-                }
-            }, 10);
+            // Attach handlers ONCE
+            attachTreeHandlers(categories, onRefresh);
         }
     }
 
