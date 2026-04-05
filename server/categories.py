@@ -44,7 +44,9 @@ def _get_categories_and_questions():
             changed = True
 
     if changed:
-        save_database(questions, create_backup_file=False)
+        # Se la normalizzazione pre-caricamento modifica il DB,
+        # effettua sempre backup prima del salvataggio.
+        save_database(questions, create_backup_file=True)
     save_categories(categories_data)
 
     return categories_data, questions, None
@@ -82,7 +84,7 @@ def _resolve_primary_for_subdomain(categories_data, subdomain_value, provided_pr
     return None, "Sottodominio non trovato"
 
 
-def _persist_categories_and_questions(categories_data, questions, create_backup_file=False):
+def _persist_categories_and_questions(categories_data, questions, create_backup_file=True):
     """Salva categorie e domande, poi restituisce la struttura categorie aggiornata."""
     categories_data = normalize_categories_structure(categories_data, questions=questions)
 

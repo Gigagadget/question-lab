@@ -9,7 +9,14 @@ import os
 import logging
 from datetime import datetime
 
-from server.utils import get_database_backup_dir, load_database, save_database, create_backup
+from server.utils import (
+    get_database_backup_dir,
+    load_database,
+    save_database,
+    create_backup,
+    normalize_categories_structure,
+    save_categories,
+)
 
 # Crea il blueprint
 backups_bp = Blueprint('backups', __name__)
@@ -62,7 +69,18 @@ def restore_backup(backup_name):
         with open(backup_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
 
+        if not isinstance(data, list):
+            return jsonify({"error": "Formato backup non valido"}), 400
+
         if save_database(data, create_backup_file=False):
+            # Rigenera categories.json dal database ripristinato per evitare
+            # categorie/sottocategorie obsolete rimaste da stati successivi.
+            regenerated_categories = normalize_categories_structure({}, questions=data)
+            if not save_categories(regenerated_categories):
+                logger.error("Ripristino DB completato ma rigenerazione categories.json fallita")
+                return jsonify({
+                    "error": "Ripristino completato ma aggiornamento categorie fallito"
+                }), 500
             return jsonify({"message": f"Ripristinato da {backup_name}"}), 200
         else:
             return jsonify({"error": "Ripristino del backup fallito"}), 500
