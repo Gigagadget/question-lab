@@ -834,7 +834,6 @@ const CategoriesManager = (() => {
             html += `
                 <div class="cm-add-section">
                     <button class="cm-action-btn cm-action-add" data-action="add-sub" data-primary="${escapeHtml(primaryName)}">+ Aggiungi sottocategoria</button>
-                    <p class="cm-hint">💡 Suggerimento: puoi aggiungere sottocategorie anche direttamente dall'albero a sinistra</p>
                 </div>
             `;
         }

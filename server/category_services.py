@@ -350,9 +350,10 @@ def merge_categories(questions, category_type, source_value, target_value, prima
                 "error": f"Il sottodominio '{DEFAULT_SUBDOMAIN}' non può essere sorgente di merge"
             }
 
+        # ✅ Permetti merge anche di sottocategorie vuote, non fare controllo esistenza
+        # Le sottocategorie vuote non appaiono in normalize_categories_structure ma esistono logicamente
+        
         subs = categories_data.get('subdomains_by_primary', {}).get(primary_domain, [])
-        if source_value not in subs:
-            return {"success": False, "error": f"Sottodominio '{source_value}' non trovato in '{primary_domain}'"}
 
         # Se target non esiste, aggiungilo
         if target_value not in subs:
@@ -374,11 +375,12 @@ def merge_categories(questions, category_type, source_value, target_value, prima
                 updated_count += 1
                 updated_ids.append(q.get('id'))
 
-        # Rimuovi source dai subdomains
-        subs = categories_data['subdomains_by_primary'].get(primary_domain, [])
-        categories_data['subdomains_by_primary'][primary_domain] = [
-            s for s in subs if s != source_value
-        ]
+        # ✅ Rimuovi ESATTAMENTE la sottocategoria sorgente
+        if primary_domain in categories_data['subdomains_by_primary']:
+            categories_data['subdomains_by_primary'][primary_domain] = [
+                s for s in categories_data['subdomains_by_primary'][primary_domain] 
+                if s != source_value
+            ]
 
     else:
         return {"success": False, "error": f"Tipo categoria non valido: {category_type}"}
@@ -390,7 +392,8 @@ def merge_categories(questions, category_type, source_value, target_value, prima
         "updated_questions_list": updated_ids,
         "merged_from": source_value,
         "merged_to": target_value,
-        "warnings": warnings
+        "warnings": warnings,
+        "categories_data": categories_data
     }
 
 

@@ -399,7 +399,7 @@ def merge_endpoint():
         if error_response:
             return error_response
 
-        result = merge_categories(
+        merge_result = merge_categories(
             questions,
             category_type=category_type,
             source_value=source_value,
@@ -407,8 +407,11 @@ def merge_endpoint():
             primary_domain=primary_domain if primary_domain else None
         )
 
-        if not result.get('success'):
-            return jsonify({"error": result.get('error', 'Merge fallito')}), 400
+        if not merge_result.get('success'):
+            return jsonify({"error": merge_result.get('error', 'Merge fallito')}), 400
+
+        # ✅ Usa DIRETTAMENTE il categories_data restituito da merge_categories
+        categories_data = merge_result.get('categories_data', categories_data)
 
         # Salva le modifiche
         merged_categories, persist_error = _persist_categories_and_questions(
@@ -420,10 +423,10 @@ def merge_endpoint():
             return persist_error
 
         return jsonify({
-            "message": result.get('message'),
-            "updated_questions": result.get('updated_questions', 0),
+            "message": merge_result.get('message'),
+            "updated_questions": merge_result.get('updated_questions', 0),
             "categories": merged_categories,
-            "warnings": result.get('warnings', [])
+            "warnings": merge_result.get('warnings', [])
         }), 200
 
     except Exception as e:
