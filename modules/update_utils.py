@@ -275,7 +275,9 @@ def download_zip(repo_url: str, config: dict, tag: str = None, verbose: bool = T
 
     # Estrai owner e repo dall'URL
     repo_url = repo_url.rstrip("/")
-    parts = repo_url.rstrip(".git").split("/")
+    if repo_url.endswith(".git"):
+        repo_url = repo_url[:-4]
+    parts = repo_url.split("/")
     if len(parts) < 2:
         if verbose:
             print(f"  ❌ github_repo non valido: '{repo_url}'")
