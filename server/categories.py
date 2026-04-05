@@ -18,6 +18,8 @@ from server.utils import (
     DEFAULT_SUBDOMAIN,
 )
 
+from server.databases import get_active_categories_path
+
 from server.category_services import (
     preview_category_impact,
     merge_categories,
@@ -98,9 +100,24 @@ def _persist_categories_and_questions(categories_data, questions, create_backup_
     for q in questions:
         normalize_question_categories(q, categories_data)
 
+    # Backup categories.json prima di salvare (se richiesto)
+    if create_backup_file:
+        from pathlib import Path
+        import shutil
+        from datetime import datetime
+        active_cat_path = get_active_categories_path()
+        if active_cat_path and active_cat_path.exists():
+            backup_dir = active_cat_path.parent / "backup"
+            if not backup_dir.exists():
+                backup_dir.mkdir(exist_ok=True)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            backup_file = backup_dir / f"categories_{timestamp}.json"
+            shutil.copy2(str(active_cat_path), str(backup_file))
+            logger.info(f"Backup categorie creato: {backup_file}")
+
     if not save_categories(categories_data):
         return None, (jsonify({"error": "Salvataggio delle categorie fallito"}), 500)
-    if not save_database(questions, create_backup_file=create_backup_file):
+    if not save_database(questions, create_backup_file=False):
         return None, (jsonify({"error": "Salvataggio del database fallito"}), 500)
 
     merged = get_unique_categories(questions)

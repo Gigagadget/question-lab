@@ -1581,68 +1581,51 @@ async function showCategoriesModal() {
     const mergeContent = document.getElementById('cmMergeContent');
     const healthContent = document.getElementById('cmHealthContent');
 
-    // Tab 1: Manage (existing UI)
-    content.innerHTML = `
-        <h4>Domini Principali</h4>
-        <div id="primaryDomainsList">
-            ${categories.primary_domains.map(d => `
-                <div class="category-item">
-                    <span>${escapeHtml(d)}</span>
-                    <div class="category-actions">
-                        ${d !== 'indefinito' ? `
-                            <button onclick="window.renameCategory('primary_domain', '${escapeHtml(d)}')" class="small-btn" style="background: #e67e22;">✏️ Rinomina</button>
-                            <button onclick="window.removeCategory('primary_domain', '${escapeHtml(d)}')" class="danger small-btn">Rimuovi</button>
-                        ` : '<span style="color: #94a3b8; font-size: 0.8rem;">(predefinito)</span>'}
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-        <div class="add-category">
-            <input type="text" id="newPrimaryDomain" placeholder="Nuovo dominio principale" onkeypress="if(event.key==='Enter') window.addCategory('primary_domain')">
-            <button onclick="window.addCategory('primary_domain')" class="primary small-btn">Aggiungi</button>
-        </div>
+    // Tab 1: Manage - Tree + Detail UI
+    // Don't reset state if already opened (preserve expanded/selection)
+    if (!window._cmTreeStateInitialized) {
+        CategoriesManager.resetTreeState();
+        window._cmTreeStateInitialized = true;
+    }
 
-        <h4 style="margin-top: 20px;">Sottodomini per dominio</h4>
-        <div class="form-group">
-            <label>Dominio di riferimento</label>
-            <select id="modalPrimaryContext" style="width: 100%;">
-                ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}" ${d === categoriesModalPrimaryContext ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
-            </select>
-        </div>
-        <div id="subdomainsList">
-            ${subdomainsForContext.map(s => `
-                <div class="category-item">
-                    <span>${escapeHtml(s)}</span>
-                    <div class="category-actions">
-                        ${s !== DEFAULT_SUBDOMAIN ? `
-                            <button onclick="window.renameCategory('subdomain', '${escapeHtml(s)}', '${escapeHtml(categoriesModalPrimaryContext)}')" class="small-btn" style="background: #e67e22;">✏️ Rinomina</button>
-                            <button onclick="window.removeCategory('subdomain', '${escapeHtml(s)}', '${escapeHtml(categoriesModalPrimaryContext)}')" class="danger small-btn">Rimuovi</button>
-                        ` : '<span style="color: #94a3b8; font-size: 0.8rem;">(predefinito)</span>'}
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-        <div class="add-category">
-            <input type="text" id="newSubdomain" placeholder="Nuovo sottodominio per ${escapeHtml(categoriesModalPrimaryContext)}" onkeypress="if(event.key==='Enter') window.addCategory('subdomain')">
-            <button onclick="window.addCategory('subdomain')" class="primary small-btn">Aggiungi</button>
-        </div>
-    `;
+    // Ensure manage tab is active
+    content.classList.add('active');
+    mergeContent.classList.remove('active');
+    healthContent.classList.remove('active');
 
-    const primaryContextSelect = document.getElementById('modalPrimaryContext');
-    primaryContextSelect?.addEventListener('change', () => {
-        categoriesModalPrimaryContext = primaryContextSelect.value;
-        showCategoriesModal();
+    // Ensure manage tab button is active
+    document.querySelectorAll('.cm-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === 'manage');
+    });
+
+    const treeHtml = CategoriesManager.renderManageTree(categories, questions);
+    content.innerHTML = treeHtml;
+
+    // Show modal AFTER inserting content
+    modal.style.display = 'block';
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+        // Create a refresh callback that re-fetches and re-renders
+        const refreshCallback = async () => {
+            await refreshCategoriesFromServer();
+            await loadQuestions();
+            // Don't reset tree state - preserve expanded/selection
+            content.innerHTML = CategoriesManager.renderManageTree(categories, questions);
+            CategoriesManager.attachTreeHandlers(categories, refreshCallback);
+        };
+
+        CategoriesManager.attachTreeHandlers(categories, refreshCallback);
     });
 
     // Tab 2: Merge wizard
     mergeContent.innerHTML = CategoriesManager.renderMergeWizard(categories);
     CategoriesManager.attachMergeWizardHandlers(async (result) => {
-        // Dopo il merge, aggiorna tutto
         await refreshCategoriesFromServer();
         await loadQuestions();
-        showCategoriesModal(); // Ricarica tutti i tab
+        showCategoriesModal();
         setStatus(`Merge completato: ${result.updated_questions} domande aggiornate`);
-    });
+    }, categories);
 
     // Tab 3: Health dashboard
     try {
@@ -1659,7 +1642,10 @@ async function showCategoriesModal() {
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('cm-tab-btn')) {
         const tabName = e.target.dataset.tab;
-        
+        const content = document.getElementById('categoriesContent');
+        const mergeContent = document.getElementById('cmMergeContent');
+        const healthContent = document.getElementById('cmHealthContent');
+
         // Update active button
         document.querySelectorAll('.cm-tab-btn').forEach(btn => btn.classList.remove('active'));
         e.target.classList.add('active');
@@ -1689,12 +1675,21 @@ document.addEventListener('click', (e) => {
                 document.getElementById('cmHealthContent').innerHTML = `<p style="color: #c44536;">Errore: ${escapeHtml(err.message)}</p>`;
             });
         } else if (tabName === 'merge') {
-            document.getElementById('cmMergeContent').innerHTML = CategoriesManager.renderMergeWizard(categories);
+            mergeContent.innerHTML = CategoriesManager.renderMergeWizard(categories);
             CategoriesManager.attachMergeWizardHandlers(async (result) => {
                 await refreshCategoriesFromServer();
                 await loadQuestions();
                 showCategoriesModal();
                 setStatus(`Merge completato: ${result.updated_questions} domande aggiornate`);
+            }, categories);
+        } else if (tabName === 'manage') {
+            // Re-init tree when going back to manage tab from another tab
+            window._cmTreeStateInitialized = false;
+            CategoriesManager.resetTreeState();
+            content.innerHTML = CategoriesManager.renderManageTree(categories, questions);
+            CategoriesManager.attachTreeHandlers(categories, async () => {
+                await refreshCategoriesFromServer();
+                await loadQuestions();
             });
         }
     }
