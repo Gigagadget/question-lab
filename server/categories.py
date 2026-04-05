@@ -18,6 +18,12 @@ from server.utils import (
     DEFAULT_SUBDOMAIN,
 )
 
+from server.category_services import (
+    preview_category_impact,
+    merge_categories,
+    get_categories_health,
+)
+
 # Crea il blueprint
 categories_bp = Blueprint('categories', __name__)
 
@@ -307,4 +313,121 @@ def rename_category():
 
     except Exception as e:
         logger.error(f"Errore in POST /api/categories/rename: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@categories_bp.route('/api/categories/impact-preview', methods=['POST'])
+def impact_preview():
+    """
+    Anteprima dell'impatto di un'operazione su categorie (dry-run).
+    Non modifica alcun dato.
+    """
+    try:
+        data = request.get_json() or {}
+        operation = data.get('operation')  # rename | remove | merge
+        category_type = data.get('type')   # primary_domain | subdomain
+        value = (data.get('value') or '').strip()
+        new_value = (data.get('new_value') or '').strip()
+        primary_domain = (data.get('primary_domain') or '').strip()
+
+        if operation not in ('rename', 'remove', 'merge'):
+            return jsonify({"error": "Operazione non valida. Usa: rename, remove, merge"}), 400
+        if category_type not in ('primary_domain', 'subdomain'):
+            return jsonify({"error": "Tipo categoria non valido"}), 400
+        if not value:
+            return jsonify({"error": "Il valore della categoria è obbligatorio"}), 400
+
+        questions = load_database()
+        if questions is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
+
+        result = preview_category_impact(
+            questions,
+            operation=operation,
+            category_type=category_type,
+            value=value,
+            new_value=new_value,
+            primary_domain=primary_domain
+        )
+
+        if "error" in result:
+            return jsonify({"error": result["error"]}), 400
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        logger.error(f"Errore in POST /api/categories/impact-preview: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@categories_bp.route('/api/categories/merge', methods=['POST'])
+def merge_endpoint():
+    """
+    Unisce una categoria in un'altra.
+    Supporta merge di primary_domain e subdomain.
+    """
+    try:
+        data = request.get_json() or {}
+        category_type = data.get('type')  # primary_domain | subdomain
+        source_value = (data.get('source_value') or '').strip()
+        target_value = (data.get('target_value') or '').strip()
+        primary_domain = (data.get('primary_domain') or '').strip()
+
+        if category_type not in ('primary_domain', 'subdomain'):
+            return jsonify({"error": "Tipo categoria non valido"}), 400
+        if not source_value or not target_value:
+            return jsonify({"error": "source_value e target_value sono obbligatori"}), 400
+
+        categories_data, questions, error_response = _get_categories_and_questions()
+        if error_response:
+            return error_response
+
+        result = merge_categories(
+            questions,
+            category_type=category_type,
+            source_value=source_value,
+            target_value=target_value,
+            primary_domain=primary_domain if primary_domain else None
+        )
+
+        if not result.get('success'):
+            return jsonify({"error": result.get('error', 'Merge fallito')}), 400
+
+        # Salva le modifiche
+        merged_categories, persist_error = _persist_categories_and_questions(
+            categories_data,
+            questions,
+            create_backup_file=True
+        )
+        if persist_error:
+            return persist_error
+
+        return jsonify({
+            "message": result.get('message'),
+            "updated_questions": result.get('updated_questions', 0),
+            "categories": merged_categories,
+            "warnings": result.get('warnings', [])
+        }), 200
+
+    except Exception as e:
+        logger.error(f"Errore in POST /api/categories/merge: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@categories_bp.route('/api/categories/health', methods=['GET'])
+def health_endpoint():
+    """
+    Dashboard integrità tassonomia categorie.
+    Restituisce metriche, anomalie e suggerimenti.
+    """
+    try:
+        questions = load_database()
+        if questions is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
+
+        health = get_categories_health(questions)
+        return jsonify(health), 200
+
+    except Exception as e:
+        logger.error(f"Errore in GET /api/categories/health: {e}")
         return jsonify({"error": str(e)}), 500

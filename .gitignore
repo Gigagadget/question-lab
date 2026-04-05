@@ -78,3 +78,5 @@ $RECYCLE.BIN/
 
 # Documentazione locale
 istruzioni.txt
+test_categories_features.py
+CATEGORIES_ADVANCED_FEATURES.md

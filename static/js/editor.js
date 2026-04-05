@@ -1575,10 +1575,13 @@ async function showCategoriesModal() {
     }
 
     const subdomainsForContext = getSubdomainsForPrimary(categoriesModalPrimaryContext);
-    
+
     const modal = document.getElementById('categoriesModal');
     const content = document.getElementById('categoriesContent');
-    
+    const mergeContent = document.getElementById('cmMergeContent');
+    const healthContent = document.getElementById('cmHealthContent');
+
+    // Tab 1: Manage (existing UI)
     content.innerHTML = `
         <h4>Domini Principali</h4>
         <div id="primaryDomainsList">
@@ -1598,7 +1601,7 @@ async function showCategoriesModal() {
             <input type="text" id="newPrimaryDomain" placeholder="Nuovo dominio principale" onkeypress="if(event.key==='Enter') window.addCategory('primary_domain')">
             <button onclick="window.addCategory('primary_domain')" class="primary small-btn">Aggiungi</button>
         </div>
-        
+
         <h4 style="margin-top: 20px;">Sottodomini per dominio</h4>
         <div class="form-group">
             <label>Dominio di riferimento</label>
@@ -1630,9 +1633,72 @@ async function showCategoriesModal() {
         categoriesModalPrimaryContext = primaryContextSelect.value;
         showCategoriesModal();
     });
-    
+
+    // Tab 2: Merge wizard
+    mergeContent.innerHTML = CategoriesManager.renderMergeWizard(categories);
+    CategoriesManager.attachMergeWizardHandlers(async (result) => {
+        // Dopo il merge, aggiorna tutto
+        await refreshCategoriesFromServer();
+        await loadQuestions();
+        showCategoriesModal(); // Ricarica tutti i tab
+        setStatus(`Merge completato: ${result.updated_questions} domande aggiornate`);
+    });
+
+    // Tab 3: Health dashboard
+    try {
+        const health = await CategoriesManager.fetchHealth();
+        healthContent.innerHTML = CategoriesManager.renderHealthDashboard(health);
+    } catch (err) {
+        healthContent.innerHTML = `<p style="color: #c44536; text-align: center;">Errore nel caricamento health: ${escapeHtml(err.message)}</p>`;
+    }
+
     modal.style.display = 'block';
 }
+
+// Tab switching
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('cm-tab-btn')) {
+        const tabName = e.target.dataset.tab;
+        
+        // Update active button
+        document.querySelectorAll('.cm-tab-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        
+        // Update active content
+        document.querySelectorAll('.cm-tab-content').forEach(content => content.classList.remove('active'));
+        
+        let targetId;
+        if (tabName === 'manage') {
+            targetId = 'categoriesContent';
+        } else if (tabName === 'merge') {
+            targetId = 'cmMergeContent';
+        } else if (tabName === 'health') {
+            targetId = 'cmHealthContent';
+        }
+        
+        const targetContent = document.getElementById(targetId);
+        if (targetContent) {
+            targetContent.classList.add('active');
+        }
+
+        // Refresh content if needed
+        if (tabName === 'health') {
+            CategoriesManager.fetchHealth().then(health => {
+                document.getElementById('cmHealthContent').innerHTML = CategoriesManager.renderHealthDashboard(health);
+            }).catch(err => {
+                document.getElementById('cmHealthContent').innerHTML = `<p style="color: #c44536;">Errore: ${escapeHtml(err.message)}</p>`;
+            });
+        } else if (tabName === 'merge') {
+            document.getElementById('cmMergeContent').innerHTML = CategoriesManager.renderMergeWizard(categories);
+            CategoriesManager.attachMergeWizardHandlers(async (result) => {
+                await refreshCategoriesFromServer();
+                await loadQuestions();
+                showCategoriesModal();
+                setStatus(`Merge completato: ${result.updated_questions} domande aggiornate`);
+            });
+        }
+    }
+});
 
 async function addCategory(type) {
     const input = document.getElementById(type === 'primary_domain' ? 'newPrimaryDomain' : 'newSubdomain');
