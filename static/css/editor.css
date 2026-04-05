@@ -127,3 +127,89 @@
     min-width: 0;
     white-space: nowrap;
 }
+
+/* ==================== NORMALIZATION WARNING UI ==================== */
+
+.normalization-alert {
+    margin: 10px 0 14px;
+    border: 1px solid #f59e0b;
+    background: #fff7ed;
+    color: #7c2d12;
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: 0 2px 8px rgba(124, 45, 18, 0.12);
+}
+
+.normalization-alert-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.normalization-alert-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.normalization-alert-text {
+    flex: 1;
+    min-width: 220px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.normalization-alert-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.normalization-alert-actions .small-btn {
+    background: #b45309;
+}
+
+.normalization-alert-actions .small-btn:hover {
+    background: #92400e;
+}
+
+.normalization-alert-details {
+    margin-top: 10px;
+    border-top: 1px dashed #f59e0b;
+    padding-top: 10px;
+    font-size: 0.8rem;
+    color: #78350f;
+    max-height: 180px;
+    overflow: auto;
+}
+
+.normalization-alert-details ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.normalization-alert-details li {
+    margin-bottom: 6px;
+}
+
+.normalization-toast {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 2000;
+    background: #b91c1c;
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    font-size: 0.9rem;
+    max-width: 380px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: opacity .2s ease, transform .2s ease;
+}
+
+.normalization-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}

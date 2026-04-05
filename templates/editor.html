@@ -38,6 +38,18 @@
             <div class="auto-save-indicator" id="autoSaveIndicator">● Auto</div>
         </div>
 
+        <div id="normalizationAlert" class="normalization-alert" style="display: none;">
+            <div class="normalization-alert-main">
+                <span class="normalization-alert-icon">⚠️</span>
+                <div class="normalization-alert-text" id="normalizationAlertText"></div>
+                <div class="normalization-alert-actions">
+                    <button id="normalizationAlertDetailsBtn" class="small-btn" type="button">Dettagli</button>
+                    <button id="normalizationAlertCloseBtn" class="small-btn" type="button">Chiudi</button>
+                </div>
+            </div>
+            <div id="normalizationAlertDetails" class="normalization-alert-details" style="display: none;"></div>
+        </div>
+
         <div class="editor-layout">
             <!-- Left panel -->
             <div class="list-panel">
@@ -160,6 +172,8 @@
             </div>
         </div>
     </div>
+
+    <div id="normalizationToast" class="normalization-toast" aria-live="assertive"></div>
 
     <script src="/static/js/editor.js"></script>
     <script src="/static/js/theme.js"></script>

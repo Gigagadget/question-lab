@@ -55,6 +55,12 @@ const questionCountSpan = document.getElementById('questionCount');
 const searchInput = document.getElementById('searchInput');
 const autoSaveIndicator = document.getElementById('autoSaveIndicator');
 const toggleDuplicatesBtn = document.getElementById('toggleDuplicatesBtn');
+const normalizationAlertEl = document.getElementById('normalizationAlert');
+const normalizationAlertTextEl = document.getElementById('normalizationAlertText');
+const normalizationAlertDetailsEl = document.getElementById('normalizationAlertDetails');
+const normalizationAlertDetailsBtn = document.getElementById('normalizationAlertDetailsBtn');
+const normalizationAlertCloseBtn = document.getElementById('normalizationAlertCloseBtn');
+const normalizationToastEl = document.getElementById('normalizationToast');
 
 // Filter elements
 let primaryDomainFilter = null;
@@ -63,6 +69,39 @@ let filterNoAnswers = null;
 let filterWithAnswers = null;
 let filterNoCorrect = null;
 let categoriesModalPrimaryContext = '';
+let normalizationToastTimeout = null;
+
+function setupNormalizationAlertUi() {
+    if (normalizationAlertCloseBtn) {
+        normalizationAlertCloseBtn.addEventListener('click', () => {
+            if (normalizationAlertEl) normalizationAlertEl.style.display = 'none';
+            if (normalizationAlertDetailsEl) normalizationAlertDetailsEl.style.display = 'none';
+            if (normalizationAlertDetailsBtn) normalizationAlertDetailsBtn.textContent = 'Dettagli';
+        });
+    }
+
+    if (normalizationAlertDetailsBtn) {
+        normalizationAlertDetailsBtn.addEventListener('click', () => {
+            if (!normalizationAlertDetailsEl) return;
+            const isOpen = normalizationAlertDetailsEl.style.display !== 'none';
+            normalizationAlertDetailsEl.style.display = isOpen ? 'none' : 'block';
+            normalizationAlertDetailsBtn.textContent = isOpen ? 'Dettagli' : 'Nascondi';
+        });
+    }
+}
+
+function showNormalizationToast(message) {
+    if (!normalizationToastEl) return;
+    normalizationToastEl.textContent = message;
+    normalizationToastEl.classList.add('show');
+
+    if (normalizationToastTimeout) clearTimeout(normalizationToastTimeout);
+    normalizationToastTimeout = setTimeout(() => {
+        normalizationToastEl.classList.remove('show');
+    }, 3200);
+}
+
+setupNormalizationAlertUi();
 
 function sortWithDefaultFirst(values, defaultValue = DEFAULT_SUBDOMAIN) {
     const uniq = [...new Set((values || []).filter(v => typeof v === 'string' && v.trim() !== '').map(v => v.trim()))]
@@ -227,7 +266,40 @@ function notifyCategoryNormalizationWarning(warnings) {
     lastNormalizationWarningAt = now;
 
     const details = examples.length ? ` (es: ${examples.join(', ')})` : '';
-    setStatus(`⚠️ ${info.count} domande riallineate a categorie valide${details}`, true);
+    const message = `⚠️ ${info.count} domande riallineate a categorie valide${details}`;
+
+    if (normalizationAlertEl && normalizationAlertTextEl) {
+        normalizationAlertTextEl.textContent = message;
+        normalizationAlertEl.style.display = 'block';
+    }
+
+    const changes = Array.isArray(info.changes) ? info.changes : [];
+    if (normalizationAlertDetailsEl && normalizationAlertDetailsBtn) {
+        if (changes.length > 0) {
+            normalizationAlertDetailsBtn.style.display = 'inline-block';
+            normalizationAlertDetailsEl.innerHTML = `
+                <ul>
+                    ${changes.map(c => {
+                        const id = escapeHtml(String(c?.id || 'sconosciuto'));
+                        const beforePrimary = escapeHtml(String(c?.before?.primary_domain ?? '')) || '∅';
+                        const beforeSub = escapeHtml(String(c?.before?.subdomain ?? '')) || '∅';
+                        const afterPrimary = escapeHtml(String(c?.after?.primary_domain ?? '')) || '∅';
+                        const afterSub = escapeHtml(String(c?.after?.subdomain ?? '')) || '∅';
+                        return `<li><strong>${id}</strong>: ${beforePrimary} / ${beforeSub} → ${afterPrimary} / ${afterSub}</li>`;
+                    }).join('')}
+                </ul>
+            `;
+            normalizationAlertDetailsEl.style.display = 'none';
+            normalizationAlertDetailsBtn.textContent = 'Dettagli';
+        } else {
+            normalizationAlertDetailsBtn.style.display = 'none';
+            normalizationAlertDetailsEl.style.display = 'none';
+            normalizationAlertDetailsEl.innerHTML = '';
+        }
+    }
+
+    showNormalizationToast(message);
+    setStatus(message, true);
     return true;
 }
 
