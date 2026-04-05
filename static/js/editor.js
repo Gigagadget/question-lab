@@ -1594,7 +1594,10 @@ async function removeCategory(type, value, primaryDomain = '') {
             })
         });
         
-        if (!response.ok) throw new Error('Rimozione categoria fallita');
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.error || 'Rimozione categoria fallita');
+        }
         
         const result = await response.json();
         categories = normalizeCategoriesData(result.categories);
@@ -1608,7 +1611,7 @@ async function removeCategory(type, value, primaryDomain = '') {
         setStatus(`Categoria "${value}" rimossa`);
     } catch (err) {
         console.error(err);
-        setStatus('Errore nella rimozione della categoria', true);
+        setStatus(err.message || 'Errore nella rimozione della categoria', true);
     }
 }
 
