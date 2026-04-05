@@ -1606,16 +1606,16 @@ async function showCategoriesModal() {
 
     // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
-        // Create a refresh callback that re-fetches and re-renders
-        const refreshCallback = async () => {
+        // Simple refresh: re-fetch and re-render from scratch
+        const refreshManageTab = async () => {
             await refreshCategoriesFromServer();
             await loadQuestions();
-            // Don't reset tree state - preserve expanded/selection
+            CategoriesManager.resetTreeState();
             content.innerHTML = CategoriesManager.renderManageTree(categories, questions);
-            CategoriesManager.attachTreeHandlers(categories, refreshCallback);
+            CategoriesManager.attachTreeHandlers(categories, refreshManageTab);
         };
 
-        CategoriesManager.attachTreeHandlers(categories, refreshCallback);
+        CategoriesManager.attachTreeHandlers(categories, refreshManageTab);
     });
 
     // Tab 2: Merge wizard
@@ -1683,14 +1683,21 @@ document.addEventListener('click', (e) => {
                 setStatus(`Merge completato: ${result.updated_questions} domande aggiornate`);
             }, categories);
         } else if (tabName === 'manage') {
-            // Re-init tree when going back to manage tab from another tab
             window._cmTreeStateInitialized = false;
-            CategoriesManager.resetTreeState();
-            content.innerHTML = CategoriesManager.renderManageTree(categories, questions);
-            CategoriesManager.attachTreeHandlers(categories, async () => {
+            (async () => {
                 await refreshCategoriesFromServer();
                 await loadQuestions();
-            });
+                CategoriesManager.resetTreeState();
+                content.innerHTML = CategoriesManager.renderManageTree(categories, questions);
+                const refreshManageTab = async () => {
+                    await refreshCategoriesFromServer();
+                    await loadQuestions();
+                    CategoriesManager.resetTreeState();
+                    content.innerHTML = CategoriesManager.renderManageTree(categories, questions);
+                    CategoriesManager.attachTreeHandlers(categories, refreshManageTab);
+                };
+                CategoriesManager.attachTreeHandlers(categories, refreshManageTab);
+            })();
         }
     }
 });

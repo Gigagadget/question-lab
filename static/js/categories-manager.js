@@ -999,13 +999,13 @@ const CategoriesManager = (() => {
                     if (action === 'rename-primary' && value) {
                         const newName = prompt('Nuovo nome per la categoria:', value);
                         if (newName && newName.trim() && newName.trim() !== value) {
-                            await handleRename('primary_domain', value, newName.trim());
-                            if (onRefresh) await onRefresh();
+                            const result = await handleRename('primary_domain', value, newName.trim());
+                            if (result && onRefresh) await onRefresh();
                         }
                     } else if (action === 'remove-primary' && value) {
                         if (confirm(`Rimuovere "${value}"? Le domande passeranno a "indefinito".`)) {
-                            await handleRemove('primary_domain', value);
-                            if (onRefresh) await onRefresh();
+                            const result = await handleRemove('primary_domain', value);
+                            if (result && onRefresh) await onRefresh();
                         }
                     } else if (action === 'merge-primary' && value) {
                         const mergeTab = document.querySelector('.cm-tab-btn[data-tab="merge"]');
@@ -1013,13 +1013,13 @@ const CategoriesManager = (() => {
                     } else if (action === 'rename-sub' && value && primary) {
                         const newName = prompt('Nuovo nome per la sottocategoria:', value);
                         if (newName && newName.trim() && newName.trim() !== value) {
-                            await handleRename('subdomain', value, newName.trim(), primary);
-                            if (onRefresh) await onRefresh();
+                            const result = await handleRename('subdomain', value, newName.trim(), primary);
+                            if (result && onRefresh) await onRefresh();
                         }
                     } else if (action === 'remove-sub' && value && primary) {
                         if (confirm(`Rimuovere sottocategoria "${value}" da "${primary}"?`)) {
-                            await handleRemove('subdomain', value, primary);
-                            if (onRefresh) await onRefresh();
+                            const result = await handleRemove('subdomain', value, primary);
+                            if (result && onRefresh) await onRefresh();
                         }
                     } else if (action === 'merge-sub' && value && primary) {
                         treeState.selectedNode = null;
@@ -1258,30 +1258,14 @@ const CategoriesManager = (() => {
     }
 
     function refreshManageTree(categories, onRefresh) {
-        // Remove ALL existing event listeners first to avoid duplicates
-        const treeContent = document.getElementById('cmTreeContent');
-        const detailPanel = document.getElementById('cmDetailPanel');
-        const searchInput = document.getElementById('cmTreeSearch');
-        
-        if (treeContent) treeContent.replaceWith(treeContent.cloneNode(true));
-        if (detailPanel) detailPanel.replaceWith(detailPanel.cloneNode(true));
-        if (searchInput) searchInput.replaceWith(searchInput.cloneNode(true));
-
-        // Save current tree state
-        const expandedCopy = new Set(treeState.expandedPrimaries);
-        const selectedCopy = treeState.selectedNode ? {...treeState.selectedNode} : null;
-
-        // Single render only
         const content = document.getElementById('categoriesContent');
         if (content) {
             content.innerHTML = renderManageTree(categories, window.questions || []);
-            // Restore state BEFORE final render
-            treeState.expandedPrimaries = expandedCopy;
-            treeState.selectedNode = selectedCopy;
-            content.innerHTML = renderManageTree(categories, window.questions || []);
-            
-            // Attach handlers ONCE
             attachTreeHandlers(categories, onRefresh);
+        }
+        const detailPanel = document.getElementById('cmDetailPanel');
+        if (detailPanel) {
+            detailPanel.innerHTML = renderDetailPanel(categories);
         }
     }
 
