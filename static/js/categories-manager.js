@@ -1283,6 +1283,7 @@ const CategoriesManager = (() => {
         attachTreeHandlers,
         resetTreeState,
         refreshManageTree,
+        getTreeState: () => treeState,
         getHealthData: () => currentHealthData
     };
 })();

@@ -1606,11 +1606,25 @@ async function showCategoriesModal() {
 
     // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
-        // Simple refresh: re-fetch and re-render from scratch
         const refreshManageTab = async () => {
+            // 1. Salva stato PRIMA di qualsiasi modifica
+            const ts = CategoriesManager.getTreeState();
+            const expandedBefore = new Set(ts.expandedPrimaries);
+            const selectedBefore = ts.selectedNode ? { ...ts.selectedNode } : null;
+
+            // 2. Fetch dati freschi
             await refreshCategoriesFromServer();
             await loadQuestions();
+
+            // 3. Reset stato
             CategoriesManager.resetTreeState();
+
+            // 4. Ripristina stato salvato
+            const newTs = CategoriesManager.getTreeState();
+            expandedBefore.forEach(p => newTs.expandedPrimaries.add(p));
+            if (selectedBefore) newTs.selectedNode = selectedBefore;
+
+            // 5. Renderizza UNA sola volta con stato ripristinato
             content.innerHTML = CategoriesManager.renderManageTree(categories, questions);
             CategoriesManager.attachTreeHandlers(categories, refreshManageTab);
         };
@@ -1690,9 +1704,19 @@ document.addEventListener('click', (e) => {
                 CategoriesManager.resetTreeState();
                 content.innerHTML = CategoriesManager.renderManageTree(categories, questions);
                 const refreshManageTab = async () => {
+                    const ts = CategoriesManager.getTreeState();
+                    const expandedBefore = new Set(ts.expandedPrimaries);
+                    const selectedBefore = ts.selectedNode ? { ...ts.selectedNode } : null;
+
                     await refreshCategoriesFromServer();
                     await loadQuestions();
+
                     CategoriesManager.resetTreeState();
+
+                    const newTs = CategoriesManager.getTreeState();
+                    expandedBefore.forEach(p => newTs.expandedPrimaries.add(p));
+                    if (selectedBefore) newTs.selectedNode = selectedBefore;
+
                     content.innerHTML = CategoriesManager.renderManageTree(categories, questions);
                     CategoriesManager.attachTreeHandlers(categories, refreshManageTab);
                 };
