@@ -51,13 +51,16 @@ def start_quiz():
         data = request.get_json()
         categories = data.get('categories', ['all'])
         num_questions = data.get('num_questions', 10)
+        subdomains_by_primary = data.get('subdomains_by_primary', {})
 
         # Gestisci il caso "Tutte"
         if num_questions == -1 or num_questions == 'all':
             num_questions = -1
 
         questions, available_count, used_count = quiz_manager.get_questions_for_quiz(
-            categories, num_questions
+            categories,
+            num_questions,
+            subdomains_by_primary=subdomains_by_primary
         )
 
         if not questions:
@@ -74,7 +77,8 @@ def start_quiz():
                 'id': q.get('id'),
                 'raw_text': q.get('raw_text'),
                 'answers': q.get('answers', {}),
-                'primary_domain': q.get('primary_domain', 'indefinito')
+                'primary_domain': q.get('primary_domain', 'indefinito'),
+                'subdomain': q.get('subdomain', 'indefinito')
             }
             quiz_questions.append(quiz_q)
 
@@ -83,7 +87,8 @@ def start_quiz():
             "total_questions": len(quiz_questions),
             "available_count": available_count,
             "used_count": used_count,
-            "categories_selected": categories
+            "categories_selected": categories,
+            "subdomains_by_primary_selected": subdomains_by_primary
         }), 200
 
     except Exception as e:

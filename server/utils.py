@@ -15,6 +15,218 @@ from server.databases import get_active_database_path, get_active_categories_pat
 # Configure logging
 logger = logging.getLogger(__name__)
 
+DEFAULT_PRIMARY_DOMAIN = "indefinito"
+DEFAULT_SUBDOMAIN = "indefinito"
+
+
+def _normalize_category_value(value, fallback=""):
+    """Normalizza un valore categoria/sottocategoria."""
+    if value is None:
+        return fallback
+    value = str(value).strip()
+    return value if value else fallback
+
+
+def _sort_with_default_first(values):
+    """Ordina alfabeticamente mantenendo 'indefinito' in testa."""
+    unique = sorted(set(values), key=lambda v: v.lower())
+    if DEFAULT_SUBDOMAIN in unique:
+        unique.remove(DEFAULT_SUBDOMAIN)
+        unique.insert(0, DEFAULT_SUBDOMAIN)
+    return unique
+
+
+def default_categories_v2():
+    """Struttura categorie di default (schema relazionale v2)."""
+    return {
+        "schema_version": 2,
+        "primary_domains": [DEFAULT_PRIMARY_DOMAIN],
+        "subdomains_by_primary": {
+            DEFAULT_PRIMARY_DOMAIN: [DEFAULT_SUBDOMAIN]
+        },
+        # Campo derivato per compatibilità frontend legacy
+        "subdomains": [DEFAULT_SUBDOMAIN]
+    }
+
+
+def _flatten_subdomains(subdomains_by_primary):
+    all_subs = set()
+    for subs in subdomains_by_primary.values():
+        for s in subs:
+            all_subs.add(s)
+    if not all_subs:
+        all_subs.add(DEFAULT_SUBDOMAIN)
+    return _sort_with_default_first(all_subs)
+
+
+def normalize_categories_structure(categories_data, questions=None):
+    """
+    Normalizza la struttura categorie in schema v2.
+    - Garantisce primary_domains
+    - Garantisce subdomains_by_primary
+    - Mantiene la regola fissa: indefinito -> [indefinito]
+    - Se fornite domande, popola/integra le relazioni a partire dal database
+    """
+    categories_data = categories_data if isinstance(categories_data, dict) else {}
+    normalized = default_categories_v2()
+
+    # Primary domains
+    raw_primary = categories_data.get("primary_domains", [])
+    primary_domains = set()
+    if isinstance(raw_primary, list):
+        for p in raw_primary:
+            p_norm = _normalize_category_value(p)
+            if p_norm:
+                primary_domains.add(p_norm)
+    if not primary_domains:
+        primary_domains.add(DEFAULT_PRIMARY_DOMAIN)
+    primary_domains.add(DEFAULT_PRIMARY_DOMAIN)
+
+    # Subdomains map (v2)
+    subdomains_by_primary = {}
+    raw_map = categories_data.get("subdomains_by_primary", {})
+    has_relational_map = isinstance(raw_map, dict) and len(raw_map) > 0
+    if isinstance(raw_map, dict):
+        for raw_primary_key, raw_subs in raw_map.items():
+            p_norm = _normalize_category_value(raw_primary_key)
+            if not p_norm:
+                continue
+            primary_domains.add(p_norm)
+            valid_subs = set()
+            if isinstance(raw_subs, list):
+                for s in raw_subs:
+                    s_norm = _normalize_category_value(s)
+                    if s_norm:
+                        valid_subs.add(s_norm)
+            if not valid_subs:
+                valid_subs.add(DEFAULT_SUBDOMAIN)
+            subdomains_by_primary[p_norm] = valid_subs
+
+    # Compatibilità legacy: subdomains globale
+    raw_legacy_subs = categories_data.get("subdomains", [])
+    legacy_subs = set()
+    if isinstance(raw_legacy_subs, list):
+        for s in raw_legacy_subs:
+            s_norm = _normalize_category_value(s)
+            if s_norm:
+                legacy_subs.add(s_norm)
+    if not legacy_subs:
+        legacy_subs.add(DEFAULT_SUBDOMAIN)
+
+    # Assicura che ogni primary abbia almeno una struttura base
+    for p in list(primary_domains):
+        if p == DEFAULT_PRIMARY_DOMAIN:
+            # Regola fissa
+            subdomains_by_primary[p] = {DEFAULT_SUBDOMAIN}
+            continue
+
+        if p not in subdomains_by_primary:
+            # Se il file è già relazionale, manteniamo fallback legacy.
+            # Se è legacy (liste piatte), evitiamo il cross-product primary<->subdomain:
+            # la relazione verrà costruita principalmente dalle domande.
+            subdomains_by_primary[p] = set(legacy_subs) if has_relational_map else set()
+        if not subdomains_by_primary[p]:
+            # Fallback minimo: sarà eventualmente raffinato dopo integrazione domande
+            subdomains_by_primary[p].add(DEFAULT_SUBDOMAIN)
+
+    # Integra dalle domande presenti nel database
+    if isinstance(questions, list):
+        for q in questions:
+            if not isinstance(q, dict):
+                continue
+            p = _normalize_category_value(q.get("primary_domain"), DEFAULT_PRIMARY_DOMAIN)
+            s = _normalize_category_value(q.get("subdomain"), DEFAULT_SUBDOMAIN)
+            if not p:
+                p = DEFAULT_PRIMARY_DOMAIN
+            if p == DEFAULT_PRIMARY_DOMAIN:
+                s = DEFAULT_SUBDOMAIN
+
+            primary_domains.add(p)
+            if p not in subdomains_by_primary:
+                subdomains_by_primary[p] = {DEFAULT_SUBDOMAIN}
+            if p == DEFAULT_PRIMARY_DOMAIN:
+                subdomains_by_primary[p] = {DEFAULT_SUBDOMAIN}
+            else:
+                subdomains_by_primary[p].add(s if s else DEFAULT_SUBDOMAIN)
+
+    # Finalizzazione strutture
+    ordered_primary = _sort_with_default_first(primary_domains)
+    final_map = {}
+    for p in ordered_primary:
+        if p == DEFAULT_PRIMARY_DOMAIN:
+            final_map[p] = [DEFAULT_SUBDOMAIN]
+        else:
+            subs = subdomains_by_primary.get(p, {DEFAULT_SUBDOMAIN})
+            if not subs:
+                subs = {DEFAULT_SUBDOMAIN}
+            final_map[p] = _sort_with_default_first(subs)
+
+    normalized["schema_version"] = 2
+    normalized["primary_domains"] = ordered_primary
+    normalized["subdomains_by_primary"] = final_map
+    normalized["subdomains"] = _flatten_subdomains(final_map)
+    return normalized
+
+
+def get_subdomains_for_primary(categories_data, primary_domain):
+    """Restituisce i sottodomini validi per un dominio principale."""
+    categories_data = normalize_categories_structure(categories_data)
+    primary_domain = _normalize_category_value(primary_domain, DEFAULT_PRIMARY_DOMAIN)
+    if primary_domain not in categories_data["subdomains_by_primary"]:
+        primary_domain = DEFAULT_PRIMARY_DOMAIN
+    return categories_data["subdomains_by_primary"].get(primary_domain, [DEFAULT_SUBDOMAIN])
+
+
+def is_valid_subdomain_for_primary(categories_data, primary_domain, subdomain):
+    """Verifica se un sottodominio è valido per il dominio principale indicato."""
+    allowed = get_subdomains_for_primary(categories_data, primary_domain)
+    return _normalize_category_value(subdomain, DEFAULT_SUBDOMAIN) in allowed
+
+
+def normalize_question_categories(question, categories_data):
+    """
+    Normalizza primary_domain/subdomain di una domanda rispetto alle categorie.
+    Restituisce True se ha effettuato modifiche.
+    """
+    if not isinstance(question, dict):
+        return False
+
+    categories_data = normalize_categories_structure(categories_data)
+    changed = False
+
+    primary = _normalize_category_value(question.get("primary_domain"), DEFAULT_PRIMARY_DOMAIN)
+    if primary not in categories_data["primary_domains"]:
+        primary = DEFAULT_PRIMARY_DOMAIN
+        changed = True
+
+    allowed_subs = categories_data["subdomains_by_primary"].get(primary, [DEFAULT_SUBDOMAIN])
+    subdomain = _normalize_category_value(question.get("subdomain"), DEFAULT_SUBDOMAIN)
+    if subdomain not in allowed_subs:
+        subdomain = DEFAULT_SUBDOMAIN if DEFAULT_SUBDOMAIN in allowed_subs else allowed_subs[0]
+        changed = True
+
+    # Regola fissa
+    if primary == DEFAULT_PRIMARY_DOMAIN and subdomain != DEFAULT_SUBDOMAIN:
+        subdomain = DEFAULT_SUBDOMAIN
+        changed = True
+
+    if question.get("primary_domain") != primary:
+        question["primary_domain"] = primary
+        changed = True
+
+    if question.get("subdomain") != subdomain:
+        question["subdomain"] = subdomain
+        changed = True
+
+    return changed
+
+
+def categories_changed(old_categories, new_categories):
+    """Confronto robusto tra due strutture categorie normalizzate."""
+    old_norm = normalize_categories_structure(old_categories)
+    new_norm = normalize_categories_structure(new_categories)
+    return old_norm != new_norm
+
 
 def get_database_backup_dir():
     """Ottiene la directory di backup specifica per il database corrente"""
@@ -99,41 +311,47 @@ def save_database(data, create_backup_file=True):
 
 def load_categories():
     """Carica le categorie da file separato (usa database attivo se disponibile)"""
-    default_categories = {
-        "primary_domains": ["indefinito"],
-        "subdomains": ["indefinito"]
-    }
-
     active_categories_path = get_active_categories_path()
+    active_db_path = get_active_database_path()
 
-    if not active_categories_path or not active_categories_path.exists():
+    if not active_categories_path or not active_db_path or not active_db_path.exists():
         return None
 
     categories_path = str(active_categories_path)
+    db_questions = load_database() or []
 
     if not os.path.exists(categories_path):
-        return default_categories
+        normalized = normalize_categories_structure({}, questions=db_questions)
+        save_categories(normalized)
+        return normalized
 
     try:
         with open(categories_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except:
-        return default_categories
+            raw = json.load(f)
+    except Exception:
+        raw = {}
+
+    normalized = normalize_categories_structure(raw, questions=db_questions)
+    if categories_changed(raw, normalized):
+        save_categories(normalized)
+    return normalized
 
 
 def save_categories(categories):
     """Salva le categorie su file separato (usa database attivo se disponibile)"""
     active_categories_path = get_active_categories_path()
+    active_db_path = get_active_database_path()
 
-    if not active_categories_path or not active_categories_path.exists():
+    if not active_categories_path or not active_db_path or not active_db_path.exists():
         logger.warning("Tentativo di salvataggio categorie senza database attivo")
         return False
 
     categories_path = str(active_categories_path)
+    normalized = normalize_categories_structure(categories)
 
     try:
         with open(categories_path, 'w', encoding='utf-8') as f:
-            json.dump(categories, f, indent=2, ensure_ascii=False)
+            json.dump(normalized, f, indent=2, ensure_ascii=False)
         return True
     except Exception as e:
         logger.error(f"Errore nel salvataggio delle categorie: {e}")
@@ -141,24 +359,17 @@ def save_categories(categories):
 
 
 def get_unique_categories(questions):
-    """Estrae i valori unici di primary_domain e subdomain dalle domande E dal file categorie"""
+    """
+    Sincronizza le categorie con le domande e restituisce la struttura normalizzata.
+    """
     saved_categories = load_categories()
-    primary_domains = set(saved_categories.get("primary_domains", []))
-    subdomains = set(saved_categories.get("subdomains", []))
+    if saved_categories is None:
+        # Nessun DB attivo
+        return None
 
-    for q in questions:
-        if q.get('primary_domain') and q['primary_domain'].strip():
-            primary_domains.add(q['primary_domain'].strip())
-        if q.get('subdomain') and q['subdomain'].strip():
-            subdomains.add(q['subdomain'].strip())
-
-    merged_categories = {
-        "primary_domains": sorted(list(primary_domains)),
-        "subdomains": sorted(list(subdomains))
-    }
+    merged_categories = normalize_categories_structure(saved_categories, questions=questions or [])
     save_categories(merged_categories)
-
-    return sorted(list(primary_domains)), sorted(list(subdomains))
+    return merged_categories
 
 
 def load_user_prefs():

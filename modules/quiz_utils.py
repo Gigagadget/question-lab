@@ -60,7 +60,12 @@ class QuizManager:
         
         return categories
     
-    def get_questions_for_quiz(self, categories: List[str], num_questions: int) -> Tuple[List[Dict], int, int]:
+    def get_questions_for_quiz(
+        self,
+        categories: List[str],
+        num_questions: int,
+        subdomains_by_primary: Optional[Dict[str, List[str]]] = None
+    ) -> Tuple[List[Dict], int, int]:
         """
         Ottiene le domande per il quiz
         
@@ -69,6 +74,27 @@ class QuizManager:
         """
         all_questions = self.load_database()
         
+        # Normalizza filtro sottodomini (opzionale)
+        normalized_sub_filter = {}
+        if isinstance(subdomains_by_primary, dict):
+            for p, subs in subdomains_by_primary.items():
+                if not isinstance(p, str):
+                    continue
+                p_norm = p.strip()
+                if not p_norm:
+                    continue
+                if not isinstance(subs, list):
+                    subs = []
+                valid_subs = set()
+                for s in subs:
+                    if not isinstance(s, str):
+                        continue
+                    s_norm = s.strip()
+                    if s_norm:
+                        valid_subs.add(s_norm)
+                # Mantiene anche set vuoti: significa "nessun sottodominio selezionato"
+                normalized_sub_filter[p_norm] = valid_subs
+
         # Filtra domande con almeno una risposta correta
         valid_questions = []
         for q in all_questions:
@@ -80,8 +106,18 @@ class QuizManager:
             
             # Filtra per categorie selezionate
             primary_domain = q.get('primary_domain', 'indefinito')
-            if 'all' in categories or primary_domain in categories:
-                valid_questions.append(q)
+            if not ('all' in categories or primary_domain in categories):
+                continue
+
+            # Filtro opzionale per sottodominio relativo alla primary
+            if normalized_sub_filter:
+                question_subdomain = q.get('subdomain', 'indefinito')
+                allowed_for_primary = normalized_sub_filter.get(primary_domain)
+                # Se la primary è stata passata nel filtro, applica il vincolo
+                if isinstance(allowed_for_primary, set) and question_subdomain not in allowed_for_primary:
+                    continue
+
+            valid_questions.append(q)
         
         available_count = len(valid_questions)
         

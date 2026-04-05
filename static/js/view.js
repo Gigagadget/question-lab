@@ -7,8 +7,11 @@ let selectedId = null;
 let showCorrectAnswers = false;
 let categories = {
     primary_domains: [],
-    subdomains: []
+    subdomains: [],
+    subdomains_by_primary: {}
 };
+const DEFAULT_PRIMARY_DOMAIN = 'indefinito';
+const DEFAULT_SUBDOMAIN = 'indefinito';
 
 // DOM elements
 const questionsListDiv = document.getElementById('questionsList');
@@ -30,7 +33,131 @@ const sortSelect = document.getElementById('sortSelect');
 
 // Selected categories
 let selectedPrimaryDomains = new Set();
-let selectedSubdomains = new Set();
+let selectedSubdomainsByPrimary = {};
+
+function sortWithDefaultFirst(values, defaultValue = DEFAULT_SUBDOMAIN) {
+    const uniq = [...new Set((values || []).filter(v => typeof v === 'string' && v.trim() !== '').map(v => v.trim()))]
+        .sort((a, b) => a.localeCompare(b, 'it', { sensitivity: 'base' }));
+    const idx = uniq.indexOf(defaultValue);
+    if (idx > -1) {
+        uniq.splice(idx, 1);
+        uniq.unshift(defaultValue);
+    }
+    return uniq;
+}
+
+function normalizeCategoriesData(raw) {
+    const data = raw && typeof raw === 'object' ? raw : {};
+
+    let primaryDomains = Array.isArray(data.primary_domains) ? data.primary_domains : [];
+    primaryDomains = sortWithDefaultFirst([...primaryDomains, DEFAULT_PRIMARY_DOMAIN], DEFAULT_PRIMARY_DOMAIN);
+
+    const map = {};
+    const rawMap = data.subdomains_by_primary && typeof data.subdomains_by_primary === 'object'
+        ? data.subdomains_by_primary
+        : {};
+
+    primaryDomains.forEach(primary => {
+        let subs = Array.isArray(rawMap[primary]) ? rawMap[primary] : [];
+        if (primary === DEFAULT_PRIMARY_DOMAIN) {
+            subs = [DEFAULT_SUBDOMAIN];
+        }
+        subs = sortWithDefaultFirst([...subs, DEFAULT_SUBDOMAIN]);
+        map[primary] = subs;
+    });
+
+    let allSubs = [];
+    Object.values(map).forEach(subs => {
+        allSubs.push(...subs);
+    });
+    if (Array.isArray(data.subdomains)) {
+        allSubs.push(...data.subdomains);
+    }
+    allSubs = sortWithDefaultFirst([...allSubs, DEFAULT_SUBDOMAIN]);
+
+    return {
+        primary_domains: primaryDomains,
+        subdomains: allSubs,
+        subdomains_by_primary: map
+    };
+}
+
+function getSubdomainsForPrimary(primaryDomain) {
+    return categories.subdomains_by_primary?.[primaryDomain] || [DEFAULT_SUBDOMAIN];
+}
+
+function ensureSelectedSubdomainsForPrimary(primaryDomain) {
+    if (!selectedSubdomainsByPrimary[primaryDomain]) {
+        selectedSubdomainsByPrimary[primaryDomain] = new Set(getSubdomainsForPrimary(primaryDomain));
+    }
+}
+
+function getDisplayedSubdomainTotals() {
+    let total = 0;
+    let selected = 0;
+    categories.primary_domains.forEach(function(primary) {
+        if (!selectedPrimaryDomains.has(primary)) return;
+        const subs = getSubdomainsForPrimary(primary);
+        total += subs.length;
+        ensureSelectedSubdomainsForPrimary(primary);
+        selected += selectedSubdomainsByPrimary[primary].size;
+    });
+    return { selected, total };
+}
+
+function renderSubdomainFilters() {
+    var subHtml = '<div class="filter-header">';
+    subHtml += '<span class="filter-label">📂 Sottodomini <span class="filter-count" id="subCount">0/0</span></span>';
+    subHtml += '<div class="filter-actions">';
+    subHtml += '<button onclick="window.selectAllSub()">Tutti</button>';
+    subHtml += '<button onclick="window.selectNoneSub()">Nessuno</button>';
+    subHtml += '</div></div>';
+
+    const selectedPrimaryList = categories.primary_domains.filter(function(primary) {
+        return selectedPrimaryDomains.has(primary);
+    });
+
+    if (selectedPrimaryList.length === 0) {
+        subHtml += '<div class="empty-list" style="padding: 8px;">Seleziona almeno un dominio per vedere i sottodomini relativi.</div>';
+        subdomainCheckboxes.innerHTML = subHtml;
+        updateFilterCounts();
+        return;
+    }
+
+    selectedPrimaryList.forEach(function(primary) {
+        const subs = getSubdomainsForPrimary(primary);
+        ensureSelectedSubdomainsForPrimary(primary);
+        const selectedSet = selectedSubdomainsByPrimary[primary];
+
+        subHtml += '<div style="margin-bottom: 10px;">';
+        subHtml += '<div style="font-size: 0.78rem; color: #475569; margin: 4px 0;"><strong>' + escapeHtml(primary) + '</strong></div>';
+        subHtml += '<div class="checkbox-group">';
+        subs.forEach(function(s) {
+            const checked = selectedSet.has(s) ? 'checked' : '';
+            subHtml += '<label class="checkbox-label"><input type="checkbox" class="subdomain-cb" data-primary="' + escapeHtml(primary) + '" value="' + escapeHtml(s) + '" ' + checked + '><span>' + escapeHtml(s) + '</span></label>';
+        });
+        subHtml += '</div></div>';
+    });
+
+    subdomainCheckboxes.innerHTML = subHtml;
+
+    document.querySelectorAll('.subdomain-cb').forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            const primary = this.getAttribute('data-primary');
+            const sub = this.value;
+            ensureSelectedSubdomainsForPrimary(primary);
+            if (this.checked) {
+                selectedSubdomainsByPrimary[primary].add(sub);
+            } else {
+                selectedSubdomainsByPrimary[primary].delete(sub);
+            }
+            updateFilterCounts();
+            applyFilters();
+        });
+    });
+
+    updateFilterCounts();
+}
 
 // Helper: show status message
 let statusTimeout;
@@ -62,7 +189,7 @@ async function loadQuestions() {
         const data = await response.json();
         
         questions = data.questions;
-        categories = data.categories;
+        categories = normalizeCategoriesData(data.categories);
         
         // Populate filter dropdowns
         populateFilters();
@@ -99,36 +226,11 @@ function populateFilters() {
         cb.addEventListener('change', function() {
             if (this.checked) {
                 selectedPrimaryDomains.add(this.value);
+                ensureSelectedSubdomainsForPrimary(this.value);
             } else {
                 selectedPrimaryDomains.delete(this.value);
             }
-            updateFilterCounts();
-            applyFilters();
-        });
-    });
-    
-    // Subdomains with new layout
-    var subHtml = '<div class="filter-header">';
-    subHtml += '<span class="filter-label">📂 Sottodomini <span class="filter-count" id="subCount">0/' + categories.subdomains.length + '</span></span>';
-    subHtml += '<div class="filter-actions">';
-    subHtml += '<button onclick="window.selectAllSub()">Tutti</button>';
-    subHtml += '<button onclick="window.selectNoneSub()">Nessuno</button>';
-    subHtml += '</div></div>';
-    subHtml += '<div class="checkbox-group">';
-    categories.subdomains.forEach(function(s) {
-        subHtml += '<label class="checkbox-label"><input type="checkbox" class="subdomain-cb" value="' + escapeHtml(s) + '" checked><span>' + escapeHtml(s) + '</span></label>';
-    });
-    subHtml += '</div>';
-    subdomainCheckboxes.innerHTML = subHtml;
-    
-    // Add event listeners
-    document.querySelectorAll('.subdomain-cb').forEach(function(cb) {
-        cb.addEventListener('change', function() {
-            if (this.checked) {
-                selectedSubdomains.add(this.value);
-            } else {
-                selectedSubdomains.delete(this.value);
-            }
+            renderSubdomainFilters();
             updateFilterCounts();
             applyFilters();
         });
@@ -136,7 +238,11 @@ function populateFilters() {
     
     // Initialize selected sets
     selectedPrimaryDomains = new Set(categories.primary_domains);
-    selectedSubdomains = new Set(categories.subdomains);
+    selectedSubdomainsByPrimary = {};
+    categories.primary_domains.forEach(function(primary) {
+        selectedSubdomainsByPrimary[primary] = new Set(getSubdomainsForPrimary(primary));
+    });
+    renderSubdomainFilters();
     
     // Update counts after initialization
     updateFilterCounts();
@@ -151,7 +257,8 @@ function updateFilterCounts() {
     
     var subCountEl = document.getElementById('subCount');
     if (subCountEl) {
-        subCountEl.textContent = selectedSubdomains.size + '/' + categories.subdomains.length;
+        const subTotals = getDisplayedSubdomainTotals();
+        subCountEl.textContent = subTotals.selected + '/' + subTotals.total;
     }
 }
 
@@ -160,7 +267,9 @@ function selectAllPrimary() {
     document.querySelectorAll('.primary-domain-cb').forEach(function(cb) {
         cb.checked = true;
         selectedPrimaryDomains.add(cb.value);
+        selectedSubdomainsByPrimary[cb.value] = new Set(getSubdomainsForPrimary(cb.value));
     });
+    renderSubdomainFilters();
     updateFilterCounts();
     applyFilters();
 }
@@ -170,24 +279,27 @@ function selectNonePrimary() {
         cb.checked = false;
         selectedPrimaryDomains.delete(cb.value);
     });
+    renderSubdomainFilters();
     updateFilterCounts();
     applyFilters();
 }
 
 function selectAllSub() {
-    document.querySelectorAll('.subdomain-cb').forEach(function(cb) {
-        cb.checked = true;
-        selectedSubdomains.add(cb.value);
+    categories.primary_domains.forEach(function(primary) {
+        if (!selectedPrimaryDomains.has(primary)) return;
+        selectedSubdomainsByPrimary[primary] = new Set(getSubdomainsForPrimary(primary));
     });
+    renderSubdomainFilters();
     updateFilterCounts();
     applyFilters();
 }
 
 function selectNoneSub() {
-    document.querySelectorAll('.subdomain-cb').forEach(function(cb) {
-        cb.checked = false;
-        selectedSubdomains.delete(cb.value);
+    categories.primary_domains.forEach(function(primary) {
+        if (!selectedPrimaryDomains.has(primary)) return;
+        selectedSubdomainsByPrimary[primary] = new Set();
     });
+    renderSubdomainFilters();
     updateFilterCounts();
     applyFilters();
 }
@@ -237,12 +349,15 @@ function applyFilters() {
         });
     }
     
-    // Subdomain filter - only if not all selected
-    if (selectedSubdomains.size < categories.subdomains.length) {
-        filtered = filtered.filter(function(q) {
-            return selectedSubdomains.has(q.subdomain);
-        });
-    }
+    // Subdomain filter relativo al dominio selezionato
+    filtered = filtered.filter(function(q) {
+        const primary = q.primary_domain;
+        if (!selectedPrimaryDomains.has(primary)) return false;
+
+        ensureSelectedSubdomainsForPrimary(primary);
+        const allowed = selectedSubdomainsByPrimary[primary];
+        return allowed.has(q.subdomain);
+    });
     
     // Apply sorting
     filteredQuestions = sortQuestions(filtered);

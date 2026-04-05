@@ -10,6 +10,8 @@ class QuizManagerFrontend {
         this.startTime = null;
         this.elapsedTime = 0;
         this.selectedCategories = [];
+        this.categoriesData = {};
+        this.selectedSubdomainsByPrimary = {};
         this.selectedCount = 10;
         this.availableCount = 0;
         this.usedCount = 0;
@@ -181,6 +183,7 @@ class QuizManagerFrontend {
         try {
             const response = await fetch('/api/quiz/categories');
             const categories = await response.json();
+            this.categoriesData = categories || {};
             
             this.renderCategories(categories);
             this.updateCategoryCount();
@@ -193,6 +196,10 @@ class QuizManagerFrontend {
     renderCategories(categories) {
         const container = document.getElementById('categoriesContainer');
         container.innerHTML = '';
+
+        // Reset state selezioni
+        this.selectedCategories = [];
+        this.selectedSubdomainsByPrimary = {};
 
         // Create "All" button with onclick
         const allBtn = document.createElement('button');
@@ -217,6 +224,117 @@ class QuizManagerFrontend {
             btn.onclick = () => this.toggleCategory(categoryName);
             container.appendChild(btn);
         }
+
+        // Assicura area sottodomini
+        let subdomainsContainer = document.getElementById('subdomainsContainer');
+        if (!subdomainsContainer) {
+            subdomainsContainer = document.createElement('div');
+            subdomainsContainer.id = 'subdomainsContainer';
+            subdomainsContainer.className = 'categories-grid';
+            subdomainsContainer.style.marginTop = '12px';
+            subdomainsContainer.style.display = 'none';
+            container.insertAdjacentElement('afterend', subdomainsContainer);
+        }
+
+        let subdomainsInfo = document.getElementById('selectedSubdomainsInfo');
+        if (!subdomainsInfo) {
+            subdomainsInfo = document.createElement('div');
+            subdomainsInfo.id = 'selectedSubdomainsInfo';
+            subdomainsInfo.className = 'category-info';
+            subdomainsInfo.style.display = 'none';
+            subdomainsInfo.innerHTML = '<span id="selectedSubdomainsCount">0</span> sottodomini selezionati';
+            subdomainsContainer.insertAdjacentElement('afterend', subdomainsInfo);
+        }
+
+        this.renderSubdomains();
+    }
+
+    getSubdomainsForPrimary(primaryDomain) {
+        const cat = this.categoriesData?.[primaryDomain];
+        if (!cat || !cat.subdomains) return [];
+        return Object.keys(cat.subdomains);
+    }
+
+    ensureSubdomainSelectionForPrimary(primaryDomain) {
+        if (!this.selectedSubdomainsByPrimary[primaryDomain]) {
+            this.selectedSubdomainsByPrimary[primaryDomain] = this.getSubdomainsForPrimary(primaryDomain);
+        }
+    }
+
+    renderSubdomains() {
+        const container = document.getElementById('subdomainsContainer');
+        const info = document.getElementById('selectedSubdomainsInfo');
+        if (!container) return;
+
+        const selectedPrimary = this.selectedCategories.filter(c => c !== 'all');
+        if (selectedPrimary.length === 0) {
+            container.style.display = 'none';
+            container.innerHTML = '';
+            if (info) info.style.display = 'none';
+            this.updateSubdomainCount();
+            return;
+        }
+
+        container.style.display = 'grid';
+        let html = '';
+        selectedPrimary.forEach(primary => {
+            this.ensureSubdomainSelectionForPrimary(primary);
+            const allSubs = this.getSubdomainsForPrimary(primary);
+            const selectedSubs = this.selectedSubdomainsByPrimary[primary] || [];
+
+            html += `
+                <div style="grid-column: 1 / -1; margin-top: 6px; font-size: 0.85rem; color: #334155;"><strong>${primary}</strong></div>
+            `;
+            allSubs.forEach(sub => {
+                const checked = selectedSubs.includes(sub) ? 'selected' : '';
+                const count = this.categoriesData?.[primary]?.subdomains?.[sub] || 0;
+                html += `
+                    <button class="category-btn subdomain-btn ${checked}" data-primary="${primary}" data-subdomain="${sub}">
+                        <span class="category-name">${sub}</span>
+                        <span class="category-count">${count}</span>
+                    </button>
+                `;
+            });
+        });
+
+        container.innerHTML = html;
+
+        container.querySelectorAll('.subdomain-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const primary = btn.dataset.primary;
+                const sub = btn.dataset.subdomain;
+                this.toggleSubdomain(primary, sub);
+            });
+        });
+
+        if (info) info.style.display = 'block';
+        this.updateSubdomainCount();
+    }
+
+    toggleSubdomain(primary, subdomain) {
+        this.ensureSubdomainSelectionForPrimary(primary);
+        const list = this.selectedSubdomainsByPrimary[primary] || [];
+        const idx = list.indexOf(subdomain);
+        if (idx >= 0) {
+            list.splice(idx, 1);
+        } else {
+            list.push(subdomain);
+        }
+        this.selectedSubdomainsByPrimary[primary] = list;
+
+        this.renderSubdomains();
+        this.updateAvailableQuestions();
+    }
+
+    updateSubdomainCount() {
+        const el = document.getElementById('selectedSubdomainsCount');
+        if (!el) return;
+        let count = 0;
+        this.selectedCategories.filter(c => c !== 'all').forEach(primary => {
+            const list = this.selectedSubdomainsByPrimary[primary] || [];
+            count += list.length;
+        });
+        el.textContent = count;
     }
 
     toggleCategory(category) {
@@ -234,9 +352,16 @@ class QuizManagerFrontend {
                 // Select "All"
                 allBtn.classList.add('selected');
                 this.selectedCategories = ['all'];
+
+                // Seleziona tutti i sottodomini disponibili per ogni primary
+                this.selectedSubdomainsByPrimary = {};
+                Object.keys(this.categoriesData || {}).forEach(primary => {
+                    this.selectedSubdomainsByPrimary[primary] = this.getSubdomainsForPrimary(primary);
+                });
             } else {
                 // Deselect "All"
                 this.selectedCategories = [];
+                this.selectedSubdomainsByPrimary = {};
             }
         } else {
             // Handle individual category
@@ -254,17 +379,21 @@ class QuizManagerFrontend {
                 // Deselect
                 btn.classList.remove('selected');
                 this.selectedCategories = this.selectedCategories.filter(c => c !== category);
+                delete this.selectedSubdomainsByPrimary[category];
             } else {
                 // Select
                 btn.classList.add('selected');
                 if (!this.selectedCategories.includes(category)) {
                     this.selectedCategories.push(category);
                 }
+                this.ensureSubdomainSelectionForPrimary(category);
             }
             
             // Remove 'all' from selection
             this.selectedCategories = this.selectedCategories.filter(c => c !== 'all');
         }
+
+        this.renderSubdomains();
         
         this.updateCategoryCount();
         this.updateAvailableQuestions();
@@ -346,7 +475,8 @@ class QuizManagerFrontend {
                 },
                 body: JSON.stringify({
                     categories: this.selectedCategories,
-                    num_questions: this.selectedCount
+                    num_questions: this.selectedCount,
+                    subdomains_by_primary: this.selectedSubdomainsByPrimary
                 })
             });
 
@@ -389,7 +519,8 @@ class QuizManagerFrontend {
                 },
                 body: JSON.stringify({
                     categories: this.selectedCategories,
-                    num_questions: this.selectedCount
+                    num_questions: this.selectedCount,
+                    subdomains_by_primary: this.selectedSubdomainsByPrimary
                 })
             });
 
@@ -673,6 +804,7 @@ class QuizManagerFrontend {
         // Prepare quiz log data
         return {
             categories_selected: this.selectedCategories,
+            subdomains_by_primary_selected: this.selectedSubdomainsByPrimary,
             total_questions_requested: this.selectedCount,
             total_questions_available: this.availableCount,
             total_questions_used: this.usedCount,

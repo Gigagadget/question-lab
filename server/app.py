@@ -102,6 +102,7 @@ from server.utils import (
     load_user_prefs,
     save_user_prefs,
     get_unique_categories,
+    normalize_question_categories,
     migrate_old_backups
 )
 
@@ -220,13 +221,21 @@ def get_questions():
         questions = load_database()
         if questions is None:
             return jsonify({"error": "Nessun database selezionato. Seleziona un database dalla Gestione Database."}), 400
+
         categories = get_unique_categories(questions)
+        if categories is None:
+            return jsonify({"error": "Nessun database selezionato. Seleziona un database dalla Gestione Database."}), 400
+
+        questions_changed = False
+        for q in questions:
+            if normalize_question_categories(q, categories):
+                questions_changed = True
+        if questions_changed:
+            save_database(questions, create_backup_file=False)
+
         return jsonify({
             'questions': questions,
-            'categories': {
-                'primary_domains': categories[0],
-                'subdomains': categories[1]
-            }
+            'categories': categories
         }), 200
     except Exception as e:
         logger.error(f"Errore in GET /api/questions: {e}")
@@ -240,15 +249,21 @@ def save_questions():
         if not isinstance(data, list):
             return jsonify({"error": "Formato dati non valido, previsto un array"}), 400
 
+        # Costruisce/aggiorna le categorie a partire dai dati in ingresso
+        categories = get_unique_categories(data)
+        if categories is None:
+            return jsonify({"error": "Nessun database selezionato. Seleziona un database dalla Gestione Database."}), 400
+
+        # Enforce coerenza primary_domain/subdomain
+        for q in data:
+            normalize_question_categories(q, categories)
+
         if save_database(data):
             categories = get_unique_categories(data)
             return jsonify({
                 "message": f"Salvate con successo {len(data)} domande",
                 "count": len(data),
-                "categories": {
-                    'primary_domains': categories[0],
-                    'subdomains': categories[1]
-                }
+                "categories": categories
             }), 200
         else:
             return jsonify({"error": "Salvataggio del database fallito. Nessun database selezionato."}), 400
@@ -276,6 +291,9 @@ def update_question(question_id):
 
         if index is not None:
             questions[index] = updated_question
+            categories = get_unique_categories(questions)
+            for q in questions:
+                normalize_question_categories(q, categories)
             if save_database(questions):
                 return jsonify(updated_question), 200
             else:

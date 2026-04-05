@@ -391,8 +391,12 @@ def create_database():
         
         # Crea categories.json di default
         default_categories = {
+            "schema_version": 2,
             "primary_domains": ["indefinito"],
-            "subdomains": ["indefinito"]
+            "subdomains": ["indefinito"],
+            "subdomains_by_primary": {
+                "indefinito": ["indefinito"]
+            }
         }
         save_json(db_path / "categories.json", default_categories)
         
@@ -561,8 +565,12 @@ def upload_database():
         
         # Crea categories.json di default
         default_categories = {
+            "schema_version": 2,
             "primary_domains": ["indefinito"],
-            "subdomains": ["indefinito"]
+            "subdomains": ["indefinito"],
+            "subdomains_by_primary": {
+                "indefinito": ["indefinito"]
+            }
         }
         save_json(db_path / "categories.json", default_categories)
         

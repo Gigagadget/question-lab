@@ -32,12 +32,15 @@ let questions = [];
 let selectedId = null;
 let categories = {
     primary_domains: [],
-    subdomains: []
+    subdomains: [],
+    subdomains_by_primary: {}
 };
 let autoSaveTimer = null;
 let isDirty = false;
 let saveInProgress = false;
 let showDuplicatesOnly = false;
+const DEFAULT_PRIMARY_DOMAIN = 'indefinito';
+const DEFAULT_SUBDOMAIN = 'indefinito';
 
 // Selezione multipla
 let selectedQuestionIds = new Set(); // ID delle domande selezionate per azioni batch
@@ -57,6 +60,120 @@ let subdomainFilter = null;
 let filterNoAnswers = null;
 let filterWithAnswers = null;
 let filterNoCorrect = null;
+let categoriesModalPrimaryContext = '';
+
+function sortWithDefaultFirst(values, defaultValue = DEFAULT_SUBDOMAIN) {
+    const uniq = [...new Set((values || []).filter(v => typeof v === 'string' && v.trim() !== '').map(v => v.trim()))]
+        .sort((a, b) => a.localeCompare(b, 'it', { sensitivity: 'base' }));
+    const idx = uniq.indexOf(defaultValue);
+    if (idx > -1) {
+        uniq.splice(idx, 1);
+        uniq.unshift(defaultValue);
+    }
+    return uniq;
+}
+
+function normalizeCategoriesData(raw) {
+    const data = raw && typeof raw === 'object' ? raw : {};
+
+    let primaryDomains = Array.isArray(data.primary_domains) ? data.primary_domains : [];
+    primaryDomains = sortWithDefaultFirst([...primaryDomains, DEFAULT_PRIMARY_DOMAIN], DEFAULT_PRIMARY_DOMAIN);
+
+    const map = {};
+    const rawMap = data.subdomains_by_primary && typeof data.subdomains_by_primary === 'object'
+        ? data.subdomains_by_primary
+        : {};
+
+    primaryDomains.forEach(primary => {
+        let subs = Array.isArray(rawMap[primary]) ? rawMap[primary] : [];
+        if (primary === DEFAULT_PRIMARY_DOMAIN) {
+            subs = [DEFAULT_SUBDOMAIN];
+        }
+        subs = sortWithDefaultFirst([...subs, DEFAULT_SUBDOMAIN]);
+        map[primary] = subs;
+    });
+
+    let allSubs = [];
+    Object.values(map).forEach(subs => {
+        allSubs.push(...subs);
+    });
+    if (Array.isArray(data.subdomains)) {
+        allSubs.push(...data.subdomains);
+    }
+    allSubs = sortWithDefaultFirst([...allSubs, DEFAULT_SUBDOMAIN]);
+
+    return {
+        primary_domains: primaryDomains,
+        subdomains: allSubs,
+        subdomains_by_primary: map
+    };
+}
+
+function getSubdomainsForPrimary(primaryDomain) {
+    const primary = (primaryDomain || '').trim();
+    if (!primary) {
+        return categories.subdomains || [DEFAULT_SUBDOMAIN];
+    }
+    return categories.subdomains_by_primary?.[primary] || [DEFAULT_SUBDOMAIN];
+}
+
+function populateSubdomainSelect(selectEl, primaryDomain, preferredValue = '', includeEmptyOption = true, emptyLabel = '-- Seleziona --') {
+    if (!selectEl) return;
+    const subs = getSubdomainsForPrimary(primaryDomain);
+    const options = [];
+    if (includeEmptyOption) {
+        options.push(`<option value="">${emptyLabel}</option>`);
+    }
+    options.push(...subs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`));
+    selectEl.innerHTML = options.join('');
+
+    if (preferredValue && subs.includes(preferredValue)) {
+        selectEl.value = preferredValue;
+    } else if (includeEmptyOption) {
+        selectEl.value = '';
+    } else {
+        selectEl.value = subs[0] || DEFAULT_SUBDOMAIN;
+    }
+}
+
+function refreshFilterSubdomainOptions(preferredValue = '') {
+    if (!subdomainFilter) return;
+    const selectedPrimary = primaryDomainFilter?.value || '';
+    const keepValue = preferredValue || subdomainFilter.value || '';
+    populateSubdomainSelect(subdomainFilter, selectedPrimary, keepValue, true, 'Tutti i Sottodomini');
+}
+
+function refreshQuestionSubdomainOptions(preferredValue = '') {
+    const primarySelect = document.getElementById('field_primary_domain');
+    const subdomainSelect = document.getElementById('field_subdomain');
+    if (!primarySelect || !subdomainSelect) return;
+    populateSubdomainSelect(subdomainSelect, primarySelect.value, preferredValue || subdomainSelect.value, false);
+}
+
+function refreshCurrentFormCategorySelects() {
+    const primarySelect = document.getElementById('field_primary_domain');
+    if (primarySelect) {
+        const currentPrimary = primarySelect.value;
+        primarySelect.innerHTML = categories.primary_domains.map(d =>
+            `<option value="${escapeHtml(d)}" ${currentPrimary === d ? 'selected' : ''}>${escapeHtml(d)}</option>`
+        ).join('');
+        if (!categories.primary_domains.includes(primarySelect.value)) {
+            primarySelect.value = categories.primary_domains[0] || DEFAULT_PRIMARY_DOMAIN;
+        }
+        refreshQuestionSubdomainOptions();
+    }
+    createFilterUI();
+}
+
+async function refreshCategoriesFromServer() {
+    const response = await fetch(`${API_BASE_URL}/categories`);
+    if (!response.ok) {
+        throw new Error('Errore nel recupero delle categorie');
+    }
+    const categoriesData = await response.json();
+    categories = normalizeCategoriesData(categoriesData);
+    return categories;
+}
 
 // Helper: show status message
 let statusTimeout;
@@ -98,7 +215,7 @@ async function loadQuestions() {
         if (!response.ok) throw new Error('Recupero fallito');
         const data = await response.json();
         questions = data.questions;
-        categories = data.categories;
+        categories = normalizeCategoriesData(data.categories);
 
         // Create filter UI
         createFilterUI();
@@ -158,10 +275,7 @@ function createFilterUI() {
             <option value="">Tutti i Domini</option>
             ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('')}
         </select>
-        <select id="subdomainFilter" style="flex: 1; min-width: 150px;">
-            <option value="">Tutti i Sottodomini</option>
-            ${categories.subdomains.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
-        </select>
+        <select id="subdomainFilter" style="flex: 1; min-width: 150px;"></select>
         <button id="clearFiltersBtn" class="small-btn">Azzera Filtri</button>
         <button id="refreshCategoriesBtn" class="small-btn" style="background: #5a6e7a;">🔄 Aggiorna</button>
     `;
@@ -174,34 +288,33 @@ function createFilterUI() {
     // Restore filter values
     if (primaryDomainFilter) {
         primaryDomainFilter.value = savedPrimaryDomain;
-        primaryDomainFilter.addEventListener('change', () => renderQuestionList());
+        primaryDomainFilter.addEventListener('change', () => {
+            refreshFilterSubdomainOptions('');
+            renderQuestionList();
+        });
     }
     if (subdomainFilter) {
-        subdomainFilter.value = savedSubdomain;
         subdomainFilter.addEventListener('change', () => renderQuestionList());
     }
+    refreshFilterSubdomainOptions(savedSubdomain);
+
     if (clearFiltersBtn) {
         clearFiltersBtn.addEventListener('click', () => {
             if (primaryDomainFilter) primaryDomainFilter.value = '';
-            if (subdomainFilter) subdomainFilter.value = '';
+            refreshFilterSubdomainOptions('');
             renderQuestionList();
         });
     }
     if (refreshCategoriesBtn) {
         refreshCategoriesBtn.addEventListener('click', async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/categories`);
-                if (response.ok) {
-                    const categoriesData = await response.json();
-                    categories.primary_domains = categoriesData.primary_domains;
-                    categories.subdomains = categoriesData.subdomains;
-                    createFilterUI();
-                    // Also update the form if open
-                    if (selectedId) {
-                        renderFormForId(selectedId);
-                    }
-                    setStatus('Categorie aggiornate');
+                await refreshCategoriesFromServer();
+                createFilterUI();
+                // Also update the form if open
+                if (selectedId) {
+                    renderFormForId(selectedId);
                 }
+                setStatus('Categorie aggiornate');
             } catch (err) {
                 console.error(err);
                 setStatus('Errore nell\'aggiornamento delle categorie', true);
@@ -429,7 +542,7 @@ async function batchDeleteQuestions() {
     // Ripristina i filtri
     if (searchInput) searchInput.value = currentFilters.search;
     if (primaryDomainFilter) primaryDomainFilter.value = currentFilters.primaryDomain;
-    if (subdomainFilter) subdomainFilter.value = currentFilters.subdomain;
+    refreshFilterSubdomainOptions(currentFilters.subdomain);
     if (filterNoAnswers) filterNoAnswers.checked = currentFilters.noAnswers;
     if (filterWithAnswers) filterWithAnswers.checked = currentFilters.withAnswers;
     if (filterNoCorrect) filterNoCorrect.checked = currentFilters.noCorrect;
@@ -468,9 +581,8 @@ async function batchChangeCategory() {
                 </div>
                 <div class="form-group">
                     <label>Nuovo Sottodominio</label>
-                    <select id="batchSubdomain" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                        <option value="">-- Seleziona --</option>
-                        ${categories.subdomains.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
+                    <select id="batchSubdomain" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" disabled>
+                        <option value="">-- Seleziona prima un dominio --</option>
                     </select>
                 </div>
             </div>
@@ -483,6 +595,27 @@ async function batchChangeCategory() {
     document.body.appendChild(modal);
 
     // Event listener
+    const batchPrimarySelect = document.getElementById('batchPrimaryDomain');
+    const batchSubdomainSelect = document.getElementById('batchSubdomain');
+
+    const refreshBatchSubdomains = () => {
+        const selectedPrimary = batchPrimarySelect?.value || '';
+        if (!selectedPrimary) {
+            if (batchSubdomainSelect) {
+                batchSubdomainSelect.disabled = true;
+                batchSubdomainSelect.innerHTML = '<option value="">-- Seleziona prima un dominio --</option>';
+            }
+            return;
+        }
+        if (batchSubdomainSelect) {
+            batchSubdomainSelect.disabled = false;
+            populateSubdomainSelect(batchSubdomainSelect, selectedPrimary, '', true, '-- Seleziona --');
+        }
+    };
+
+    batchPrimarySelect?.addEventListener('change', refreshBatchSubdomains);
+    refreshBatchSubdomains();
+
     document.getElementById('btnBatchCategoryCancel')?.addEventListener('click', () => {
         modal.remove();
     });
@@ -496,12 +629,28 @@ async function batchChangeCategory() {
             return;
         }
 
+        if (newSubdomain && !newPrimaryDomain) {
+            alert('Per cambiare sottodominio devi selezionare anche il dominio principale.');
+            return;
+        }
+
         // Aggiorna le domande selezionate
         let updatedCount = 0;
         questions.forEach(q => {
             if (selectedQuestionIds.has(q.id)) {
-                if (newPrimaryDomain) q.primary_domain = newPrimaryDomain;
-                if (newSubdomain) q.subdomain = newSubdomain;
+                if (newPrimaryDomain) {
+                    q.primary_domain = newPrimaryDomain;
+                    if (newSubdomain) {
+                        q.subdomain = newSubdomain;
+                    } else {
+                        const allowedSubs = getSubdomainsForPrimary(newPrimaryDomain);
+                        if (!allowedSubs.includes(q.subdomain)) {
+                            q.subdomain = allowedSubs.includes(DEFAULT_SUBDOMAIN)
+                                ? DEFAULT_SUBDOMAIN
+                                : (allowedSubs[0] || DEFAULT_SUBDOMAIN);
+                        }
+                    }
+                }
                 updatedCount++;
             }
         });
@@ -512,6 +661,7 @@ async function batchChangeCategory() {
         // Aggiorna filtri se necessario
         if (primaryDomainFilter && newPrimaryDomain && primaryDomainFilter.value !== newPrimaryDomain) {
             primaryDomainFilter.value = newPrimaryDomain;
+            refreshFilterSubdomainOptions('');
         }
         if (subdomainFilter && newSubdomain && subdomainFilter.value !== newSubdomain) {
             subdomainFilter.value = newSubdomain;
@@ -630,9 +780,7 @@ function renderFormForId(id) {
             </div>
             <div class="form-group">
                 <label>Sottodominio</label>
-                <select id="field_subdomain">
-                    ${categories.subdomains.map(s => `<option value="${escapeHtml(s)}" ${question.subdomain === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
-                </select>
+                <select id="field_subdomain"></select>
             </div>
         </div>
     `;
@@ -675,6 +823,12 @@ function renderFormForId(id) {
     `;
     
     formContentDiv.innerHTML = formHtml;
+
+    const formPrimarySelect = document.getElementById('field_primary_domain');
+    refreshQuestionSubdomainOptions(question.subdomain);
+    formPrimarySelect?.addEventListener('change', () => {
+        refreshQuestionSubdomainOptions('');
+    });
 
     // Navigation buttons handlers
     document.getElementById('navPrevBtn')?.addEventListener('click', navigateToPrevious);
@@ -885,7 +1039,7 @@ async function saveCurrentQuestion(existingId, showStatus = false) {
 
             const result = await response.json();
             if (result.categories) {
-                categories = result.categories;
+                categories = normalizeCategoriesData(result.categories);
                 createFilterUI(); // This now preserves filter values
             }
 
@@ -959,7 +1113,7 @@ async function deleteQuestionById(id) {
         // Restore filter values
         if (searchInput) searchInput.value = currentFilters.search;
         if (primaryDomainFilter) primaryDomainFilter.value = currentFilters.primaryDomain;
-        if (subdomainFilter) subdomainFilter.value = currentFilters.subdomain;
+        refreshFilterSubdomainOptions(currentFilters.subdomain);
         if (filterNoAnswers) filterNoAnswers.checked = currentFilters.noAnswers;
         if (filterWithAnswers) filterWithAnswers.checked = currentFilters.withAnswers;
         if (filterNoCorrect) filterNoCorrect.checked = currentFilters.noCorrect;
@@ -1006,7 +1160,7 @@ async function duplicateQuestion(id) {
     // Restore filters
     if (searchInput) searchInput.value = currentFilters.search;
     if (primaryDomainFilter) primaryDomainFilter.value = currentFilters.primaryDomain;
-    if (subdomainFilter) subdomainFilter.value = currentFilters.subdomain;
+    refreshFilterSubdomainOptions(currentFilters.subdomain);
     if (filterNoAnswers) filterNoAnswers.checked = currentFilters.noAnswers;
     if (filterWithAnswers) filterWithAnswers.checked = currentFilters.withAnswers;
     if (filterNoCorrect) filterNoCorrect.checked = currentFilters.noCorrect;
@@ -1029,7 +1183,7 @@ async function saveAllToServer(refreshFilters = true) {
         if (!response.ok) throw new Error('Salvataggio fallito');
         const result = await response.json();
         if (result.categories && refreshFilters) {
-            categories = result.categories;
+            categories = normalizeCategoriesData(result.categories);
             createFilterUI(); // Refresh filter UI only if needed
         }
         setStatus(result.message || 'Tutte le modifiche sono state salvate con successo!');
@@ -1056,8 +1210,8 @@ async function createNewQuestion() {
         id: newId,
         raw_text: "Nuova domanda",
         normalized_text: "",
-        primary_domain: categories.primary_domains[0] || "indefinito",
-        subdomain: categories.subdomains[0] || "indefinito",
+        primary_domain: categories.primary_domains[0] || DEFAULT_PRIMARY_DOMAIN,
+        subdomain: getSubdomainsForPrimary(categories.primary_domains[0] || DEFAULT_PRIMARY_DOMAIN)[0] || DEFAULT_SUBDOMAIN,
         question_type: "",
         answers: { A: "" },
         correct: ["null"],
@@ -1307,17 +1461,17 @@ async function restoreBackup(backupName) {
 }
 
 async function showCategoriesModal() {
-    // Refresh categories from server first
     try {
-        const response = await fetch(`${API_BASE_URL}/categories`);
-        if (response.ok) {
-            const categoriesData = await response.json();
-            categories.primary_domains = categoriesData.primary_domains;
-            categories.subdomains = categoriesData.subdomains;
-        }
+        await refreshCategoriesFromServer();
     } catch (err) {
         console.error('Errore nell\'aggiornamento delle categorie:', err);
     }
+
+    if (!categories.primary_domains.includes(categoriesModalPrimaryContext)) {
+        categoriesModalPrimaryContext = categories.primary_domains[0] || DEFAULT_PRIMARY_DOMAIN;
+    }
+
+    const subdomainsForContext = getSubdomainsForPrimary(categoriesModalPrimaryContext);
     
     const modal = document.getElementById('categoriesModal');
     const content = document.getElementById('categoriesContent');
@@ -1342,25 +1496,37 @@ async function showCategoriesModal() {
             <button onclick="window.addCategory('primary_domain')" class="primary small-btn">Aggiungi</button>
         </div>
         
-        <h4 style="margin-top: 20px;">Sottodomini</h4>
+        <h4 style="margin-top: 20px;">Sottodomini per dominio</h4>
+        <div class="form-group">
+            <label>Dominio di riferimento</label>
+            <select id="modalPrimaryContext" style="width: 100%;">
+                ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}" ${d === categoriesModalPrimaryContext ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
+            </select>
+        </div>
         <div id="subdomainsList">
-            ${categories.subdomains.map(s => `
+            ${subdomainsForContext.map(s => `
                 <div class="category-item">
                     <span>${escapeHtml(s)}</span>
                     <div class="category-actions">
-                        ${s !== 'indefinito' ? `
-                            <button onclick="window.renameCategory('subdomain', '${escapeHtml(s)}')" class="small-btn" style="background: #e67e22;">✏️ Rinomina</button>
-                            <button onclick="window.removeCategory('subdomain', '${escapeHtml(s)}')" class="danger small-btn">Rimuovi</button>
+                        ${s !== DEFAULT_SUBDOMAIN ? `
+                            <button onclick="window.renameCategory('subdomain', '${escapeHtml(s)}', '${escapeHtml(categoriesModalPrimaryContext)}')" class="small-btn" style="background: #e67e22;">✏️ Rinomina</button>
+                            <button onclick="window.removeCategory('subdomain', '${escapeHtml(s)}', '${escapeHtml(categoriesModalPrimaryContext)}')" class="danger small-btn">Rimuovi</button>
                         ` : '<span style="color: #94a3b8; font-size: 0.8rem;">(predefinito)</span>'}
                     </div>
                 </div>
             `).join('')}
         </div>
         <div class="add-category">
-            <input type="text" id="newSubdomain" placeholder="Nuovo sottodominio" onkeypress="if(event.key==='Enter') window.addCategory('subdomain')">
+            <input type="text" id="newSubdomain" placeholder="Nuovo sottodominio per ${escapeHtml(categoriesModalPrimaryContext)}" onkeypress="if(event.key==='Enter') window.addCategory('subdomain')">
             <button onclick="window.addCategory('subdomain')" class="primary small-btn">Aggiungi</button>
         </div>
     `;
+
+    const primaryContextSelect = document.getElementById('modalPrimaryContext');
+    primaryContextSelect?.addEventListener('change', () => {
+        categoriesModalPrimaryContext = primaryContextSelect.value;
+        showCategoriesModal();
+    });
     
     modal.style.display = 'block';
 }
@@ -1376,13 +1542,15 @@ async function addCategory(type) {
         setStatus(`Aggiunta categoria "${value}"...`);
     
     try {
+        const primaryContext = (document.getElementById('modalPrimaryContext')?.value || categoriesModalPrimaryContext || '').trim();
         const response = await fetch(`${API_BASE_URL}/categories`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'add',
                 type: type,
-                value: value
+                value: value,
+                ...(type === 'subdomain' ? { primary_domain: primaryContext } : {})
             })
         });
         
@@ -1392,32 +1560,15 @@ async function addCategory(type) {
         }
         
         const result = await response.json();
-        categories = result.categories;
+        categories = normalizeCategoriesData(result.categories);
         input.value = '';
+        if (type === 'subdomain' && primaryContext) {
+            categoriesModalPrimaryContext = primaryContext;
+        }
         
         // Refresh the modal to show new categories
         showCategoriesModal();
-        
-        // Update the select dropdowns in the form if they exist
-        const primarySelect = document.getElementById('field_primary_domain');
-        const subdomainSelect = document.getElementById('field_subdomain');
-        
-        if (primarySelect && type === 'primary_domain') {
-            const currentValue = primarySelect.value;
-            primarySelect.innerHTML = categories.primary_domains.map(d => 
-                `<option value="${escapeHtml(d)}" ${currentValue === d ? 'selected' : ''}>${escapeHtml(d)}</option>`
-            ).join('');
-        }
-        
-        if (subdomainSelect && type === 'subdomain') {
-            const currentValue = subdomainSelect.value;
-            subdomainSelect.innerHTML = categories.subdomains.map(s => 
-                `<option value="${escapeHtml(s)}" ${currentValue === s ? 'selected' : ''}>${escapeHtml(s)}</option>`
-            ).join('');
-        }
-        
-        // Update filter UI
-        createFilterUI();
+        refreshCurrentFormCategorySelects();
         
         setStatus(`Categoria "${value}" aggiunta con successo!`);
     } catch (err) {
@@ -1426,7 +1577,7 @@ async function addCategory(type) {
     }
 }
 
-async function removeCategory(type, value) {
+async function removeCategory(type, value, primaryDomain = '') {
     if (!confirm(`Rimuovere la categoria "${value}"? Le domande che la utilizzano verranno impostate su "indefinito".`)) return;
     
     setStatus(`Rimozione categoria "${value}"...`);
@@ -1438,14 +1589,15 @@ async function removeCategory(type, value) {
             body: JSON.stringify({
                 action: 'remove',
                 type: type,
-                value: value
+                value: value,
+                ...(type === 'subdomain' ? { primary_domain: primaryDomain || categoriesModalPrimaryContext } : {})
             })
         });
         
         if (!response.ok) throw new Error('Rimozione categoria fallita');
         
         const result = await response.json();
-        categories = result.categories;
+        categories = normalizeCategoriesData(result.categories);
         
         // Refresh the modal
         showCategoriesModal();
@@ -1460,7 +1612,7 @@ async function removeCategory(type, value) {
     }
 }
 
-async function renameCategory(type, oldValue) {
+async function renameCategory(type, oldValue, primaryDomain = '') {
     const typeName = type === 'primary_domain' ? 'dominio principale' : 'sottodominio';
     const newValue = prompt(`Inserisci il nuovo nome per "${oldValue}":`, oldValue);
     
@@ -1482,7 +1634,8 @@ async function renameCategory(type, oldValue) {
             body: JSON.stringify({
                 type: type,
                 old_value: oldValue,
-                new_value: trimmedValue
+                new_value: trimmedValue,
+                ...(type === 'subdomain' ? { primary_domain: primaryDomain || categoriesModalPrimaryContext } : {})
             })
         });
         
@@ -1492,7 +1645,7 @@ async function renameCategory(type, oldValue) {
         }
         
         const result = await response.json();
-        categories = result.categories;
+        categories = normalizeCategoriesData(result.categories);
         
         // Refresh the modal
         showCategoriesModal();
