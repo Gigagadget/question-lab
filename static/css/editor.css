@@ -20,14 +20,20 @@
 }
 
 .toolbar button {
-    padding: 8px 14px;
+    min-height: 38px;
+    padding: 8px 18px;
     border-radius: 8px;
     transition: all 0.2s ease;
+    font-size: 0.85rem;
 }
 
 .toolbar button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+
+.toolbar button:active {
+    transform: translateY(0px);
 }
 
 .toolbar .status {
@@ -80,9 +86,11 @@
 }
 
 .nav-buttons button {
-    padding: 4px 10px;
-    font-size: 0.7rem;
+    min-height: 32px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
     background: #5a6e7a;
+    border-radius: 6px;
 }
 
 .nav-buttons button:hover:not(:disabled) {
@@ -304,12 +312,13 @@
 
 /* Bottoni batch - si espandono uniformemente */
 #batchActionsDiv button {
-    padding: 6px 12px;
-    font-size: 0.7rem;
+    min-height: 34px;
+    padding: 8px 16px;
+    font-size: 0.75rem;
     flex: 1;
     min-width: 0;
     white-space: nowrap;
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
 /* ==================== NORMALIZATION WARNING UI ==================== */
@@ -346,6 +355,13 @@
 .normalization-alert-actions {
     display: flex;
     gap: 6px;
+}
+
+.small-btn {
+    min-height: 32px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    border-radius: 6px;
 }
 
 .normalization-alert-actions .small-btn {
