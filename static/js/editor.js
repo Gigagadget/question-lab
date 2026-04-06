@@ -534,10 +534,25 @@ function renderQuestionList() {
     });
 }
 
+function scrollToSelectedQuestion() {
+    // Piccolo delay per attendere che il DOM sia aggiornato dopo il render
+    setTimeout(() => {
+        const selectedElement = document.querySelector('.question-item.selected');
+        if (selectedElement) {
+            selectedElement.scrollIntoView({
+                block: 'nearest',
+                behavior: 'smooth',
+                inline: 'nearest'
+            });
+        }
+    }, 50);
+}
+
 function selectQuestion(id) {
     selectedId = id;
     renderQuestionList();
     renderFormForId(id);
+    scrollToSelectedQuestion();
 }
 
 // ==================== SELEZIONE MULTIPLA E AZIONI BATCH ====================
@@ -823,7 +838,7 @@ function renderFormForId(id) {
         const answerValue = question.answers?.[letter] || '';
         answersHtml += `
             <div class="answer-field" data-letter="${letter}">
-                <span class="answer-letter">${letter}:</span>
+                <span class="answer-letter">${letter}</span>
                 <input type="text" class="answer-input" data-letter="${letter}" value="${escapeHtml(answerValue)}" placeholder="Testo risposta">
                 <div class="answer-actions">
                     <button type="button" class="remove-answer" data-letter="${letter}">✖</button>
@@ -993,7 +1008,7 @@ function addNewAnswer() {
     
     const newAnswerHtml = `
         <div class="answer-field" data-letter="${newLetter}">
-            <span class="answer-letter">${newLetter}:</span>
+            <span class="answer-letter">${newLetter}</span>
             <input type="text" class="answer-input" data-letter="${newLetter}" value="" placeholder="Testo risposta">
             <div class="answer-actions">
                 <button type="button" class="remove-answer" data-letter="${newLetter}">✖</button>
