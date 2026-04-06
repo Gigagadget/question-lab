@@ -298,8 +298,9 @@
     margin-top: 22px;
     margin-bottom: 16px;
     display: block;
-    font-weight: 600;
-    color: #475569;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #1e293b;
 }
 
 #correctOptions {
@@ -436,6 +437,8 @@
     cursor: pointer;
     accent-color: #2c7da0;
     flex-shrink: 0;
+    align-self: center;
+    margin: 0 !important;
 }
 
 /* Header della lista con azioni batch */

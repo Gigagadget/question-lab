@@ -848,7 +848,7 @@ function renderFormForId(id) {
     });
     answersHtml += `</div>`;
 
-    let correctHtml = `<div class="correct-answers-header"><strong>Risposte Corrette</strong></div><div class="correct-options" id="correctOptions">`;
+    let correctHtml = `<div class="correct-answers-header"><label>Risposte corrette</label></div><div class="correct-options" id="correctOptions">`;
     answerLetters.forEach(letter => {
         const isChecked = Array.isArray(question.correct) && question.correct.includes(letter);
         correctHtml += `
@@ -924,7 +924,7 @@ function renderFormForId(id) {
         ${combinedButtonsHtml}
         ${topBarHtml}
         <div class="form-group">
-            <label>Testo Domanda</label>
+            <label>Domanda</label>
             <textarea id="field_raw_text" placeholder="Testo della domanda...">${escapeHtml(question.raw_text || '')}</textarea>
         </div>
         ${answersSectionHtml}

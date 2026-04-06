@@ -256,7 +256,7 @@ button.small-btn {
 }
 
 .form-top-bar .form-group label {
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     margin-bottom: 2px;
 }
 
@@ -268,7 +268,7 @@ button.small-btn {
     display: block;
     font-weight: 500;
     margin-bottom: 4px;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: #1e293b;
 }
 
@@ -308,7 +308,7 @@ textarea {
 
 .answers-header label {
     font-weight: 500;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: #1e293b;
     margin-bottom: 0;
 }
@@ -349,7 +349,7 @@ textarea {
 .answer-field input {
     flex: 1;
     padding: 5px 8px;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
 }
 
 .answer-actions {
