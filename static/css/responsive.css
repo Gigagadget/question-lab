@@ -1,0 +1,328 @@
+/* ================================================
+   RESPONSIVE DESIGN PER MOBILE E DISPOSITIVI PICCOLI
+   ================================================ */
+
+/* Breakpoint Tablet Verticale / Large Phone */
+@media (max-width: 768px) {
+
+    body {
+        padding: 8px;
+    }
+
+    .header {
+        padding: 0.8rem 1rem;
+        margin-bottom: 0.7rem;
+    }
+
+    .header h1 {
+        font-size: 1rem;
+    }
+
+    /* Toolbar */
+    .toolbar {
+        padding: 10px;
+        gap: 6px;
+    }
+
+    .toolbar button {
+        padding: 10px 12px;
+        min-height: 44px;
+        font-size: 0.8rem;
+        flex: 1;
+        min-width: auto;
+    }
+
+    .toolbar .status {
+        width: 100%;
+        text-align: center;
+        order: 99;
+    }
+
+    .toolbar .auto-save-indicator {
+        order: 100;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Editor Layout */
+    .editor-layout {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .list-panel {
+        min-width: auto;
+        max-height: 40vh;
+    }
+
+    .questions-list {
+        max-height: 30vh;
+    }
+
+    .form-panel {
+        min-width: auto !important;
+        max-height: none;
+        padding: 12px;
+    }
+
+    /* Form Top Bar */
+    .form-top-bar {
+        grid-template-columns: 1fr !important;
+        gap: 8px;
+    }
+
+    /* Action Buttons */
+    .action-buttons-row {
+        flex-wrap: wrap;
+    }
+
+    .action-buttons-row button {
+        flex: 1;
+        min-height: 44px;
+    }
+
+    /* Answer fields */
+    .answer-field {
+        gap: 6px;
+    }
+
+    .answer-letter {
+        min-width: 32px;
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .remove-answer {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+
+    /* Correct Answers */
+    #correctOptions {
+        gap: 8px;
+    }
+
+    .correct-check {
+        flex: 1;
+        min-height: 44px;
+        min-width: 70px;
+        padding: 8px 12px;
+    }
+
+    /* Answer Filters */
+    .answer-filters label {
+        min-height: 40px;
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+
+    /* Batch Actions */
+    #batchActionsDiv {
+        flex-direction: column;
+    }
+
+    #batchActionsDiv button {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    /* Normalization Alert */
+    .normalization-alert-main {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .normalization-alert-actions {
+        justify-content: stretch;
+    }
+
+    .normalization-alert-actions .small-btn {
+        flex: 1;
+        min-height: 40px;
+    }
+
+    /* Modali */
+    .modal-content {
+        margin: 2% auto;
+        width: 95%;
+        padding: 12px;
+        max-height: 90vh;
+    }
+
+    .modal-content-wide {
+        width: 95% !important;
+    }
+
+    /* Navigation buttons */
+    .nav-buttons {
+        justify-content: stretch;
+    }
+
+    .nav-buttons button {
+        flex: 1;
+        min-height: 40px;
+    }
+}
+
+/* Breakpoint Smartphone Standard */
+@media (max-width: 576px) {
+
+    body {
+        padding: 6px;
+    }
+
+    .header {
+        padding: 0.7rem 0.8rem;
+        border-radius: 10px;
+    }
+
+    .header h1 {
+        font-size: 0.95rem;
+    }
+
+    .header p {
+        font-size: 0.75rem;
+    }
+
+    /* Toolbar */
+    .toolbar {
+        border-radius: 10px;
+    }
+
+    .toolbar button {
+        min-width: 48%;
+    }
+
+    /* List Panel */
+    .list-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .questions-title {
+        justify-content: center;
+    }
+
+    /* Form Elements */
+    .form-group input[type="text"],
+    .form-group textarea,
+    .form-group select {
+        padding: 12px 14px;
+        font-size: 1rem;
+    }
+
+    .form-group label {
+        font-size: 0.9rem;
+    }
+
+    /* Answers */
+    .answer-field {
+        flex-wrap: wrap;
+    }
+
+    .answer-input {
+        min-width: calc(100% - 80px);
+    }
+
+    /* Correct Answers */
+    .correct-check {
+        min-width: 45%;
+    }
+
+    /* Answer Filters */
+    .answer-filters label {
+        min-width: calc(50% - 4px);
+    }
+
+    /* Batch */
+    #batchCountSpan {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Buttons global */
+    button {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+
+    .small-btn {
+        min-height: 38px;
+    }
+}
+
+/* Breakpoint Smartphone Piccolo */
+@media (max-width: 420px) {
+
+    /* Toolbar */
+    .toolbar button {
+        min-width: 100%;
+    }
+
+    /* Correct Answers */
+    .correct-check {
+        min-width: 100%;
+    }
+
+    /* Answer Filters */
+    .answer-filters label {
+        min-width: 100%;
+    }
+
+    /* Form Top Bar */
+    .form-top-bar .form-group {
+        min-width: 100%;
+    }
+
+    /* Action Buttons */
+    .action-buttons-row button {
+        min-width: 100%;
+    }
+}
+
+/* Fix per hover su dispositivi touch */
+@media (hover: none) {
+    button:hover {
+        transform: none;
+    }
+
+    .question-item:hover {
+        transform: none;
+    }
+
+    .correct-check:hover {
+        transform: none;
+    }
+
+    .remove-answer:hover {
+        background: transparent;
+        color: #697380;
+    }
+
+    .toolbar button:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .accordion-header:hover {
+        background: var(--bg-secondary);
+    }
+}
+
+/* Miglioramenti scroll su mobile */
+@media (pointer: coarse) {
+    .questions-list,
+    .form-panel,
+    .modal-content {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    input, textarea, select {
+        font-size: 16px !important; /* Previene zoom automatico su Safari iOS */
+    }
+}
