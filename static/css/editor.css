@@ -166,6 +166,27 @@
     border-radius: 6px;
 }
 
+/* ==================== COMBINED BUTTONS ROW ==================== */
+.combined-buttons-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.left-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.right-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 /* ==================== TOOLBAR MIGLIORATA ==================== */
 .toolbar {
     display: flex;

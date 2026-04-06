@@ -799,19 +799,26 @@ function renderFormForId(id) {
     const currentIndex = filtered.findIndex(q => q.id === id);
     const total = filtered.length;
     
-    // Navigation buttons
-    const navButtonsHtml = `
-        <div class="nav-buttons">
-            <button id="navPrevBtn" class="small-btn" ${currentIndex === 0 ? 'disabled style="opacity:0.5;"' : ''}>◀ Prec</button>
-            <span style="font-size:0.7rem; color:#6c757d;">${currentIndex + 1} / ${total}</span>
-            <button id="navNextBtn" class="small-btn" ${currentIndex === total - 1 ? 'disabled style="opacity:0.5;"' : ''}>Succ ▶</button>
+    // Combined action and navigation buttons row
+    const combinedButtonsHtml = `
+        <div class="combined-buttons-row">
+            <div class="left-buttons">
+                <button id="btnDeleteQuestion" class="danger small-btn">🗑️ Elimina</button>
+                <button id="btnDuplicate" class="warning small-btn">📑 Duplica</button>
+                <button id="manageCategoriesBtn" class="info small-btn">🏷️ Categorie</button>
+            </div>
+            <div class="right-buttons">
+                <button id="navPrevBtn" class="small-btn" ${currentIndex === 0 ? 'disabled style="opacity:0.5;"' : ''}>◀ Prec</button>
+                <span style="font-size:0.7rem; color:#6c757d;">${currentIndex + 1} / ${total}</span>
+                <button id="navNextBtn" class="small-btn" ${currentIndex === total - 1 ? 'disabled style="opacity:0.5;"' : ''}>Succ ▶</button>
+            </div>
         </div>
     `;
-    
+
     // Get all answer letters from question
     const answerLetters = Object.keys(question.answers || {}).sort();
     let answersHtml = `<div class="answers-grid" id="answersGrid">`;
-    
+
     answerLetters.forEach(letter => {
         const answerValue = question.answers?.[letter] || '';
         answersHtml += `
@@ -847,7 +854,7 @@ function renderFormForId(id) {
                 text: question.duplicate_texts[i]
             });
         }
-        
+
         duplicateHtml = `
             <div class="accordion">
                 <div class="accordion-header" onclick="window.toggleAccordion(this)">
@@ -889,15 +896,6 @@ function renderFormForId(id) {
         </div>
     `;
 
-    // Action buttons row
-    const actionButtonsRowHtml = `
-        <div class="action-buttons-row">
-            <button id="btnDeleteQuestion" class="danger">🗑️ Elimina</button>
-            <button id="btnDuplicate" class="warning">📑 Duplica</button>
-            <button id="manageCategoriesBtn" class="info small-btn" style="margin-left: auto;">🏷️ Categorie</button>
-        </div>
-    `;
-
     // Answers section with header
     const answersSectionHtml = `
         <div class="answers-header">
@@ -908,9 +906,8 @@ function renderFormForId(id) {
     `;
 
     const formHtml = `
-        ${navButtonsHtml}
+        ${combinedButtonsHtml}
         ${topBarHtml}
-        ${actionButtonsRowHtml}
         <div class="form-group">
             <label>Testo Domanda</label>
             <textarea id="field_raw_text" placeholder="Testo della domanda...">${escapeHtml(question.raw_text || '')}</textarea>
