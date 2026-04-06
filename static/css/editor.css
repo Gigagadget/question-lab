@@ -105,7 +105,8 @@
 .remove-answer {
     background: transparent;
     border: none;
-    color: #697380;
+    color: #dadfe6;
+    /* color: #697380; */
     cursor: pointer;
     font-size: 1rem;
     padding: 3px;
