@@ -40,6 +40,19 @@
     width: 100%;
 }
 
+/* Correct answers section spacing */
+.correct-answers-header {
+    margin-top: 22px;
+    margin-bottom: 0px;
+    display: block;
+    font-weight: 500;
+}
+
+.correct-check {
+    margin-top: 5px;
+    display: block;
+}
+
 .answer-filters label {
     display: flex;
     align-items: center;

@@ -337,6 +337,14 @@ const CategoriesManager = (() => {
                     </label>
                 </div>
 
+                <!-- Subdomain context (hidden by default) -->
+                <div class="cm-form-group" id="cmPrimaryDomainGroup" style="display:none;">
+                    <label>📂 Dominio principale di riferimento</label>
+                    <select id="cmMergePrimaryDomain">
+                        ${primary_domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('')}
+                    </select>
+                </div>
+
                 <div class="cm-merge-flow">
                     <!-- DA -->
                     <div class="cm-merge-step">
@@ -368,14 +376,6 @@ const CategoriesManager = (() => {
                         </select>
                         <p class="cm-merge-hint">Questa categoria <strong>riceverà</strong> tutte le domande</p>
                     </div>
-                </div>
-
-                <!-- Subdomain context (hidden by default) -->
-                <div class="cm-form-group" id="cmPrimaryDomainGroup" style="display:none;">
-                    <label>📂 Dominio principale di riferimento</label>
-                    <select id="cmMergePrimaryDomain">
-                        ${primary_domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('')}
-                    </select>
                 </div>
 
                 <div id="cmMergePreview"></div>
@@ -599,7 +599,7 @@ const CategoriesManager = (() => {
                 <!-- LEFT: Tree Panel -->
                 <div class="cm-tree-panel">
                     <div class="cm-tree-header">
-                        <h4>🌳 Struttura</h4>
+                        <h4>📂 Gerarchia Categorie</h4>
                         <div class="cm-tree-actions">
                             <button class="cm-icon-btn" id="cmExpandAllBtn" title="Espandi tutto">📂</button>
                             <button class="cm-icon-btn" id="cmCollapseAllBtn" title="Comprimi tutto">📁</button>
@@ -721,7 +721,7 @@ const CategoriesManager = (() => {
         if (!node) {
             return `
                 <div class="cm-detail-empty">
-                    <div class="cm-detail-empty-icon">👈</div>
+                    <div class="cm-detail-empty-icon">🎯</div>
                     <h4>Nessuna selezione</h4>
                     <p>Seleziona una categoria dall'albero per vedere i dettagli e le azioni disponibili</p>
                 </div>

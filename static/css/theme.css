@@ -51,10 +51,10 @@
     --bg-hover: #2d2d31;
     
     /* Testo - grigio-azzurrognolo chiaro, ottimo per lettura prolungata */
-    --text-primary: #e0e8f0;
-    --text-secondary: #c8d0e0;
-    --text-muted: #7a8294;
-    --text-light: #62707c;
+    --text-primary: #e8edf2;
+    --text-secondary: #cbd5e1;
+    --text-muted: #8a94a6;
+    --text-light: #6b7280;
     
     /* Bordi */
     --border-color: #2d2d31;
@@ -63,30 +63,30 @@
     --shadow-hover: rgba(0, 0, 0, 0.7);
     
     /* Colori accent - vivaci come Samsung/VS Code pero non eccessivi */
-    --accent-primary: #5ba3dd;
-    --accent-secondary: #4a95d8;
-    --accent-blue: #5ba3dd;
-    --accent-blue-hover: #4a95d8;
-    --accent-green: #6ba896;
-    --accent-orange: #d39b5e;
-    --accent-red: #d85d6f;
-    --accent-gray: #7a8294;
+    --accent-primary: #6eb5f0;
+    --accent-secondary: #5ba8e3;
+    --accent-blue: #6eb5f0;
+    --accent-blue-hover: #82c4ff;
+    --accent-green: #7ec0ab;
+    --accent-orange: #d39840;
+    --accent-red: #bf5b68;
+    --accent-gray: #96a0b0;
     
     /* Stati - colori ben definiti ma morbidi */
-    --status-correct-bg: rgba(107, 168, 150, 0.15);
-    --status-correct-border: rgba(107, 168, 150, 0.35);
-    --status-correct-text: #6ba896;
-    --status-wrong-bg: rgba(216, 93, 111, 0.15);
-    --status-wrong-border: rgba(216, 93, 111, 0.35);
-    --status-wrong-text: #d85d6f;
-    --status-partial-bg: rgba(211, 155, 94, 0.15);
-    --status-partial-border: rgba(211, 155, 94, 0.35);
-    --status-partial-text: #d39b5e;
-    --status-info-bg: rgba(91, 163, 221, 0.15);
-    --status-info-text: #5ba3dd;
-    --status-warning-bg: rgba(211, 155, 94, 0.15);
-    --status-warning-text: #d39b5e;
-    --status-warning-border: rgba(211, 155, 94, 0.35);
+    --status-correct-bg: rgba(110, 181, 240, 0.12);
+    --status-correct-border: rgba(110, 181, 240, 0.30);
+    --status-correct-text: #6eb5f0;
+    --status-wrong-bg: rgba(191, 91, 104, 0.12);
+    --status-wrong-border: rgba(191, 91, 104, 0.30);
+    --status-wrong-text: #bf5b68;
+    --status-partial-bg: rgba(201, 145, 61, 0.12);
+    --status-partial-border: rgba(201, 145, 61, 0.30);
+    --status-partial-text: #c9913d;
+    --status-info-bg: rgba(110, 181, 240, 0.12);
+    --status-info-text: #6eb5f0;
+    --status-warning-bg: rgba(201, 145, 61, 0.12);
+    --status-warning-text: #c9913d;
+    --status-warning-border: rgba(201, 145, 61, 0.30);
 }
 
 /* ==================== STILI GLOBALI CON VARIABILI ==================== */

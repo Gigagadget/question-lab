@@ -821,7 +821,7 @@ function renderFormForId(id) {
     });
     answersHtml += `</div>`;
 
-    let correctHtml = `<div><strong>Risposte Corrette</strong></div><div class="correct-options" id="correctOptions">`;
+    let correctHtml = `<div class="correct-answers-header"><strong>Risposte Corrette</strong></div><div class="correct-options" id="correctOptions">`;
     answerLetters.forEach(letter => {
         const isChecked = Array.isArray(question.correct) && question.correct.includes(letter);
         correctHtml += `
