@@ -576,7 +576,7 @@ function updateBatchActionUI() {
                 div.style.cssText = 'display: none; gap: 6px; margin-left: auto; align-items: center;';
                 div.innerHTML = `
                     <span id="batchCountSpan" style="font-size: 0.7rem; color: #2c7da0; background: #e0f2fe; padding: 2px 8px; border-radius: 12px; white-space: nowrap;"></span>
-                    <button id="btnBatchSelectAll" class="small-btn" style="background: #2c6e2f; flex: 1;">✓ Seleziona Tutte</button>
+                    <button id="btnBatchSelectAll" class="small-btn" style="background: #2c6e2f; flex: 1;">✓ Sel. tutto</button>
                     <button id="btnBatchDelete" class="small-btn" style="background: #c44536; flex: 1;">🗑️ Elimina</button>
                     <button id="btnBatchCategory" class="small-btn" style="background: #2c7da0; flex: 1;">🏷️ Categoria</button>
                     <button id="btnBatchClear" class="small-btn" style="background: #6c757d; flex: 1;">✕ Deseleziona</button>
