@@ -230,16 +230,21 @@ function setStatus(msg, isError = false) {
     }, 3000);
 }
 
-// Auto-save functionality - immediate save
+// Auto-save functionality - intelligent debounced
 function markDirty() {
     if (saveInProgress) return;
     
     isDirty = true;
     autoSaveIndicator.style.color = '#e67e22';
-    autoSaveIndicator.textContent = '● Salvataggio...';
+    autoSaveIndicator.textContent = '● Modifiche in sospeso';
     
-    // Save immediately
-    saveCurrentQuestion(selectedId);
+    // Clear existing timer
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    
+    // Save after 300ms from last keystroke
+    autoSaveTimer = setTimeout(() => {
+        saveCurrentQuestion(selectedId);
+    }, 300);
 }
 
 function clearDirty() {
