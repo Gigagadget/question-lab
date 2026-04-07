@@ -1972,7 +1972,6 @@ window.renameCategory = renameCategory;
 searchInput.addEventListener('input', () => renderQuestionList());
 
 document.getElementById('btnNew').addEventListener('click', createNewQuestion);
-document.getElementById('btnSaveAll').addEventListener('click', saveAllToServer);
 document.getElementById('btnReload').addEventListener('click', loadQuestions);
 document.getElementById('btnStats').addEventListener('click', showStats);
 document.getElementById('btnBackup').addEventListener('click', showBackups);
