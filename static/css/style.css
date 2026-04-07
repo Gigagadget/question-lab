@@ -672,9 +672,6 @@ button.active {
     background: #fff6e6;
 }
 
-.question-item.flagged-item.selected {
-    background: #fff3cd;
-}
 
 /* Dark theme support for flag feature */
 body.dark .question-item.flagged-item {
@@ -686,9 +683,6 @@ body.dark .question-item.flagged-item:hover {
     background: #383428;
 }
 
-body.dark .question-item.flagged-item.selected {
-    background: #3a362a;
-}
 
 #btnFlagQuestion.flag-active {
     background: #f39c12;

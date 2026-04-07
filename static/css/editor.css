@@ -377,7 +377,7 @@
 .answer-filters label {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
     font-size: 0.75rem;
     color: #475569;
     font-weight: 500;
@@ -387,9 +387,9 @@
     background: #f1f5f9;
     padding: 6px 10px;
     border-radius: 8px;
-    justify-content: center;
     transition: all 0.2s ease;
     border: 2px solid transparent;
+    text-align: center;
 }
 
 .answer-filters label:hover {
@@ -404,11 +404,11 @@
 }
 
 .answer-filters input[type="checkbox"] {
-    width: 14px;
-    height: 14px;
-    accent-color: #2c7da0;
-    cursor: pointer;
-    flex-shrink: 0;
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
 }
 
 :root[data-theme="dark"] .answer-filters label {
