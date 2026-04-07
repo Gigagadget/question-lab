@@ -114,6 +114,10 @@ app = Flask(
 )
 CORS(app)
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(str(BASE_DIR / 'static'), 'favicon.svg', mimetype='image/svg+xml')
+
 # Registra i blueprint
 app.register_blueprint(databases_bp)
 app.register_blueprint(quiz_bp)
