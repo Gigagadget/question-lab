@@ -65,10 +65,20 @@
     white-space: nowrap;
 }
 
+.filter-actions button {
+    padding: 2px 8px;
+    font-size: 0.6rem;
+    border-radius: 12px;
+    background: #5a6e7a;
+}
+
+.filter-actions button:hover {
+    background: #2c3e66;
+}
+
 /* Toggle button for correct answers */
 .toggle-btn {
     background: #6c757d;
-    transition: all 0.2s;
 }
 
 .toggle-btn:hover {
@@ -124,12 +134,8 @@
 .filter-actions button {
     padding: 2px 8px;
     font-size: 0.6rem;
-    background: #5a6e7a;
-    color: white;
-    border: none;
     border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
+    background: #5a6e7a;
 }
 
 .filter-actions button:hover {
@@ -214,13 +220,8 @@
 /* Edit button in detail view */
 .view-edit-btn {
     background: #2c7da0;
-    color: white;
-    border: none;
     padding: 6px 14px;
-    border-radius: 20px;
     font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s;
     margin-left: auto;
 }
 
@@ -506,11 +507,6 @@
     padding: 8px 20px;
     font-size: 0.8rem;
     background: #5a6e7a;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
 }
 
 .nav-arrow:hover:not(:disabled) {
@@ -536,13 +532,8 @@
 /* Export buttons */
 .export-btn {
     background: #8b5cf6;
-    color: white;
-    border: none;
     padding: 5px 12px;
-    border-radius: 20px;
     font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s;
 }
 
 .export-btn:hover {

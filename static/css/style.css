@@ -68,33 +68,21 @@ button:hover {
     transform: translateY(-1px);
 }
 
-button.primary {
-    background: #2c7da0;
-}
+/* Button color variants - ONLY COLORS, no other properties */
+button.primary { background: #2c7da0; }
+button.primary:hover { background: #1f5e7a; }
 
-button.primary:hover {
-    background: #1f5e7a;
-}
+button.danger { background: #c44536; }
+button.danger:hover { background: #a23426; }
 
-button.danger {
-    background: #c44536;
-}
+button.success { background: #2c6e2f; }
+button.success:hover { background: #235826; }
 
-button.danger:hover {
-    background: #a23426;
-}
+button.warning { background: #e67e22; }
+button.warning:hover { background: #d35400; }
 
-button.success {
-    background: #2c6e2f;
-}
-
-button.warning {
-    background: #e67e22;
-}
-
-button.info {
-    background: #5a6e7a;
-}
+button.info { background: #5a6e7a; }
+button.info:hover { background: #485a64; }
 
 button.small-btn {
     padding: 3px 8px;
@@ -703,11 +691,9 @@ body.dark .question-item.flagged-item.selected {
 }
 
 #btnFlagQuestion.flag-active {
-    background: #f39c12 !important;
-    color: white !important;
+    background: #f39c12;
 }
 
 #btnFlagQuestion.flag-inactive {
-    background: #6c757d !important;
-    color: white !important;
+    background: #6c757d;
 }

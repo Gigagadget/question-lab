@@ -200,6 +200,7 @@
     flex-wrap: wrap;
 }
 
+/* Base toolbar button styles - shared properties */
 .toolbar button {
     min-height: 38px;
     padding: 8px 18px;
@@ -266,6 +267,7 @@
     justify-content: flex-end;
 }
 
+/* Base nav button styles - shared properties */
 .nav-buttons button {
     min-height: 32px;
     padding: 6px 14px;

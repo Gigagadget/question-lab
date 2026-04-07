@@ -732,8 +732,11 @@
 
 /* ==================== BUTTONS ==================== */
 
-button.primary {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+/* Base button styles - shared by all buttons */
+button.primary,
+button.secondary,
+button.info,
+button.danger {
     color: white;
     border: none;
     padding: 12px 24px;
@@ -742,6 +745,11 @@ button.primary {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+}
+
+/* Color variants - ONLY colors, no other properties */
+button.primary {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
 }
 
 button.primary:hover:not(:disabled) {
@@ -756,14 +764,6 @@ button.primary:disabled {
 
 button.secondary {
     background: #6c757d;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
 }
 
 button.secondary:hover {
@@ -773,14 +773,6 @@ button.secondary:hover {
 
 button.info {
     background: #2c7da0;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
 }
 
 button.info:hover {
@@ -790,14 +782,6 @@ button.info:hover {
 
 button.danger {
     background: #dc3545;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
 }
 
 button.danger:hover {
