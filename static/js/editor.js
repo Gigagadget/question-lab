@@ -1972,7 +1972,13 @@ window.renameCategory = renameCategory;
 searchInput.addEventListener('input', () => renderQuestionList());
 
 document.getElementById('btnNew').addEventListener('click', createNewQuestion);
-document.getElementById('btnReload').addEventListener('click', loadQuestions);
+document.getElementById('btnReload').addEventListener('click', async () => {
+    if (isDirty) {
+        const confirmed = confirm('Ci sono modifiche non salvate. Procedere con la ricarica?');
+        if (!confirmed) return;
+    }
+    await loadQuestions();
+});
 document.getElementById('btnStats').addEventListener('click', showStats);
 document.getElementById('btnBackup').addEventListener('click', showBackups);
 if (toggleDuplicatesBtn) {
