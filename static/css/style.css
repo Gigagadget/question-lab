@@ -668,3 +668,46 @@ button.active {
 .nav-buttons button:hover {
     background: #2c3e66;
 }
+
+/* Flag feature styles */
+.flag-indicator {
+    margin-right: 4px;
+    font-size: 0.9rem;
+}
+
+.question-item.flagged-item {
+    background: #fffbf5;
+    border-left: 3px solid #f39c12;
+}
+
+.question-item.flagged-item:hover {
+    background: #fff6e6;
+}
+
+.question-item.flagged-item.selected {
+    background: #fff3cd;
+}
+
+/* Dark theme support for flag feature */
+body.dark .question-item.flagged-item {
+    background: #2d2a20;
+    border-left: 3px solid #f39c12;
+}
+
+body.dark .question-item.flagged-item:hover {
+    background: #383428;
+}
+
+body.dark .question-item.flagged-item.selected {
+    background: #3a362a;
+}
+
+#btnFlagQuestion.flag-active {
+    background: #f39c12 !important;
+    color: white !important;
+}
+
+#btnFlagQuestion.flag-inactive {
+    background: #6c757d !important;
+    color: white !important;
+}

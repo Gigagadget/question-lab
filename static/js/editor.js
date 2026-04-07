@@ -44,6 +44,9 @@ const DEFAULT_SUBDOMAIN = 'indefinito';
 let lastNormalizationWarningSignature = '';
 let lastNormalizationWarningAt = 0;
 
+// Flag feature
+let filterFlaggedOnly = false;
+
 // Selezione multipla
 let selectedQuestionIds = new Set(); // ID delle domande selezionate per azioni batch
 
@@ -191,6 +194,18 @@ function refreshQuestionSubdomainOptions(preferredValue = '') {
     populateSubdomainSelect(subdomainSelect, primarySelect.value, preferredValue || subdomainSelect.value, false);
 }
 
+function toggleQuestionFlag(id) {
+    const question = questions.find(q => q.id === id);
+    if (!question) return;
+    
+    // Toggle status, default false if not present
+    question.flagged = !(question.flagged || false);
+    
+    markDirty();
+    renderQuestionList();
+    renderFormForId(id);
+}
+
 function refreshCurrentFormCategorySelects() {
     const primarySelect = document.getElementById('field_primary_domain');
     if (primarySelect) {
@@ -331,6 +346,16 @@ async function loadQuestions() {
         if (filterNoAnswers) filterNoAnswers.addEventListener('change', () => renderQuestionList());
         if (filterWithAnswers) filterWithAnswers.addEventListener('change', () => renderQuestionList());
         if (filterNoCorrect) filterNoCorrect.addEventListener('change', () => renderQuestionList());
+        
+        // Flagged filter
+        const filterFlaggedEl = document.getElementById('filterFlaggedOnly');
+        if (filterFlaggedEl) {
+            filterFlaggedEl.checked = filterFlaggedOnly;
+            filterFlaggedEl.addEventListener('change', () => {
+                filterFlaggedOnly = filterFlaggedEl.checked;
+                renderQuestionList();
+            });
+        }
 
         renderQuestionList();
 
@@ -476,6 +501,11 @@ function filterQuestions(questionsList) {
         filtered = filtered.filter(q => q.duplicate_count > 0);
     }
     
+    // Flagged only filter
+    if (filterFlaggedOnly) {
+        filtered = filtered.filter(q => q.flagged || false);
+    }
+    
     return filtered;
 }
 
@@ -491,15 +521,18 @@ function renderQuestionList() {
         return;
     }
 
+
     questionsListDiv.innerHTML = filtered.map(q => {
         const isDuplicate = q.duplicate_count > 0;
         const isSelected = selectedQuestionIds.has(q.id);
+        const isFlagged = q.flagged || false;
         return `
-            <div class="question-item ${selectedId === q.id ? 'selected' : ''} ${isSelected ? 'batch-selected' : ''} ${isDuplicate ? 'duplicate-item' : ''}" data-id="${q.id}">
+            <div class="question-item ${selectedId === q.id ? 'selected' : ''} ${isSelected ? 'batch-selected' : ''} ${isDuplicate ? 'duplicate-item' : ''} ${isFlagged ? 'flagged-item' : ''}" data-id="${q.id}">
                 <div class="question-item-content" style="display: flex; gap: 8px; align-items: flex-start;">
                     <input type="checkbox" class="batch-select-checkbox" data-id="${q.id}" ${isSelected ? 'checked' : ''} style="margin-top: 3px; cursor: pointer;">
                     <div style="flex: 1; min-width: 0;">
                         <div class="question-id">
+                            ${isFlagged ? '<span class="flag-indicator">🚩</span>' : ''}
                             ${escapeHtml(q.id)}
                             ${isDuplicate ? `<span class="duplicate-badge">${q.duplicate_count} duplicati</span>` : ''}
                         </div>
@@ -815,12 +848,14 @@ function renderFormForId(id) {
     const total = filtered.length;
     
     // Combined action and navigation buttons row
+    const isFlagged = question.flagged || false;
     const combinedButtonsHtml = `
         <div class="combined-buttons-row">
             <div class="left-buttons">
                 <button id="btnDeleteQuestion" class="danger small-btn">🗑️ Elimina</button>
                 <button id="btnDuplicate" class="warning small-btn">📑 Duplica</button>
                 <button id="manageCategoriesBtn" class="info small-btn">🏷️ Categorie</button>
+                <button id="btnFlagQuestion" class="small-btn ${isFlagged ? 'flag-active' : 'flag-inactive'}" style="${isFlagged ? 'background: #f39c12; color: white;' : 'background: #6c757d; color: white;'}">🚩 ${isFlagged ? 'Segnata' : 'Segna'}</button>
             </div>
             <div class="right-buttons">
                 <button id="navPrevBtn" class="small-btn" ${currentIndex === 0 ? 'disabled style="opacity:0.5;"' : ''}>◀ Prec</button>
@@ -964,6 +999,7 @@ function renderFormForId(id) {
     document.getElementById('btnDeleteQuestion')?.addEventListener('click', () => deleteQuestionById(id));
     document.getElementById('btnDuplicate')?.addEventListener('click', () => duplicateQuestion(id));
     document.getElementById('manageCategoriesBtn')?.addEventListener('click', showCategoriesModal);
+    document.getElementById('btnFlagQuestion')?.addEventListener('click', () => toggleQuestionFlag(id));
     document.getElementById('field_id')?.addEventListener('change', () => {
         validateId(id);
         markDirty();

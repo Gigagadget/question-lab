@@ -80,6 +80,8 @@ $RECYCLE.BIN/
 istruzioni.txt
 test_categories_features.py
 CATEGORIES_ADVANCED_FEATURES.md
+FLAG_FEATURE_PLAN.md
+docs/
 
 # File
 .qwen/
