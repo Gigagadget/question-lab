@@ -852,9 +852,9 @@ function renderFormForId(id) {
     const combinedButtonsHtml = `
         <div class="combined-buttons-row">
             <div class="left-buttons">
-                <button id="btnDeleteQuestion" class="danger small-btn">🗑️ Elimina</button>
+                <button id="btnNewFromForm" class="primary small-btn">➕ Nuova</button>
                 <button id="btnDuplicate" class="warning small-btn">📑 Duplica</button>
-                <button id="manageCategoriesBtn" class="info small-btn">🏷️ Categorie</button>
+                <button id="btnDeleteQuestion" class="danger small-btn">🗑️ Elimina</button>
                 <button id="btnFlagQuestion" class="small-btn ${isFlagged ? 'flag-active' : 'flag-inactive'}" style="${isFlagged ? 'background: #f39c12; color: white;' : 'background: #6c757d; color: white;'}">🚩 ${isFlagged ? 'Segnata' : 'Segna'}</button>
             </div>
             <div class="right-buttons">
@@ -998,7 +998,7 @@ function renderFormForId(id) {
     
     document.getElementById('btnDeleteQuestion')?.addEventListener('click', () => deleteQuestionById(id));
     document.getElementById('btnDuplicate')?.addEventListener('click', () => duplicateQuestion(id));
-    document.getElementById('manageCategoriesBtn')?.addEventListener('click', showCategoriesModal);
+    document.getElementById('btnNewFromForm')?.addEventListener('click', createNewQuestion);
     document.getElementById('btnFlagQuestion')?.addEventListener('click', () => toggleQuestionFlag(id));
     document.getElementById('field_id')?.addEventListener('change', () => {
         validateId(id);
@@ -1971,7 +1971,7 @@ window.renameCategory = renameCategory;
 // Event listeners
 searchInput.addEventListener('input', () => renderQuestionList());
 
-document.getElementById('btnNew').addEventListener('click', createNewQuestion);
+document.getElementById('btnCategories').addEventListener('click', showCategoriesModal);
 document.getElementById('btnReload').addEventListener('click', async () => {
     if (isDirty) {
         const confirmed = confirm('Ci sono modifiche non salvate. Procedere con la ricarica?');
