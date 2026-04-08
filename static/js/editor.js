@@ -2,13 +2,6 @@
 const API_BASE_URL = '/api';
 
 document.addEventListener('DOMContentLoaded', function() {
-    const btnHome = document.getElementById('btnHome');
-    if (btnHome) {
-        btnHome.addEventListener('click', () => {
-            window.location.href = '/';
-        });
-    }
-
     // Load active database name
     fetch('/api/databases/active')
         .then(res => res.json())
@@ -880,10 +873,8 @@ function renderFormForId(id) {
                     <input type="text" class="detail-id-input" id="field_id" value="${escapeHtml(question.id)}" placeholder="es., Q1257" maxlength="50">
                     <div id="idError" style="color: #c44536; font-size: 0.65rem; margin-top: 2px; display: none;"></div>
                 </div>
-                ${isDuplicate ? `<span class="duplicate-indicator">📋 Duplicati (${question.duplicate_count})</span>` : ''}
             </div>
             <div class="action-group">
-                <button id="btnNewFromForm" class="btn-icon-modern">➕ Nuova</button>
                 <button id="btnDuplicate" class="btn-icon-modern">📑 Duplica</button>
                 <button id="btnDeleteQuestion" class="btn-icon-modern" style="color: #dc2626;">🗑️ Elimina</button>
                 <button id="btnFlagQuestion" class="btn-icon-modern" style="${isFlagged ? 'border-color: #f59e0b; color: #f59e0b;' : ''}">🚩 ${isFlagged ? 'Segnata' : 'Segna'}</button>
@@ -976,9 +967,9 @@ function renderFormForId(id) {
 
     // Answers section with header
     const answersSectionHtml = `
-        <label class="form-label">Risposte (seleziona quelle corrette)</label>
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
-            <button type="button" id="addAnswerBtn" class="btn-outline">+ Aggiungi risposta</button>
+        <div class="answers-header">
+            <label class="form-label">Risposte (seleziona quelle corrette)</label>
+            <button type="button" id="addAnswerBtn" class="btn-icon-modern">+ Aggiungi risposta</button>
         </div>
         ${answersHtml}
     `;
@@ -1044,9 +1035,9 @@ function renderFormForId(id) {
         });
     });
     
+    document.getElementById('btnNewQuestion')?.addEventListener('click', createNewQuestion);
     document.getElementById('btnDeleteQuestion')?.addEventListener('click', () => deleteQuestionById(id));
     document.getElementById('btnDuplicate')?.addEventListener('click', () => duplicateQuestion(id));
-    document.getElementById('btnNewFromForm')?.addEventListener('click', createNewQuestion);
     document.getElementById('btnFlagQuestion')?.addEventListener('click', () => toggleQuestionFlag(id));
     document.getElementById('field_id')?.addEventListener('change', () => {
         validateId(id);
@@ -1095,7 +1086,12 @@ function addNewAnswer() {
             <input type="checkbox" class="answer-check-modern" data-letter="${newLetter}">
             <span class="answer-letter">${newLetter}</span>
             <input type="text" class="answer-input answer-text-modern" data-letter="${newLetter}" value="" placeholder="Testo risposta">
-            <button type="button" class="remove-answer" data-letter="${newLetter}">🗑️</button>
+            <button type="button" class="remove-answer" data-letter="${newLetter}" title="Elimina risposta">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
         </div>
     `;
     
@@ -2073,15 +2069,17 @@ document.getElementById('btnDeleteSelectedBackups')?.addEventListener('click', d
 document.getElementById('selectAllBackups')?.addEventListener('change', selectAllBackups);
 
 // Help button functionality
-const btnHelp = document.getElementById('btnHelp');
 const helpModal = document.getElementById('helpModal');
 const helpClose = helpModal?.querySelector('.close');
 
-if (btnHelp && helpModal) {
-    btnHelp.addEventListener('click', function() {
-        helpModal.style.display = 'block';
-    });
-}
+['btnHelp', 'btnHelpSidebar'].forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (btn && helpModal) {
+        btn.addEventListener('click', function() {
+            helpModal.style.display = 'block';
+        });
+    }
+});
 
 if (helpClose) {
     helpClose.addEventListener('click', function() {

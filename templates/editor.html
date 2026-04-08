@@ -27,7 +27,6 @@
     <div class="app">
         <!-- Sidebar minimal a icone -->
         <div class="sidebar">
-            <div class="logo">📚</div>
             <div class="nav-items">
                 <a href="/" class="nav-item">
                     <span class="nav-icon">🏠</span>
@@ -50,6 +49,10 @@
                     <span>Database</span>
                 </a>
             </div>
+            <div class="nav-item" id="btnHelpSidebar">
+                <span class="nav-icon">❓</span>
+                <span>Aiuto</span>
+            </div>
             <div class="nav-item" onclick="toggleTheme()">
                 <span class="nav-icon" id="themeIcon">🌙</span>
                 <span>Tema</span>
@@ -60,13 +63,11 @@
         <div class="main-content">
             <!-- Top bar -->
             <div class="top-bar">
-                <h1 class="page-title">✏️ Editor Domande</h1>
+                <h1 class="page-title">Editor Domande</h1>
                 <div class="header-actions">
-                    <button id="btnHome" class="btn-icon-modern">🏠 Home</button>
                     <button id="btnStats" class="btn-icon-modern">📊 Statistiche</button>
                     <button id="btnCategories" class="btn-icon-modern">🏷️ Categorie</button>
                     <button id="btnBackup" class="btn-icon-modern">💿 Backup</button>
-                    <button id="btnHelp" class="btn-icon-modern">❓ Aiuto</button>
                     <button class="btn-primary" id="btnNewQuestion">+ Nuova domanda</button>
                     <span id="statusMsg" style="display: none;"></span>
                     <span id="activeDbName" style="display: none;"></span>
@@ -142,11 +143,6 @@
                 <div class="questions-panel">
                     <div class="questions-toolbar">
                         <span class="questions-count">📄 <span id="questionCountDisplay">0</span> domande</span>
-                        <select class="sort-select" id="sortSelect">
-                            <option value="recent">Più recenti</option>
-                            <option value="oldest">Più vecchie</option>
-                            <option value="id">ID crescente</option>
-                        </select>
                     </div>
 
                     <div id="questionsList" class="questions-list">
