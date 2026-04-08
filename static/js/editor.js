@@ -1981,6 +1981,32 @@ document.getElementById('btnReload').addEventListener('click', async () => {
 });
 document.getElementById('btnStats').addEventListener('click', showStats);
 document.getElementById('btnBackup').addEventListener('click', showBackups);
+
+// Settings dropdown toggle
+const btnSettings = document.getElementById('btnSettings');
+const dropdownMenu = btnSettings?.nextElementSibling;
+
+if (btnSettings && dropdownMenu) {
+    btnSettings.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('active');
+    });
+
+    // Chiudi quando si clicca fuori
+    document.addEventListener('click', (e) => {
+        if (!btnSettings.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownMenu.classList.remove('active');
+        }
+    });
+    
+    // Chiudi il menu quando si clicca sui pulsanti interni
+    dropdownMenu.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdownMenu.classList.remove('active');
+        });
+    });
+}
 if (toggleDuplicatesBtn) {
     toggleDuplicatesBtn.addEventListener('click', toggleShowDuplicates);
 }
