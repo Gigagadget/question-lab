@@ -1163,6 +1163,28 @@ select:focus {
     color: var(--text-secondary, #94a3b8);
 }
 
+[data-theme="dark"] .detail-id-input {
+    background: transparent;
+    color: var(--text-primary, #f1f5f9);
+}
+
+[data-theme="dark"] .detail-id-input:hover {
+    background: var(--bg-tertiary, #1e293b);
+}
+
+[data-theme="dark"] .detail-id-input:focus {
+    background: var(--bg-secondary, #0f172a);
+    border-color: var(--accent-blue, #3b82f6);
+}
+
+[data-theme="dark"] .remove-answer:hover {
+    background: rgba(220, 38, 38, 0.15);
+}
+
+[data-theme="dark"] .meta-icon {
+    opacity: 0.5;
+}
+
 /* Editor - Form top bar */
 [data-theme="dark"] .form-top-bar {
     background: var(--bg-tertiary);

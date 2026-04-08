@@ -555,8 +555,14 @@ function renderQuestionList() {
                 </div>
                 <div class="question-text-modern">${escapeHtml(q.raw_text ? q.raw_text.substring(0, 80) : 'Nessun testo disponibile')}${q.raw_text?.length > 80 ? '...' : ''}</div>
                 <div class="question-meta-modern">
-                    <span>🧠 ${escapeHtml(q.primary_domain || 'nessun dominio')}</span>
-                    <span>📁 ${escapeHtml(q.subdomain || 'nessun sottodominio')}</span>
+                    <span>
+                        <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                        ${escapeHtml(q.primary_domain || 'nessun dominio')}
+                    </span>
+                    <span>
+                        <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                        ${escapeHtml(q.subdomain || 'nessun sottodominio')}
+                    </span>
                 </div>
             </div>
         `;
@@ -869,8 +875,11 @@ function renderFormForId(id) {
     
     const detailActionsHtml = `
         <div class="detail-actions">
-            <div>
-                <span class="detail-title">${escapeHtml(question.id)}</span>
+            <div class="detail-title-row">
+                <div class="id-group">
+                    <input type="text" class="detail-id-input" id="field_id" value="${escapeHtml(question.id)}" placeholder="es., Q1257" maxlength="50">
+                    <div id="idError" style="color: #c44536; font-size: 0.65rem; margin-top: 2px; display: none;"></div>
+                </div>
                 ${isDuplicate ? `<span class="duplicate-indicator">📋 Duplicati (${question.duplicate_count})</span>` : ''}
             </div>
             <div class="action-group">
@@ -904,7 +913,12 @@ function renderFormForId(id) {
                 <input type="checkbox" class="answer-check-modern" data-letter="${letter}" ${question.correct?.includes(letter) ? 'checked' : ''}>
                 <span class="answer-letter">${letter}</span>
                 <input type="text" class="answer-input answer-text-modern" data-letter="${letter}" value="${escapeHtml(answerValue)}" placeholder="Testo risposta">
-                <button type="button" class="remove-answer" data-letter="${letter}">🗑️</button>
+                <button type="button" class="remove-answer" data-letter="${letter}" title="Elimina risposta">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
         `;
     });
@@ -946,11 +960,6 @@ function renderFormForId(id) {
 
     // Form fields
     const fieldsHtml = `
-        <div class="form-group">
-            <label class="form-label">ID</label>
-            <input type="text" class="form-input" id="field_id" value="${escapeHtml(question.id)}" placeholder="es., Q1257">
-            <div id="idError" style="color: #c44536; font-size: 0.7rem; margin-top: 2px; display: none;"></div>
-        </div>
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label">Dominio</label>
