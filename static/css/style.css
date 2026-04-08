@@ -484,6 +484,46 @@ textarea {
     font-size: 0.8rem;
 }
 
+/* Help modal - larger size for all pages */
+#helpModal .modal-content {
+    max-width: 700px;
+    max-height: 90vh;
+}
+
+.help-content h4 {
+    margin: 15px 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #2c7da0;
+    color: #1e293b;
+    font-size: 0.9rem;
+}
+
+.help-content ul {
+    padding-left: 20px;
+    margin: 10px 0;
+}
+
+.help-content li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.help-content strong {
+    color: #2c3e66;
+}
+
+/* Dark mode - help modal */
+body.dark .help-content h4,
+[data-theme="dark"] .help-content h4 {
+    border-bottom-color: #6eb5f0;
+    color: #e8edf2;
+}
+
+body.dark .help-content strong,
+[data-theme="dark"] .help-content strong {
+    color: #6eb5f0;
+}
+
 .close {
     color: #aaa;
     float: right;

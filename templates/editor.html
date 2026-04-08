@@ -139,49 +139,91 @@
             <span class="close">&times;</span>
             <h3>ℹ️ Guida all'Editor Domande</h3>
             <div class="help-content">
-                <h4>📋 Panoramica delle funzionalità</h4>
+                <h4>🚀 Come iniziare</h4>
                 <ul>
-                    <li><strong>Nuova domanda</strong>: Clicca "➕ Nuova" per creare una nuova domanda</li>
-                    <li><strong>Modifica domanda</strong>: Seleziona una domanda dalla lista per modificarla nel pannello destro</li>
-                    <li><strong>Salvataggio automatico</strong>: Le modifiche vengono salvate automaticamente (indicatore "● Auto" in alto)</li>
-                    <li><strong>Ricarica</strong>: Clicca "🔄 Ricarica" per ricaricare le domande dal server</li>
+                    <li><strong>Creare una domanda</strong>: Clicca "➕ Nuova" e compila i campi</li>
+                    <li><strong>Modificare una domanda</strong>: Cliccala dalla lista a sinistra</li>
+                    <li><strong>Salvataggio</strong>: Automatico! Non devi premere nessun pulsante</li>
                 </ul>
-                
-                <h4>🔍 Ricerca e Filtri</h4>
+
+                <h4>💾 Salvataggio Automatico</h4>
                 <ul>
-                    <li><strong>Barra di ricerca</strong>: Cerca per ID o testo della domanda</li>
-                    <li><strong>Filtri risposte</strong>: Filtra per "Senza risposta", "Con risposte", "Senza risposta corretta"</li>
-                    <li><strong>Mostra Duplicati</strong>: Visualizza solo le domande con duplicati</li>
+                    <li><strong>"● Auto"</strong> (in alto a destra): Tutto salvato ✓</li>
+                    <li><strong>"● Modifiche in sospeso"</strong>: Salvataggio in corso...</li>
+                    <li>Il sistema salva da solo 300ms dopo che hai finito di scrivere</li>
                 </ul>
-                
+
+                <h4>🔍 Cercare e Filtrare</h4>
+                <ul>
+                    <li><strong>Barra di ricerca</strong>: Scrivi l'ID o il testo della domanda</li>
+                    <li><strong>Filtri risposte</strong>: Mostra domande senza risposta, con risposte, o senza risposta corretta</li>
+                    <li><strong>🚩 Solo flaggate</strong>: Vedi solo le domande che hai contrassegnato</li>
+                    <li><strong>🔍 Mostra Duplicati</strong>: Vedi solo le domande che hanno duplicati</li>
+                </ul>
+
+                <h4>🚩 Contrassegnare Domande (Flag)</h4>
+                <ul>
+                    <li>Clicca il pulsante 🚩 su una domanda per "segnarla"</li>
+                    <li>Utile per trovare dopo le domande da rivedere o controllare</li>
+                    <li>Usa il filtro "🚩 Solo flaggate" per vederle tutte insieme</li>
+                </ul>
+
+                <h4>📑 Duplicati</h4>
+                <ul>
+                    <li><strong>Domande duplicate</strong>: Appaiono con sfondo giallo nella lista</li>
+                    <li><strong>Badge "X duplicati"</strong>: Ti dice quanti duplicati esistono</li>
+                    <li><strong>📑 Duplica</strong>: Crea una copia della domanda con un nuovo ID</li>
+                    <li><strong>🔍 Mostra Duplicati</strong>: Filtra per vedere solo le domande duplicate</li>
+                </ul>
+
+                <h4>🔖 Selezionare Più Domande (Batch)</h4>
+                <ul>
+                    <li><strong>Checkbox</strong>: Accanto a ogni domanda, seleziona quelle che ti interessano</li>
+                    <li><strong>"✓ Sel. tutto"</strong>: Seleziona tutte le domande visibili</li>
+                    <li><strong>"🗑️ Elimina"</strong>: Cancella tutte le domande selezionate</li>
+                    <li><strong>"🏷️ Categoria"</strong>: Sposta le domande selezionate in un'altra categoria</li>
+                    <li><strong>"✗ Deseleziona"</strong>: Annulla la selezione</li>
+                </ul>
+
+                <h4>⚠️ Normalizzazione Categorie</h4>
+                <ul>
+                    <li>Se una categoria non è più valida, il sistema la sistema da sola</li>
+                    <li><strong>Alert in alto</strong>: Ti dice quante domande sono state sistemate</li>
+                    <li><strong>"Dettagli"</strong>: Clicca per vedere esattamente cosa è cambiato</li>
+                    <li><strong>Toast in basso</strong>: Un messaggio veloce conferma l'operazione</li>
+                </ul>
+
                 <h4>🏷️ Categorie</h4>
                 <ul>
-                    <li><strong>Gestisci categorie</strong>: Clicca "🏷️ Categorie" per aggiungere, rimuovere o rinominare domini e sottodomini</li>
-                    <li><strong>Rinomina</strong>: Usa il pulsante "✏️ Rinomina" per cambiare nome a una categoria (aggiorna automaticamente le domande)</li>
+                    <li><strong>"🏷️ Categorie"</strong>: Apre il pannello per gestire domini e sottodomini</li>
+                    <li><strong>"✏️ Rinomina"</strong>: Cambia nome a una categoria (aggiorna anche le domande)</li>
                 </ul>
-                
+
                 <h4>📊 Statistiche</h4>
                 <ul>
-                    <li><strong>Panoramica</strong>: Visualizza il totale delle domande, duplicati e distribuzione per categoria</li>
-                    <li><strong>Statistiche risposte</strong>: Controlla domande con una sola risposta, senza risposte o senza risposte corrette</li>
+                    <li>Vedi il totale delle domande, i duplicati e la distribuzione per categoria</li>
+                    <li>Controlla quante domande hanno una sola risposta, nessuna risposta, o nessuna risposta corretta</li>
                 </ul>
-                
+
                 <h4>💾 Backup</h4>
                 <ul>
-                    <li><strong>Backup automatici</strong>: Ogni salvataggio crea un backup automatico</li>
-                    <li><strong>Ripristina</strong>: Seleziona un backup dalla lista per ripristinare il database</li>
+                    <li><strong>Ogni salvataggio crea un backup automatico</strong></li>
+                    <li>Puoi ripristinare un backup precedente dalla lista</li>
                 </ul>
-                
-                <h4>⌨️ Scorciatoie da tastiera</h4>
+
+                <h4>⌨️ Scorciatoie da Tastiera</h4>
                 <ul>
-                    <li><strong>Frecce sinistra/destra</strong>: Naviga tra le domande</li>
+                    <li><strong>Freccia sinistra/destra</strong>: Vai alla domanda precedente/successiva</li>
                 </ul>
-                
-                <h4>💡 Suggerimenti</h4>
+
+                <h4>💡 Consigli Utili</h4>
                 <ul>
-                    <li>Le domande con duplicati sono evidenziate in giallo nella lista</li>
-                    <li>Puoi selezionare più domande per azioni batch (elimina, cambia categoria)</li>
-                    <li>Il campo ID deve essere univoco: se lo cambi, viene verificato automaticamente</li>
+                    <li>Le domande duplicate sono in giallo con il numero di duplicati</li>
+                    <li>Seleziona più domande per eliminarle o spostarle insieme</li>
+                    <li>Usa il filtro 🚩 per trovare subito le domande importanti</li>
+                    <li>Se vedi "Modifiche in sospeso", il sistema sta salvando da solo</li>
+                    <li>L'ID deve essere unico: se lo cambi, il sistema controlla subito</li>
+                    <li>Usa "📑 Duplica" per creare velocemente una domanda simile</li>
                 </ul>
             </div>
         </div>

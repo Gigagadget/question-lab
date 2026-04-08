@@ -751,16 +751,6 @@ select:focus {
     background: var(--status-correct-border);
 }
 
-/* Help modal */
-.help-content h4 {
-    border-bottom: 2px solid var(--accent-blue);
-    color: var(--text-primary);
-}
-
-.help-content strong {
-    color: var(--accent-primary);
-}
-
 /* Home cards */
 .card {
     background: var(--bg-secondary);
@@ -1133,15 +1123,6 @@ select:focus {
 
 [data-theme="dark"] .toggle-btn.active {
     background: var(--status-correct-text);
-}
-
-[data-theme="dark"] .help-content h4 {
-    border-bottom-color: var(--accent-blue);
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .help-content strong {
-    color: var(--accent-primary);
 }
 
 /* Editor.css */
