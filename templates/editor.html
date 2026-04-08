@@ -7,7 +7,7 @@
     <link rel="apple-touch-icon" href="/static/favicon.svg?v=1">
     <title>QuestionLab - Editor</title>
     <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/editor.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
     <link rel="stylesheet" href="/static/css/responsive.css">
     <link rel="stylesheet" href="/static/css/theme.css">
     <link rel="stylesheet" href="/static/css/no-db-blocker.css">
@@ -24,65 +24,146 @@
         </div>
     </div>
 
-    <div class="app-container">
-        <div class="header">
-            <h1>✏️ Editor Domande</h1>
-            <p>Gestione domande in <strong id="activeDbName">--</strong></p>
+    <div class="app">
+        <!-- Sidebar minimal a icone -->
+        <div class="sidebar">
+            <div class="logo">📚</div>
+            <div class="nav-items">
+                <a href="/" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="/editor" class="nav-item active">
+                    <span class="nav-icon">✏️</span>
+                    <span>Editor</span>
+                </a>
+                <a href="/quiz" class="nav-item">
+                    <span class="nav-icon">🎯</span>
+                    <span>Quiz</span>
+                </a>
+                <a href="/view" class="nav-item">
+                    <span class="nav-icon">👁️</span>
+                    <span>View</span>
+                </a>
+                <a href="/databases" class="nav-item">
+                    <span class="nav-icon">🗃️</span>
+                    <span>Database</span>
+                </a>
+            </div>
+            <div class="nav-item" onclick="toggleTheme()">
+                <span class="nav-icon" id="themeIcon">🌙</span>
+                <span>Tema</span>
+            </div>
         </div>
 
-        <div class="toolbar">
-            <button id="btnHome" class="info">🏠 Home</button>
-            <button id="btnHelp" class="info">❓ Aiuto</button>
-            <button id="btnStats" class="info">📊 Statistiche</button>
-            <button id="btnCategories" class="info">🏷️ Categorie</button>
-            <div class="toolbar-dropdown">
-                <button id="btnSettings" class="info">⚙️ Impostazioni</button>
-                <div class="toolbar-dropdown-menu">
-                    <button id="btnReload" class="info">🔄 Ricarica</button>
-                    <button id="btnBackup" class="info">💿 Backup</button>
+        <!-- Main content -->
+        <div class="main-content">
+            <!-- Top bar -->
+            <div class="top-bar">
+                <h1 class="page-title">✏️ Editor Domande</h1>
+                <div class="header-actions">
+                    <button id="btnHome" class="btn-icon-modern">🏠 Home</button>
+                    <button id="btnStats" class="btn-icon-modern">📊 Statistiche</button>
+                    <button id="btnCategories" class="btn-icon-modern">🏷️ Categorie</button>
+                    <button id="btnBackup" class="btn-icon-modern">💿 Backup</button>
+                    <button id="btnHelp" class="btn-icon-modern">❓ Aiuto</button>
+                    <button class="btn-primary" id="btnNewQuestion">+ Nuova domanda</button>
+                    <span id="statusMsg" style="display: none;"></span>
+                    <span id="activeDbName" style="display: none;"></span>
+                    <button id="btnSettings" style="display: none;"></button>
+                    <button id="btnReload" style="display: none;"></button>
+                    <div class="auto-save-indicator" id="autoSaveIndicator">● Auto</div>
                 </div>
             </div>
-            <div class="status" id="statusMsg">Pronto</div>
-            <div class="auto-save-indicator" id="autoSaveIndicator">● Auto</div>
-        </div>
 
-        <div id="normalizationAlert" class="normalization-alert" style="display: none;">
-            <div class="normalization-alert-main">
-                <span class="normalization-alert-icon">⚠️</span>
-                <div class="normalization-alert-text" id="normalizationAlertText"></div>
-                <div class="normalization-alert-actions">
-                    <button id="normalizationAlertDetailsBtn" class="small-btn" type="button">Dettagli</button>
-                    <button id="normalizationAlertCloseBtn" class="small-btn" type="button">Chiudi</button>
-                </div>
-            </div>
-            <div id="normalizationAlertDetails" class="normalization-alert-details" style="display: none;"></div>
-        </div>
-
-        <div class="editor-layout">
-            <!-- Left panel -->
-            <div class="list-panel">
-                <div class="list-header">
-                    <span class="questions-title">📋 Domande (<span id="questionCount">0</span>)</span>
-                    <button id="toggleDuplicatesBtn" class="small-btn">🔍 Mostra Duplicati</button>
-                </div>
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="🔍 Cerca per ID o testo...">
-                    <div class="answer-filters">
-                        <label><input type="checkbox" id="filterNoAnswers"> Senza risposta</label>
-                        <label><input type="checkbox" id="filterWithAnswers"> Con risposte</label>
-                        <label><input type="checkbox" id="filterNoCorrect"> Senza risposta corretta</label>
-                        <label><input type="checkbox" id="filterFlaggedOnly"> 🚩 Solo flaggate</label>
+            <!-- Normalization Alert -->
+            <div id="normalizationAlert" class="normalization-alert" style="display: none;">
+                <div class="normalization-alert-main">
+                    <span class="normalization-alert-icon">⚠️</span>
+                    <div class="normalization-alert-text" id="normalizationAlertText"></div>
+                    <div class="normalization-alert-actions">
+                        <button id="normalizationAlertDetailsBtn" class="small-btn" type="button">Dettagli</button>
+                        <button id="normalizationAlertCloseBtn" class="small-btn" type="button">Chiudi</button>
                     </div>
                 </div>
-                <div id="questionsList" class="questions-list">
-                    <div class="empty-list">Caricamento domande...</div>
-                </div>
+                <div id="normalizationAlertDetails" class="normalization-alert-details" style="display: none;"></div>
             </div>
 
-            <!-- Right panel -->
-            <div class="form-panel" id="formPanel">
-                <div id="formContent">
-                    <!-- dynamic form fields will appear here -->
+            <!-- Workspace 3 colonne -->
+            <div class="workspace">
+                <!-- Panel 1: Filtri -->
+                <div class="filters-panel">
+                    <div class="filters-header">
+                        <h3>📋 Domande</h3>
+                        <div class="search-box" style="margin-bottom: 12px;">
+                            <input type="text" id="searchInput" placeholder="Cerca per ID o testo...">
+                        </div>
+
+                        <div class="filter-group">
+                            <div class="filter-label">Stato risposta</div>
+                            <div class="filter-options">
+                                <label class="filter-option">
+                                    <input type="checkbox" id="filterNoAnswers"> Senza risposta
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" id="filterWithAnswers"> Con risposte
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" id="filterNoCorrect"> Senza risposta corretta
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" id="filterFlaggedOnly"> 🚩 Solo flaggate
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <button id="toggleDuplicatesBtn" class="btn-outline">🔍 Mostra Duplicati</button>
+                        </div>
+
+                        <div class="filter-actions-modern">
+                            <button class="btn-outline" id="btnSelectAll">✓ Sel. tutto</button>
+                            <button class="btn-outline" id="btnClearSelection">✗ Deseleziona</button>
+                        </div>
+
+                        <div id="batchActionsDiv" style="display: none; margin-top: 12px;">
+                            <span id="batchCountSpan" class="active-filters-info">0 domande selezionate</span>
+                            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                <button id="btnBatchSelectAll" class="btn-outline">✓ Sel. tutto</button>
+                                <button id="btnBatchClear" class="btn-outline">✗ Deseleziona</button>
+                                <button id="btnBatchDelete" class="btn-outline" style="color: var(--accent-red);">🗑️ Elimina</button>
+                                <button id="btnBatchCategory" class="btn-outline">🏷️ Categoria</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Lista domande -->
+                <div class="questions-panel">
+                    <div class="questions-toolbar">
+                        <span class="questions-count">📄 <span id="questionCountDisplay">0</span> domande</span>
+                        <select class="sort-select" id="sortSelect">
+                            <option value="recent">Più recenti</option>
+                            <option value="oldest">Più vecchie</option>
+                            <option value="id">ID crescente</option>
+                        </select>
+                    </div>
+
+                    <div id="questionsList" class="questions-list">
+                        <div class="empty-list">Caricamento domande...</div>
+                    </div>
+                </div>
+
+                <!-- Panel 3: Dettaglio domanda -->
+                <div class="detail-panel" id="formPanel">
+                    <div id="formContent">
+                        <div class="view-placeholder" id="formPlaceholder">
+                            <div class="placeholder-icon">📝</div>
+                            <h3>Seleziona una domanda</h3>
+                            <p>Clicca su una domanda dalla lista per modificarla</p>
+                            <p>oppure clicca "+ Nuova domanda" per crearne una</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -163,7 +244,7 @@
                     <li><strong>Barra di ricerca</strong>: Scrivi l'ID o il testo della domanda</li>
                     <li><strong>Filtri risposte</strong>: Mostra domande senza risposta, con risposte, o senza risposta corretta</li>
                     <li><strong>🚩 Solo flaggate</strong>: Vedi solo le domande che hai contrassegnato</li>
-                    <li><strong>🔍 Mostra Duplicati</strong>: Vedi solo le domande che hanno duplicati</li>
+                    <li><strong>🔍 Mostra Duplicati</strong>: Filtra per vedere solo le domande duplicate</li>
                 </ul>
 
                 <h4>🚩 Contrassegnare Domande (Flag)</h4>

@@ -15,11 +15,11 @@
     --shadow-color: rgba(0, 0, 0, 0.08);
     --shadow-hover: rgba(0, 0, 0, 0.12);
     
-    /* Colori accent */
-    --accent-primary: #1e3c72;
-    --accent-secondary: #2a5298;
-    --accent-blue: #2c7da0;
-    --accent-blue-hover: #1f5e7a;
+    /* Colori accent - aggiornati al design moderno */
+    --accent-primary: #3b82f6;
+    --accent-secondary: #2563eb;
+    --accent-blue: #3b82f6;
+    --accent-blue-hover: #2563eb;
     --accent-green: #2c6e2f;
     --accent-orange: #e67e22;
     --accent-red: #c44536;
@@ -62,11 +62,11 @@
     --shadow-color: rgba(0, 0, 0, 0.5);
     --shadow-hover: rgba(0, 0, 0, 0.7);
     
-    /* Colori accent - vivaci come Samsung/VS Code pero non eccessivi */
-    --accent-primary: #6eb5f0;
-    --accent-secondary: #5ba8e3;
-    --accent-blue: #6eb5f0;
-    --accent-blue-hover: #82c4ff;
+    /* Colori accent - aggiornati al design moderno */
+    --accent-primary: #60a5fa;
+    --accent-secondary: #3b82f6;
+    --accent-blue: #60a5fa;
+    --accent-blue-hover: #93c5fd;
     --accent-green: #7ec0ab;
     --accent-orange: #d39840;
     --accent-red: #bf5b68;
@@ -1145,6 +1145,22 @@ select:focus {
 
 [data-theme="dark"] .nav-buttons button:hover:not(:disabled) {
     background: var(--accent-primary);
+}
+
+[data-theme="dark"] .nav-btn-modern {
+    background: var(--bg-secondary, #1e293b);
+    border-color: var(--border-color, #334155);
+    color: var(--text-primary, #f1f5f9);
+}
+
+[data-theme="dark"] .nav-btn-modern:hover:not(:disabled) {
+    background: var(--accent-blue, #3b82f6);
+    border-color: var(--accent-blue, #3b82f6);
+}
+
+[data-theme="dark"] .nav-counter {
+    background: var(--bg-tertiary, #1e293b);
+    color: var(--text-secondary, #94a3b8);
 }
 
 /* Editor - Form top bar */

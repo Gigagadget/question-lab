@@ -7,7 +7,8 @@
     <link rel="apple-touch-icon" href="/static/favicon.svg?v=1">
     <title>QuestionLab - View</title>
     <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/view.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
     <link rel="stylesheet" href="/static/css/theme.css">
     <link rel="stylesheet" href="/static/css/no-db-blocker.css">
 </head>
@@ -22,102 +23,145 @@
         </div>
     </div>
 
-    <div class="app-container">
-        <div class="header">
-            <h1>👁️ Modalità Visualizzazione</h1>
-            <p>Naviga e visualizza le domande in formato ottimizzato per la lettura</p>
-        </div>
-
-        <div class="toolbar">
-            <button id="btnHome" class="info">🏠 Home</button>
-            <button id="btnHelp" class="info">❓ Aiuto</button>
-            <button id="btnExportDoc" class="export-btn">📄 Esporta DOC</button>
-            <button id="btnExportPdf" class="export-btn">📕 Esporta PDF</button>
-            <select id="sortSelect" class="view-filter-select" style="width: auto; margin-left: 10px;">
-                <option value="id">🔢 Per Numero</option>
-                <option value="category">🏷️ Per Categoria</option>
-            </select>
-            <div class="view-counter" id="viewCounter">Domanda 0 di 0</div>
-            <div class="status" id="statusMsg">Pronto</div>
-        </div>
-        
-        <!-- Help Modal -->
-        <div id="helpModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h3>ℹ️ Guida alla Modalità Visualizzazione</h3>
-                <div class="help-content">
-                    <h4> panoramica delle funzionalità</h4>
-                    <ul>
-                        <li><strong>Navigazione tra le domande</strong>: Usa i pulsanti "Precedente" e "Successiva" oppure i tasti freccia della tastiera</li>
-                        <li><strong>Filtri</strong>: Filtra le domande per dominio e sottodominio usando le caselle di controllo</li>
-                        <li><strong>Ricerca</strong>: Cerca parole specifiche nelle domande usando la barra di ricerca</li>
-                        <li><strong>Ordinamento</strong>: Scegli come ordinare le domande dal menu a tendina (per numero o per categoria)</li>
-                        <li><strong>Mostra/Nascondi risposte</strong>: Usa il pulsante "Mostra Risposte" per vedere quali risposte sono corrette</li>
-                        <li><strong>Esportazione</strong>: Esporta le domande visualizzate in formato DOC o PDF</li>
-                        <li><strong>Modifica rapida</strong>: Clicca su "Modifica" per aprire la domanda nell'editor</li>
-                    </ul>
-                    
-                    <h4>Scorciatoie da tastiera</h4>
-                    <ul>
-                        <li><strong>Frecce sinistra/destra</strong>: Naviga tra le domande</li>
-                    </ul>
-                    
-                    <h4>Suggerimenti utili</h4>
-                    <ul>
-                        <li>Puoi selezionare più domini e sottodomini contemporaneamente</li>
-                        <li>I filtri si applicano automaticamente man mano che selezioni le opzioni</li>
-                        <li>Il contatore in alto mostra la posizione attuale tra le domande filtrate</li>
-                        <li>Le domande selezionate vengono evidenziate nella lista</li>
-                    </ul>
-                </div>
+    <div class="app">
+        <!-- Sidebar minimal a icone -->
+        <div class="sidebar">
+            <div class="logo">📚</div>
+            <div class="nav-items">
+                <a href="/" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="/editor" class="nav-item">
+                    <span class="nav-icon">✏️</span>
+                    <span>Editor</span>
+                </a>
+                <a href="/quiz" class="nav-item">
+                    <span class="nav-icon">🎯</span>
+                    <span>Quiz</span>
+                </a>
+                <a href="/view" class="nav-item active">
+                    <span class="nav-icon">👁️</span>
+                    <span>View</span>
+                </a>
+                <a href="/databases" class="nav-item">
+                    <span class="nav-icon">🗃️</span>
+                    <span>Database</span>
+                </a>
+            </div>
+            <div class="nav-item" onclick="toggleTheme()">
+                <span class="nav-icon" id="themeIcon">🌙</span>
+                <span>Tema</span>
             </div>
         </div>
 
-        <div class="view-layout">
-            <!-- Left Panel: Filters + Question List -->
-            <div class="view-list-panel">
-            <div class="view-filters">
-                <div class="filter-row">
-                    <input type="text" id="searchInput" placeholder="🔍 Cerca domande..." class="view-search">
+        <!-- Main content -->
+        <div class="main-content">
+            <!-- Top bar -->
+            <div class="top-bar">
+                <h1 class="page-title">👁️ Modalità Visualizzazione</h1>
+                <div class="header-actions">
+                    <button id="btnHome" class="btn-icon-modern">🏠 Home</button>
+                    <button id="btnExportDoc" class="btn-icon-modern">📄 Esporta DOC</button>
+                    <button id="btnExportPdf" class="btn-icon-modern">📕 Esporta PDF</button>
+                    <select id="sortSelect" class="filter-select-modern" style="width: auto;">
+                        <option value="id">🔢 Per Numero</option>
+                        <option value="category">🏷️ Per Categoria</option>
+                    </select>
+                    <div class="view-counter" id="viewCounter">Domanda 0 di 0</div>
+                    <span id="statusMsg" style="display: none;"></span>
+                    <button id="btnHelp" class="btn-icon-modern">❓ Aiuto</button>
                 </div>
-                <div class="filter-row">
-                    <div class="category-filter-group">
-                        <label class="filter-label">Domini:</label>
-                        <div id="primaryDomainCheckboxes" class="checkbox-group"></div>
+            </div>
+
+            <!-- Workspace 3 colonne -->
+            <div class="workspace">
+                <!-- Panel 1: Filtri -->
+                <div class="filters-panel">
+                    <div class="filters-header">
+                        <h3>🔍 Filtri</h3>
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Cerca domande...">
+                        </div>
+
+                        <div class="filter-group">
+                            <div class="filter-label">Domini:</div>
+                            <div id="primaryDomainCheckboxes" class="checkbox-group"></div>
+                        </div>
+
+                        <div class="filter-group">
+                            <div class="filter-label">Sottodomini:</div>
+                            <div id="subdomainCheckboxes" class="checkbox-group"></div>
+                        </div>
+
+                        <div class="filter-actions-modern">
+                            <button id="clearFiltersBtn" class="btn-outline">Pulisci Filtri</button>
+                            <button id="toggleCorrectBtn" class="btn-outline toggle-btn">👁️ Mostra Risposte</button>
+                        </div>
+
+                        <div class="active-filters-info" id="questionCount">0 domande</div>
                     </div>
                 </div>
-                <div class="filter-row">
-                    <div class="category-filter-group">
-                        <label class="filter-label">Sottodomini:</label>
-                        <div id="subdomainCheckboxes" class="checkbox-group"></div>
+
+                <!-- Panel 2: Lista domande -->
+                <div class="questions-panel">
+                    <div class="questions-toolbar">
+                        <span class="questions-count">📄 Lista domande</span>
+                    </div>
+
+                    <div id="questionsList" class="questions-list">
+                        <div class="empty-list">Caricamento...</div>
                     </div>
                 </div>
-                <div class="filter-row">
-                    <button id="clearFiltersBtn" class="small-btn">Pulisci Filtri</button>
-                    <button id="toggleCorrectBtn" class="small-btn toggle-btn">👁️ Mostra Risposte</button>
-                    <span id="questionCount" class="view-count">0 domande</span>
-                </div>
-            </div>
-                <div class="view-questions-list" id="questionsList">
-                    <div class="empty-list">Caricamento...</div>
-                </div>
-            </div>
 
-            <!-- Right Panel: Question Reading View -->
-            <div class="view-detail-panel" id="detailPanel">
-                <div class="view-placeholder">
-                    <div class="placeholder-icon">📖</div>
-                    <h3>Seleziona una domanda</h3>
-                    <p>Scegli una domanda dalla lista per visualizzarla</p>
+                <!-- Panel 3: Dettaglio domanda -->
+                <div class="detail-panel" id="detailPanel">
+                    <div class="view-placeholder">
+                        <div class="placeholder-icon">📖</div>
+                        <h3>Seleziona una domanda</h3>
+                        <p>Scegli una domanda dalla lista per visualizzarla</p>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Navigation Arrows -->
-        <div class="view-nav-arrows">
-            <button id="navPrevBtn" class="nav-arrow" disabled>◀ Precedente</button>
-            <button id="navNextBtn" class="nav-arrow" disabled>Successiva ▶</button>
+    <!-- Navigation Arrows -->
+    <div class="view-nav-arrows" style="position: fixed; bottom: 20px; right: 32px; display: flex; gap: 8px; z-index: 50;">
+        <button id="navPrevBtn" class="btn-outline" disabled>◀ Precedente</button>
+        <button id="navNextBtn" class="btn-outline" disabled>Successiva ▶</button>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>ℹ️ Guida alla Modalità Visualizzazione</h3>
+            <div class="help-content">
+                <h4> panoramica delle funzionalità</h4>
+                <ul>
+                    <li><strong>Navigazione tra le domande</strong>: Usa i pulsanti "Precedente" e "Successiva" oppure i tasti freccia della tastiera</li>
+                    <li><strong>Filtri</strong>: Filtra le domande per dominio e sottodominio usando le caselle di controllo</li>
+                    <li><strong>Ricerca</strong>: Cerca parole specifiche nelle domande usando la barra di ricerca</li>
+                    <li><strong>Ordinamento</strong>: Scegli come ordinare le domande dal menu a tendina (per numero o per categoria)</li>
+                    <li><strong>Mostra/Nascondi risposte</strong>: Usa il pulsante "Mostra Risposte" per vedere quali risposte sono corrette</li>
+                    <li><strong>Esportazione</strong>: Esporta le domande visualizzate in formato DOC o PDF</li>
+                    <li><strong>Modifica rapida</strong>: Clicca su "Modifica" per aprire la domanda nell'editor</li>
+                </ul>
+                
+                <h4>Scorciatoie da tastiera</h4>
+                <ul>
+                    <li><strong>Frecce sinistra/destra</strong>: Naviga tra le domande</li>
+                </ul>
+                
+                <h4>Suggerimenti utili</h4>
+                <ul>
+                    <li>Puoi selezionare più domini e sottodomini contemporaneamente</li>
+                    <li>I filtri si applicano automaticamente man mano che selezioni le opzioni</li>
+                    <li>Il contatore in alto mostra la posizione attuale tra le domande filtrate</li>
+                    <li>Le domande selezionate vengono evidenziate nella lista</li>
+                </ul>
+            </div>
         </div>
     </div>
 

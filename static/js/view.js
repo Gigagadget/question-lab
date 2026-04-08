@@ -377,18 +377,38 @@ function renderQuestionList() {
     var html = '';
     filteredQuestions.forEach(function(q) {
         var isSelected = selectedId === q.id;
-        var preview = q.raw_text ? q.raw_text.substring(0, 60) : 'Nessun testo';
-        var moreText = q.raw_text && q.raw_text.length > 60 ? '...' : '';
-        html += '<div class="view-question-item ' + (isSelected ? 'selected' : '') + '" data-id="' + q.id + '">' +
-            '<div class="view-question-id">' + escapeHtml(q.id) + '</div>' +
-            '<div class="view-question-preview">' + escapeHtml(preview) + moreText + '</div>' +
-            '<div class="view-question-meta">' + escapeHtml(q.primary_domain || 'N/D') + ' / ' + escapeHtml(q.subdomain || 'N/D') + '</div>' +
-            '</div>';
+        var preview = q.raw_text ? q.raw_text.substring(0, 80) : 'Nessun testo';
+        var moreText = q.raw_text && q.raw_text.length > 80 ? '...' : '';
+        
+        // Determine status badge
+        let statusBadge = '';
+        const hasAnswers = q.answers && q.answers.length > 0;
+        const hasCorrectAnswer = q.correct_options && q.correct_options.length > 0;
+        
+        if (!hasAnswers) {
+            statusBadge = '<span class="status-badge status-unanswered">Senza risposta</span>';
+        } else if (!hasCorrectAnswer) {
+            statusBadge = '<span class="status-badge status-unanswered">Senza corretta</span>';
+        } else {
+            statusBadge = '<span class="status-badge status-answered">Con risposta</span>';
+        }
+        
+        html += `<div class="question-card-modern ${isSelected ? 'selected' : ''}" data-id="${q.id}">
+            <div class="card-header">
+                <span class="question-id-modern">${escapeHtml(q.id)}</span>
+                ${statusBadge}
+            </div>
+            <div class="question-text-modern">${escapeHtml(preview)}${moreText}</div>
+            <div class="question-meta-modern">
+                <span>🧠 ${escapeHtml(q.primary_domain || 'N/D')}</span>
+                <span>📁 ${escapeHtml(q.subdomain || 'N/D')}</span>
+            </div>
+        </div>`;
     });
     questionsListDiv.innerHTML = html;
     
     // Add click handlers
-    document.querySelectorAll('.view-question-item').forEach(function(el) {
+    document.querySelectorAll('.question-card-modern').forEach(function(el) {
         el.addEventListener('click', function() {
             var id = el.getAttribute('data-id');
             selectQuestion(id);
@@ -408,7 +428,7 @@ function selectQuestion(id) {
 
 // Scroll to selected question in the list
 function scrollToSelectedQuestion() {
-    var selectedElement = document.querySelector('.view-question-item.selected');
+    var selectedElement = document.querySelector('.question-card-modern.selected');
     if (selectedElement) {
         selectedElement.scrollIntoView({
             behavior: 'smooth',
@@ -474,21 +494,23 @@ function renderDetailView(id) {
     // Edit button
     var editButtonHtml = '<button class="view-edit-btn" onclick="window.openInEditor(\'' + escapeHtml(question.id) + '\')">✏️ Modifica</button>';
     
-    detailPanel.innerHTML = '<div class="view-detail-content">' +
-        '<div class="view-detail-header">' +
-            '<span class="view-detail-id">' + escapeHtml(question.id) + '</span>' +
-            '<span class="view-detail-domain">' + escapeHtml(question.primary_domain || 'N/D') + '</span>' +
-            '<span class="view-detail-subdomain">' + escapeHtml(question.subdomain || 'N/D') + '</span>' +
-            editButtonHtml +
+    detailPanel.innerHTML = '<div class="detail-card">' +
+        '<div class="view-detail-content">' +
+            '<div class="view-detail-header">' +
+                '<span class="view-detail-id">' + escapeHtml(question.id) + '</span>' +
+                '<span class="view-detail-domain">' + escapeHtml(question.primary_domain || 'N/D') + '</span>' +
+                '<span class="view-detail-subdomain">' + escapeHtml(question.subdomain || 'N/D') + '</span>' +
+                editButtonHtml +
+            '</div>' +
+            '<div class="view-question-text">' +
+                escapeHtml(question.raw_text || 'Nessun testo disponibile') +
+            '</div>' +
+            '<div class="view-answers-section">' +
+                '<div class="view-answers-title">Risposte</div>' +
+                (answersHtml || '<div class="view-no-answers">Nessuna risposta disponibile</div>') +
+            '</div>' +
+            notesHtml +
         '</div>' +
-        '<div class="view-question-text">' +
-            escapeHtml(question.raw_text || 'Nessun testo disponibile') +
-        '</div>' +
-        '<div class="view-answers-section">' +
-            '<div class="view-answers-title">Risposte</div>' +
-            (answersHtml || '<div class="view-no-answers">Nessuna risposta disponibile</div>') +
-        '</div>' +
-        notesHtml +
     '</div>';
 }
 

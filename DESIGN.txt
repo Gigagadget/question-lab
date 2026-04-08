@@ -1,0 +1,112 @@
+📐 DESCRIZIONE DEL DESIGN (Design System)
+1. Filosofia generale
+
+    Layout a 3 colonne orizzontali: Filtri | Lista domande | Dettaglio
+
+    Sidebar verticale a icone (72px) – minimal, stile strumenti moderni
+
+    Spaziatura aerata con card arrotondate e ombre sottili
+
+    Colori freschi e professionali (blu #3b82f6 come accent)
+
+    Interattività fluida con hover, focus, transizioni
+
+2. Palette colori
+Ruolo	Colore HEX	Utilizzo
+Sfondo principale	#f8fafc	Sfondo workspace
+Sfondo card	#ffffff	Card, sidebar, pannelli
+Testo primario	#0f172a	Titoli, testi importanti
+Testo secondario	#475569, #64748b	Label, metadati
+Accent primario	#3b82f6	Pulsanti primari, hover, focus
+Bordi	#e2e8f0, #f1f5f9	Separatori, bordi input
+Stato "senza risposta"	#fee2e2 / #dc2626	Badge rosso
+Stato "con risposta"	#dcfce7 / #16a34a	Badge verde
+Duplicati	#fef3c7 / #d97706	Badge giallo
+3. Layout dimensioni
+text
+
+┌────────┬──────────┬────────────┬─────────────────┐
+│ Sidebar│  Filtri  │    Lista   │    Dettaglio    │
+│  72px  │  280px   │   420px    │    (flex: 1)    │
+└────────┴──────────┴────────────┴─────────────────┘
+
+4. Componenti principali
+Sidebar (sinistra)
+
+    Larghezza: 72px
+
+    Padding verticale: 24px
+
+    Icone: 20px, testo sotto: 11px
+
+    Active: sfondo #eff6ff, colore #3b82f6
+
+Top bar
+
+    Altezza: 56px (padding 12px 32px)
+
+    Titolo a sinistra, pulsante "Nuova domanda" a destra
+
+Panel Filtri
+
+    Larghezza: 280px
+
+    Cerca: input con lente in placeholder
+
+    Checkbox raggruppate per "Stato risposta"
+
+    Dropdown per Dominio/Sottodominio
+
+    Badge "Filtri attivi: X"
+
+Panel Lista Domande
+
+    Larghezza: 420px
+
+    Card: border-radius 16px, padding 16px
+
+    Hover: ombra 0 4px 12px rgba(0,0,0,0.05)
+
+    Selected: bordo #3b82f6, sfondo #f8fafc
+
+Panel Dettaglio
+
+    Card bianca con border-radius 20px, padding 28px
+
+    Campi: border-radius 12px, padding 10px 14px
+
+    Focus: box-shadow 0 0 0 3px rgba(59,130,246,0.1)
+
+Gestione Risposte (funzionalità chiave)
+
+    Ogni risposta è una riga con:
+
+        Checkbox (corretta)
+
+        Input testo editabile
+
+        Pulsante 🗑️ per eliminare
+
+    Pulsante "+ Aggiungi risposta" in alto a destra
+
+    Minimo 1 risposta (validazione)
+
+5. Tipografia
+
+    Font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto
+
+    Base: 14px, line-height 1.5
+
+    Titolo pagina: 20px weight 600
+
+    Label filtri: 11px uppercase
+
+    Testo domanda: 13px weight 500
+
+6. Interazioni
+
+    Tutti i clickable: cursor: pointer
+
+    Transizioni: all 0.2s
+
+    Hover su card: transform: translateY(-1px) (opzionale)

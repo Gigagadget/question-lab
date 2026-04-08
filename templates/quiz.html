@@ -7,7 +7,8 @@
     <link rel="apple-touch-icon" href="/static/favicon.svg?v=1">
     <title>QuestionLab - Quiz</title>
     <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/quiz.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
     <link rel="stylesheet" href="/static/css/theme.css">
     <link rel="stylesheet" href="/static/css/no-db-blocker.css">
 </head>
@@ -22,242 +23,277 @@
         </div>
     </div>
 
-    <div class="app-container">
-        <div class="header">
-            <h1>🎯 Modalità Quiz</h1>
-            <p>Metti alla prova le tue conoscenze</p>
+    <div class="app">
+        <!-- Sidebar minimal a icone -->
+        <div class="sidebar">
+            <div class="logo">📚</div>
+            <div class="nav-items">
+                <a href="/" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="/editor" class="nav-item">
+                    <span class="nav-icon">✏️</span>
+                    <span>Editor</span>
+                </a>
+                <a href="/quiz" class="nav-item active">
+                    <span class="nav-icon">🎯</span>
+                    <span>Quiz</span>
+                </a>
+                <a href="/view" class="nav-item">
+                    <span class="nav-icon">👁️</span>
+                    <span>View</span>
+                </a>
+                <a href="/databases" class="nav-item">
+                    <span class="nav-icon">🗃️</span>
+                    <span>Database</span>
+                </a>
+            </div>
+            <div class="nav-item" onclick="toggleTheme()">
+                <span class="nav-icon" id="themeIcon">🌙</span>
+                <span>Tema</span>
+            </div>
         </div>
 
-        <div class="toolbar">
-            <button id="btnHome" class="info">🏠 Home</button>
-            <button id="btnHelp" class="info">❓ Aiuto</button>
-            <button id="btnLogs" class="info">📋 Log Quiz</button>
-            <div class="status" id="statusMsg">Pronto</div>
-        </div>
+        <!-- Main content -->
+        <div class="main-content">
+            <!-- Top bar -->
+            <div class="top-bar">
+                <h1 class="page-title">🎯 Modalità Quiz</h1>
+                <div class="header-actions">
+                    <button id="btnHome" class="btn-icon-modern">🏠 Home</button>
+                    <button id="btnLogs" class="btn-icon-modern">📋 Log Quiz</button>
+                    <button id="btnHelp" class="btn-icon-modern">❓ Aiuto</button>
+                </div>
+            </div>
 
-        <!-- Schermata di configurazione quiz -->
-        <div id="quizSetup" class="quiz-container">
-            <div class="setup-card">
-                <h2>⚙️ Configura il tuo Quiz</h2>
+            <!-- Workspace - Single panel for quiz -->
+            <div class="workspace" style="padding: 24px;">
+                <!-- Schermata di configurazione quiz -->
+                <div id="quizSetup" class="quiz-container" style="max-width: 800px; margin: 0 auto; width: 100%;">
+                    <div class="detail-card setup-card">
+                        <h2>⚙️ Configura il tuo Quiz</h2>
+                        
+                        <div class="setup-section">
+                            <h3>📚 Seleziona Categorie</h3>
+                            <div id="categoriesContainer" class="categories-grid">
+                                <!-- Le categorie verranno caricate dinamicamente -->
+                            </div>
+                            <div class="category-info">
+                                <span id="selectedCategoriesCount">0</span> categorie selezionate
+                            </div>
+                        </div>
+
+                        <div class="setup-section">
+                            <h3>📊 Numero di Domande</h3>
+                            <div class="question-count-options">
+                                <button class="count-btn" data-count="5">5</button>
+                                <button class="count-btn" data-count="10">10</button>
+                                <button class="count-btn" data-count="50">50</button>
+                                <button class="count-btn" data-count="100">100</button>
+                                <button class="count-btn" data-count="200">200</button>
+                                <button class="count-btn" data-count="500">500</button>
+                                <button class="count-btn" data-count="750">750</button>
+                                <button class="count-btn" data-count="1000">1000</button>
+                                <button class="count-btn" data-count="all">Tutte</button>
+                            </div>
+                            <div class="custom-count">
+                                <label for="customCount">Numero personalizzato:</label>
+                                <input type="text" id="customCount" inputmode="numeric" pattern="[0-9]*" min="1" max="1000" placeholder="N. domande">
+                                <button id="applyCustomCount" class="btn-outline">Applica</button>
+                            </div>
+                            <div class="count-info">
+                                <span id="selectedCount">10</span> domande selezionate
+                            </div>
+                        </div>
+
+                        <div class="setup-summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Domande disponibili:</span>
+                                <span id="availableQuestions" class="summary-value">--</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Domande da usare:</span>
+                                <span id="questionsToUse" class="summary-value">--</span>
+                            </div>
+                        </div>
+
+                        <div class="setup-actions">
+                            <button id="btnStartQuiz" class="btn-primary" disabled>🚀 Inizia Quiz</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schermata del quiz -->
+                <div id="quizGame" class="quiz-container" style="display: none; max-width: 900px; margin: 0 auto; width: 100%;">
+                    <div class="detail-card quiz-question-container" style="padding: 20px;">
+                        <div class="quiz-header">
+                            <div class="quiz-progress">
+                                <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span>
+                            </div>
+                            <div class="quiz-timer">
+                                ⏱️ <span id="timer">00:00</span>
+                            </div>
+                            <div class="quiz-score">
+                                ✅ <span id="correctCount">0</span> | 
+                                ⚠️ <span id="partialCount">0</span> | 
+                                ❌ <span id="wrongCount">0</span>
+                            </div>
+                        </div>
+
+                        <div class="question-category" id="questionCategory"></div>
+                        <div class="question-text" id="questionText"></div>
+                        
+                        <div class="answers-container" id="answersContainer">
+                            <!-- Le risposte verranno caricate dinamicamente -->
+                        </div>
+
+                        <div class="question-actions">
+                            <button id="btnSubmitAnswer" class="btn-primary" disabled>Conferma Risposta</button>
+                            <button id="btnNextQuestion" class="btn-outline" style="display: none;">Prossima Domanda →</button>
+                        </div>
+
+                        <div class="feedback-container" id="feedbackContainer" style="display: none;">
+                            <div class="feedback-message" id="feedbackMessage"></div>
+                            <div class="correct-answers" id="correctAnswers"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schermata dei risultati -->
+                <div id="quizResults" class="quiz-container" style="display: none; max-width: 600px; margin: 0 auto; width: 100%;">
+                    <div class="detail-card results-card">
+                        <h2>🎉 Quiz Completato!</h2>
+                        
+                        <div class="results-summary">
+                            <div class="result-item">
+                                <span class="result-label">Punteggio:</span>
+                                <span id="finalScore" class="result-value">0%</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Risposte Corrette:</span>
+                                <span id="finalCorrect" class="result-value">0</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Risposte Parziali:</span>
+                                <span id="finalPartial" class="result-value">0</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Risposte Sbagliate:</span>
+                                <span id="finalWrong" class="result-value">0</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Tempo Totale:</span>
+                                <span id="finalTime" class="result-value">00:00</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">Media per Domanda:</span>
+                                <span id="avgTime" class="result-value">00:00</span>
+                            </div>
+                        </div>
+
+                        <div class="results-actions">
+                            <button id="btnReview" class="btn-primary">📖 Rivedi Risposte</button>
+                            <button id="btnNewQuiz" class="btn-outline">🔄 Nuovo Quiz</button>
+                            <button id="btnBackHome" class="btn-outline">🏠 Torna alla Home</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schermata di review -->
+                <div id="quizReview" class="quiz-container" style="display: none; max-width: 900px; margin: 0 auto; width: 100%;">
+                    <div class="review-header">
+                        <h2>📖 Review delle Risposte</h2>
+                        <button id="btnBackToResults" class="btn-outline">← Torna ai Risultati</button>
+                    </div>
+                    
+                    <div class="review-container" id="reviewContainer">
+                        <!-- Le domande riviste verranno caricate dinamicamente -->
+                    </div>
+                </div>
+
+                <!-- Schermata dei log -->
+                <div id="quizLogs" class="quiz-container" style="display: none; max-width: 900px; margin: 0 auto; width: 100%;">
+                    <div class="logs-header">
+                        <h2>📋 Log dei Quiz</h2>
+                        <div class="logs-actions">
+                            <button id="btnDeleteAllLogs" class="btn-outline" style="color: var(--accent-red);">🗑️ Cancella Tutti</button>
+                            <button id="btnBackFromLogs" class="btn-outline">← Torna al Quiz</button>
+                        </div>
+                    </div>
+                    
+                    <div class="logs-container" id="logsContainer">
+                        <!-- I log verranno caricati dinamicamente -->
+                    </div>
+                </div>
+
+                <!-- Schermata review log -->
+                <div id="logReview" class="quiz-container" style="display: none; max-width: 900px; margin: 0 auto; width: 100%;">
+                    <div class="review-header">
+                        <h2>📖 Review Quiz Completato</h2>
+                        <button id="btnBackToLogs" class="btn-outline">← Torna ai Log</button>
+                    </div>
+                    
+                    <div class="review-container" id="logReviewContainer">
+                        <!-- Le domande riviste verranno caricate dinamicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>ℹ️ Guida alla Modalità Quiz</h3>
+            <div class="help-content">
+                <h4>🎯 Panoramica</h4>
+                <p>La modalità Quiz ti permette di testare le tue conoscenze rispondendo alle domande del database. Puoi scegliere le categorie e il numero di domande.</p>
                 
-                <div class="setup-section">
-                    <h3>📚 Seleziona Categorie</h3>
-                    <div id="categoriesContainer" class="categories-grid">
-                        <!-- Le categorie verranno caricate dinamicamente -->
-                    </div>
-                    <div class="category-info">
-                        <span id="selectedCategoriesCount">0</span> categorie selezionate
-                    </div>
-                </div>
-
-                <div class="setup-section">
-                    <h3>📊 Numero di Domande</h3>
-                    <div class="question-count-options">
-                        <button class="count-btn" data-count="5">5</button>
-                        <button class="count-btn" data-count="10">10</button>
-                        <button class="count-btn" data-count="50">50</button>
-                        <button class="count-btn" data-count="100">100</button>
-                        <button class="count-btn" data-count="200">200</button>
-                        <button class="count-btn" data-count="500">500</button>
-                        <button class="count-btn" data-count="750">750</button>
-                        <button class="count-btn" data-count="1000">1000</button>
-                        <button class="count-btn" data-count="all">Tutte</button>
-                    </div>
-                    <div class="custom-count">
-                        <label for="customCount">Numero personalizzato:</label>
-                        <input type="text" id="customCount" inputmode="numeric" pattern="[0-9]*" min="1" max="1000" placeholder="N. domande">
-                        <button id="applyCustomCount" class="secondary">Applica</button>
-                    </div>
-                    <div class="count-info">
-                        <span id="selectedCount">10</span> domande selezionate
-                    </div>
-                </div>
-
-                <div class="setup-summary">
-                    <div class="summary-item">
-                        <span class="summary-label">Domande disponibili:</span>
-                        <span id="availableQuestions" class="summary-value">--</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Domande da usare:</span>
-                        <span id="questionsToUse" class="summary-value">--</span>
-                    </div>
-                </div>
-
-                <div class="setup-actions">
-                    <button id="btnStartQuiz" class="primary" disabled>🚀 Inizia Quiz</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Schermata del quiz -->
-        <div id="quizGame" class="quiz-container" style="display: none;">
-            <div class="quiz-header">
-                <div class="quiz-progress">
-                    <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span>
-                </div>
-                <div class="quiz-timer">
-                    ⏱️ <span id="timer">00:00</span>
-                </div>
-                <div class="quiz-score">
-                    ✅ <span id="correctCount">0</span> | 
-                    ⚠️ <span id="partialCount">0</span> | 
-                    ❌ <span id="wrongCount">0</span>
-                </div>
-            </div>
-
-            <div class="quiz-question-container">
-                <div class="question-category" id="questionCategory"></div>
-                <div class="question-text" id="questionText"></div>
+                <h4>⚙️ Configurazione del Quiz</h4>
+                <ul>
+                    <li><strong>Seleziona Categorie</strong>: Scegli una o più categorie di domande (o "Tutte" per includerle tutte)</li>
+                    <li><strong>Numero di Domande</strong>: Scegli tra le opzioni predefinite (5, 10, 50, 100, 200) o inserisci un numero personalizzato</li>
+                    <li><strong>"Tutte"</strong>: Usa tutte le domande disponibili nelle categorie selezionate</li>
+                </ul>
                 
-                <div class="answers-container" id="answersContainer">
-                    <!-- Le risposte verranno caricate dinamicamente -->
-                </div>
-
-                <div class="question-actions">
-                    <button id="btnSubmitAnswer" class="primary" disabled>Conferma Risposta</button>
-                    <button id="btnNextQuestion" class="secondary" style="display: none;">Prossima Domanda →</button>
-                </div>
-
-                <div class="feedback-container" id="feedbackContainer" style="display: none;">
-                    <div class="feedback-message" id="feedbackMessage"></div>
-                    <div class="correct-answers" id="correctAnswers"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Schermata dei risultati -->
-        <div id="quizResults" class="quiz-container" style="display: none;">
-            <div class="results-card">
-                <h2>🎉 Quiz Completato!</h2>
+                <h4>📝 Durante il Quiz</h4>
+                <ul>
+                    <li><strong>Seleziona le risposte</strong>: Clicca sulle opzioni per selezionarle (puoi selezionarne più di una)</li>
+                    <li><strong>Conferma Risposta</strong>: Clicca per verificare la tua risposta</li>
+                    <li><strong>Feedback immediato</strong>: Vedrai se la risposta è corretta, parziale o sbagliata</li>
+                    <li><strong>Risposte corrette evidenziate</strong>: Le risposte corrette vengono evidenziate in verde</li>
+                    <li><strong>Prossima Domanda</strong>: Clicca per passare alla domanda successiva</li>
+                </ul>
                 
-                <div class="results-summary">
-                    <div class="result-item">
-                        <span class="result-label">Punteggio:</span>
-                        <span id="finalScore" class="result-value">0%</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Risposte Corrette:</span>
-                        <span id="finalCorrect" class="result-value">0</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Risposte Parziali:</span>
-                        <span id="finalPartial" class="result-value">0</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Risposte Sbagliate:</span>
-                        <span id="finalWrong" class="result-value">0</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Tempo Totale:</span>
-                        <span id="finalTime" class="result-value">00:00</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Media per Domanda:</span>
-                        <span id="avgTime" class="result-value">00:00</span>
-                    </div>
-                </div>
-
-                <div class="results-actions">
-                    <button id="btnReview" class="primary">📖 Rivedi Risposte</button>
-                    <button id="btnNewQuiz" class="secondary">🔄 Nuovo Quiz</button>
-                    <button id="btnBackHome" class="info">🏠 Torna alla Home</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Schermata di review -->
-        <div id="quizReview" class="quiz-container" style="display: none;">
-            <div class="review-header">
-                <h2>📖 Review delle Risposte</h2>
-                <button id="btnBackToResults" class="secondary">← Torna ai Risultati</button>
-            </div>
-            
-            <div class="review-container" id="reviewContainer">
-                <!-- Le domande riviste verranno caricate dinamicamente -->
-            </div>
-        </div>
-
-        <!-- Schermata dei log -->
-        <div id="quizLogs" class="quiz-container" style="display: none;">
-            <div class="logs-header">
-                <h2>📋 Log dei Quiz</h2>
-                <div class="logs-actions">
-                    <button id="btnDeleteAllLogs" class="danger">🗑️ Cancella Tutti</button>
-                    <button id="btnBackFromLogs" class="secondary">← Torna al Quiz</button>
-                </div>
-            </div>
-            
-            <div class="logs-container" id="logsContainer">
-                <!-- I log verranno caricati dinamicamente -->
-            </div>
-        </div>
-
-        <!-- Schermata review log -->
-        <div id="logReview" class="quiz-container" style="display: none;">
-            <div class="review-header">
-                <h2>📖 Review Quiz Completato</h2>
-                <button id="btnBackToLogs" class="secondary">← Torna ai Log</button>
-            </div>
-            
-            <div class="review-container" id="logReviewContainer">
-                <!-- Le domande riviste verranno caricate dinamicamente -->
-            </div>
-        </div>
-
-        <!-- Help Modal -->
-        <div id="helpModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h3>ℹ️ Guida alla Modalità Quiz</h3>
-                <div class="help-content">
-                    <h4>🎯 Panoramica</h4>
-                    <p>La modalità Quiz ti permette di testare le tue conoscenze rispondendo alle domande del database. Puoi scegliere le categorie e il numero di domande.</p>
-                    
-                    <h4>⚙️ Configurazione del Quiz</h4>
-                    <ul>
-                        <li><strong>Seleziona Categorie</strong>: Scegli una o più categorie di domande (o "Tutte" per includerle tutte)</li>
-                        <li><strong>Numero di Domande</strong>: Scegli tra le opzioni predefinite (5, 10, 50, 100, 200) o inserisci un numero personalizzato</li>
-                        <li><strong>"Tutte"</strong>: Usa tutte le domande disponibili nelle categorie selezionate</li>
-                    </ul>
-                    
-                    <h4>📝 Durante il Quiz</h4>
-                    <ul>
-                        <li><strong>Seleziona le risposte</strong>: Clicca sulle opzioni per selezionarle (puoi selezionarne più di una)</li>
-                        <li><strong>Conferma Risposta</strong>: Clicca per verificare la tua risposta</li>
-                        <li><strong>Feedback immediato</strong>: Vedrai se la risposta è corretta, parziale o sbagliata</li>
-                        <li><strong>Risposte corrette evidenziate</strong>: Le risposte corrette vengono evidenziate in verde</li>
-                        <li><strong>Prossima Domanda</strong>: Clicca per passare alla domanda successiva</li>
-                    </ul>
-                    
-                    <h4>📊 Punteggio e Statistiche</h4>
-                    <ul>
-                        <li><strong>✅ Corrette</strong>: Risposte completamente corrette</li>
-                        <li><strong>⚠️ Parziali</strong>: Risposte parzialmente corrette (alcune corrette ma non tutte)</li>
-                        <li><strong>❌ Sbagliate</strong>: Risposte completamente errate</li>
-                        <li><strong>Tempo</strong>: Il timer mostra il tempo trascorso nel quiz</li>
-                    </ul>
-                    
-                    <h4>📖 Review delle Risposte</h4>
-                    <ul>
-                        <li>Al termine del quiz, puoi rivedere tutte le domande con le tue risposte</li>
-                        <li>Le risposte corrette sono evidenziate in verde</li>
-                        <li>Le tue risposte sbagliate sono evidenziate in rosso</li>
-                    </ul>
-                    
-                    <h4>📋 Log dei Quiz</h4>
-                    <ul>
-                        <li><strong>Storico quiz</strong>: Visualizza tutti i quiz completati con data e punteggio</li>
-                        <li><strong>Dettagli</strong>: Clicca "👁️ Visualizza" per rivedere un quiz precedente</li>
-                        <li><strong>Cancella</strong>: Elimina singoli log o tutti i log</li>
-                    </ul>
-                    
-                    <h4>⚠️ Importante</h4>
-                    <ul>
-                        <li>Se chiudi la pagina durante un quiz, il progresso viene salvato automaticamente nel log</li>
-                        <li>Il quiz interrotto viene contrassegnato come "Quiz Interrotto" nei risultati</li>
-                    </ul>
-                </div>
+                <h4>📊 Punteggio e Statistiche</h4>
+                <ul>
+                    <li><strong>✅ Corrette</strong>: Risposte completamente corrette</li>
+                    <li><strong>⚠️ Parziali</strong>: Risposte parzialmente corrette (alcune corrette ma non tutte)</li>
+                    <li><strong>❌ Sbagliate</strong>: Risposte completamente errate</li>
+                    <li><strong>Tempo</strong>: Il timer mostra il tempo trascorso nel quiz</li>
+                </ul>
+                
+                <h4>📖 Review delle Risposte</h4>
+                <ul>
+                    <li>Al termine del quiz, puoi rivedere tutte le domande con le tue risposte</li>
+                    <li>Le risposte corrette sono evidenziate in verde</li>
+                    <li>Le tue risposte sbagliate sono evidenziate in rosso</li>
+                </ul>
+                
+                <h4>📋 Log dei Quiz</h4>
+                <ul>
+                    <li><strong>Storico quiz</strong>: Visualizza tutti i quiz completati con data e punteggio</li>
+                    <li><strong>Dettagli</strong>: Clicca "👁️ Visualizza" per rivedere un quiz precedente</li>
+                    <li><strong>Cancella</strong>: Elimina singoli log o tutti i log</li>
+                </ul>
+                
+                <h4>⚠️ Importante</h4>
+                <ul>
+                    <li>Se chiudi la pagina durante un quiz, il progresso viene salvato automaticamente nel log</li>
+                    <li>Il quiz interrotto viene contrassegnato come "Quiz Interrotto" nei risultati</li>
+                </ul>
             </div>
         </div>
     </div>

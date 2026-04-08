@@ -54,7 +54,7 @@ let selectedQuestionIds = new Set(); // ID delle domande selezionate per azioni 
 const questionsListDiv = document.getElementById('questionsList');
 const formContentDiv = document.getElementById('formContent');
 const statusSpan = document.getElementById('statusMsg');
-const questionCountSpan = document.getElementById('questionCount');
+const questionCountSpan = document.getElementById('questionCountDisplay');
 const searchInput = document.getElementById('searchInput');
 const autoSaveIndicator = document.getElementById('autoSaveIndicator');
 const toggleDuplicatesBtn = document.getElementById('toggleDuplicatesBtn');
@@ -526,21 +526,37 @@ function renderQuestionList() {
         const isDuplicate = q.duplicate_count > 0;
         const isSelected = selectedQuestionIds.has(q.id);
         const isFlagged = q.flagged || false;
+        const hasAnswers = q.answers && q.answers.length > 0;
+        const hasCorrectAnswer = q.correct_options && q.correct_options.length > 0;
+        
+        // Determine status badge
+        let statusBadge = '';
+        if (!hasAnswers) {
+            statusBadge = '<span class="status-badge status-unanswered">Senza risposta</span>';
+        } else if (!hasCorrectAnswer) {
+            statusBadge = '<span class="status-badge status-unanswered">Senza corretta</span>';
+        } else {
+            statusBadge = '<span class="status-badge status-answered">Con risposta</span>';
+        }
+        
+        if (isFlagged) {
+            statusBadge += '<span class="status-badge status-flag">Flag</span>';
+        }
+        
         return `
-            <div class="question-item ${selectedId === q.id ? 'selected' : ''} ${isSelected ? 'batch-selected' : ''} ${isDuplicate ? 'duplicate-item' : ''} ${isFlagged ? 'flagged-item' : ''}" data-id="${q.id}">
-                <div class="question-item-content" style="display: flex; gap: 8px; align-items: flex-start;">
-                    <input type="checkbox" class="batch-select-checkbox" data-id="${q.id}" ${isSelected ? 'checked' : ''} style="margin-top: 3px; cursor: pointer;">
-                    <div style="flex: 1; min-width: 0;">
-                        <div class="question-id">
-                            ${isFlagged ? '<span class="flag-indicator">🚩</span>' : ''}
-                            ${escapeHtml(q.id)}
-                            ${isDuplicate ? `<span class="duplicate-badge">${q.duplicate_count} duplicati</span>` : ''}
-                        </div>
-                        <div class="question-preview">${escapeHtml(q.raw_text ? q.raw_text.substring(0, 80) : 'Nessun testo disponibile')}${q.raw_text?.length > 80 ? '...' : ''}</div>
-                        <div class="question-meta" style="font-size: 0.7rem; color: #6c757d; margin-top: 4px;">
-                            ${escapeHtml(q.primary_domain || 'nessun dominio')} / ${escapeHtml(q.subdomain || 'nessun sottodominio')}
-                        </div>
+            <div class="question-card-modern ${selectedId === q.id ? 'selected' : ''} ${isSelected ? 'batch-selected' : ''} ${isDuplicate ? 'duplicate-item' : ''} ${isFlagged ? 'flagged-item' : ''}" data-id="${q.id}">
+                <div class="card-header">
+                    <span class="question-id-modern">${escapeHtml(q.id)}</span>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        ${isDuplicate ? `<span class="status-badge status-flag">${q.duplicate_count} dup</span>` : ''}
+                        ${statusBadge}
+                        <input type="checkbox" class="batch-select-checkbox" data-id="${q.id}" ${isSelected ? 'checked' : ''}>
                     </div>
+                </div>
+                <div class="question-text-modern">${escapeHtml(q.raw_text ? q.raw_text.substring(0, 80) : 'Nessun testo disponibile')}${q.raw_text?.length > 80 ? '...' : ''}</div>
+                <div class="question-meta-modern">
+                    <span>🧠 ${escapeHtml(q.primary_domain || 'nessun dominio')}</span>
+                    <span>📁 ${escapeHtml(q.subdomain || 'nessun sottodominio')}</span>
                 </div>
             </div>
         `;
@@ -556,7 +572,7 @@ function renderQuestionList() {
     });
 
     // Event listener per i question-item (click sul testo carica la domanda)
-    document.querySelectorAll('.question-item').forEach(el => {
+    document.querySelectorAll('.question-card-modern').forEach(el => {
         el.addEventListener('click', (e) => {
             // Se non è un click sulla checkbox, carica la domanda
             if (!e.target.classList.contains('batch-select-checkbox')) {
@@ -570,7 +586,7 @@ function renderQuestionList() {
 function scrollToSelectedQuestion() {
     // Piccolo delay per attendere che il DOM sia aggiornato dopo il render
     setTimeout(() => {
-        const selectedElement = document.querySelector('.question-item.selected');
+        const selectedElement = document.querySelector('.question-card-modern.selected');
         if (selectedElement) {
             selectedElement.scrollIntoView({
                 block: 'nearest',
@@ -847,52 +863,55 @@ function renderFormForId(id) {
     const currentIndex = filtered.findIndex(q => q.id === id);
     const total = filtered.length;
     
-    // Combined action and navigation buttons row
+    // Detail actions header (mockup compliant)
     const isFlagged = question.flagged || false;
-    const combinedButtonsHtml = `
-        <div class="combined-buttons-row">
-            <div class="left-buttons">
-                <button id="btnNewFromForm" class="primary small-btn">➕ Nuova</button>
-                <button id="btnDuplicate" class="warning small-btn">📑 Duplica</button>
-                <button id="btnDeleteQuestion" class="danger small-btn">🗑️ Elimina</button>
-                <button id="btnFlagQuestion" class="small-btn ${isFlagged ? 'flag-active' : 'flag-inactive'}" style="${isFlagged ? 'background: #f39c12; color: white;' : 'background: #6c757d; color: white;'}">🚩 ${isFlagged ? 'Segnata' : 'Segna'}</button>
+    const isDuplicate = question.duplicate_count > 0;
+    
+    const detailActionsHtml = `
+        <div class="detail-actions">
+            <div>
+                <span class="detail-title">${escapeHtml(question.id)}</span>
+                ${isDuplicate ? `<span class="duplicate-indicator">📋 Duplicati (${question.duplicate_count})</span>` : ''}
             </div>
-            <div class="right-buttons">
-                <button id="navPrevBtn" class="small-btn" ${currentIndex === 0 ? 'disabled style="opacity:0.5;"' : ''}>◀ Prec</button>
-                <span style="font-size:0.7rem; color:#6c757d;">${currentIndex + 1} / ${total}</span>
-                <button id="navNextBtn" class="small-btn" ${currentIndex === total - 1 ? 'disabled style="opacity:0.5;"' : ''}>Succ ▶</button>
+            <div class="action-group">
+                <button id="btnNewFromForm" class="btn-icon-modern">➕ Nuova</button>
+                <button id="btnDuplicate" class="btn-icon-modern">📑 Duplica</button>
+                <button id="btnDeleteQuestion" class="btn-icon-modern" style="color: #dc2626;">🗑️ Elimina</button>
+                <button id="btnFlagQuestion" class="btn-icon-modern" style="${isFlagged ? 'border-color: #f59e0b; color: #f59e0b;' : ''}">🚩 ${isFlagged ? 'Segnata' : 'Segna'}</button>
             </div>
+        </div>
+        <div class="nav-buttons-modern">
+            <button id="navPrevBtn" class="nav-btn-modern" ${currentIndex === 0 ? 'disabled' : ''}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Precedente
+            </button>
+            <span class="nav-counter">${currentIndex + 1} / ${total}</span>
+            <button id="navNextBtn" class="nav-btn-modern" ${currentIndex === total - 1 ? 'disabled' : ''}>
+                Successivo
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
         </div>
     `;
 
     // Get all answer letters from question
     const answerLetters = Object.keys(question.answers || {}).sort();
-    let answersHtml = `<div class="answers-grid" id="answersGrid">`;
+    let answersHtml = `<div class="answers-list" id="answersGrid">`;
 
     answerLetters.forEach(letter => {
         const answerValue = question.answers?.[letter] || '';
         answersHtml += `
-            <div class="answer-field" data-letter="${letter}">
+            <div class="answer-row" data-letter="${letter}">
+                <input type="checkbox" class="answer-check-modern" data-letter="${letter}" ${question.correct?.includes(letter) ? 'checked' : ''}>
                 <span class="answer-letter">${letter}</span>
-                <input type="text" class="answer-input" data-letter="${letter}" value="${escapeHtml(answerValue)}" placeholder="Testo risposta">
-                <div class="answer-actions">
-                    <button type="button" class="remove-answer" data-letter="${letter}">✖</button>
-                </div>
+                <input type="text" class="answer-input answer-text-modern" data-letter="${letter}" value="${escapeHtml(answerValue)}" placeholder="Testo risposta">
+                <button type="button" class="remove-answer" data-letter="${letter}">🗑️</button>
             </div>
         `;
     });
     answersHtml += `</div>`;
 
-    let correctHtml = `<div class="correct-answers-header"><label>Risposte corrette</label></div><div class="correct-options" id="correctOptions">`;
-    answerLetters.forEach(letter => {
-        const isChecked = Array.isArray(question.correct) && question.correct.includes(letter);
-        correctHtml += `
-            <label class="correct-check">
-                <input type="checkbox" class="correct-checkbox" value="${letter}" ${isChecked ? 'checked' : ''}> ${letter}
-            </label>
-        `;
-    });
-    correctHtml += `</div>`;
+    // No separate correct checkboxes section - now integrated directly in answer rows
+    let correctHtml = '';
 
     // Duplicate info - combined ID and text
     let duplicateHtml = '';
@@ -925,52 +944,54 @@ function renderFormForId(id) {
         `;
     }
 
-    // Top bar with ID and categories
-    const topBarHtml = `
-        <div class="form-top-bar">
+    // Form fields
+    const fieldsHtml = `
+        <div class="form-group">
+            <label class="form-label">ID</label>
+            <input type="text" class="form-input" id="field_id" value="${escapeHtml(question.id)}" placeholder="es., Q1257">
+            <div id="idError" style="color: #c44536; font-size: 0.7rem; margin-top: 2px; display: none;"></div>
+        </div>
+        <div class="form-row">
             <div class="form-group">
-                <label>ID</label>
-                <input type="text" id="field_id" value="${escapeHtml(question.id)}" placeholder="es., Q1257">
-                <div id="idError" style="color: #c44536; font-size: 0.7rem; margin-top: 2px; display: none;"></div>
-            </div>
-            <div class="form-group">
-                <label>Dominio</label>
-                <select id="field_primary_domain">
+                <label class="form-label">Dominio</label>
+                <select class="form-input" id="field_primary_domain">
                     ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}" ${question.primary_domain === d ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
                 </select>
             </div>
             <div class="form-group">
-                <label>Sottodominio</label>
-                <select id="field_subdomain"></select>
+                <label class="form-label">Sottodominio</label>
+                <select class="form-input" id="field_subdomain"></select>
             </div>
         </div>
     `;
 
     // Answers section with header
     const answersSectionHtml = `
-        <div class="answers-header">
-            <label>Risposte</label>
-            <button type="button" id="addAnswerBtn" class="small-btn">+ Aggiungi</button>
+        <label class="form-label">Risposte (seleziona quelle corrette)</label>
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+            <button type="button" id="addAnswerBtn" class="btn-outline">+ Aggiungi risposta</button>
         </div>
         ${answersHtml}
     `;
 
     const formHtml = `
-        ${combinedButtonsHtml}
-        ${topBarHtml}
-        <div class="form-group">
-            <label>Domanda</label>
-            <textarea id="field_raw_text" placeholder="Testo della domanda...">${escapeHtml(question.raw_text || '')}</textarea>
+        <div class="detail-card">
+            ${detailActionsHtml}
+            ${fieldsHtml}
+            <div class="form-group">
+                <label class="form-label">Domanda</label>
+                <textarea class="form-input" id="field_raw_text" placeholder="Testo della domanda...">${escapeHtml(question.raw_text || '')}</textarea>
+            </div>
+            ${answersSectionHtml}
+            <div class="form-group">
+                ${correctHtml}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Note</label>
+                <textarea class="form-input" id="field_notes" placeholder="Aggiungi note...">${escapeHtml(question.notes || '')}</textarea>
+            </div>
+            ${duplicateHtml}
         </div>
-        ${answersSectionHtml}
-        <div class="form-group">
-            ${correctHtml}
-        </div>
-        <div class="form-group">
-            <label>Note</label>
-            <textarea id="field_notes" placeholder="Aggiungi note...">${escapeHtml(question.notes || '')}</textarea>
-        </div>
-        ${duplicateHtml}
     `;
     
     formContentDiv.innerHTML = formHtml;
@@ -993,6 +1014,24 @@ function renderFormForId(id) {
         btn.addEventListener('click', (e) => {
             const letter = btn.getAttribute('data-letter');
             removeAnswer(letter);
+        });
+    });
+    
+    // Add handler for answer checkboxes (correct answers)
+    document.querySelectorAll('.answer-check-modern').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const letter = checkbox.getAttribute('data-letter');
+            if (!Array.isArray(question.correct)) question.correct = [];
+            
+            if (checkbox.checked) {
+                if (!question.correct.includes(letter)) {
+                    question.correct.push(letter);
+                }
+            } else {
+                question.correct = question.correct.filter(l => l !== letter);
+            }
+            
+            markDirty();
         });
     });
     
@@ -1026,7 +1065,7 @@ function renderFormForId(id) {
 // Add new answer
 function addNewAnswer() {
     const answersGrid = document.getElementById('answersGrid');
-    const currentLetters = Array.from(answersGrid.querySelectorAll('.answer-field')).map(f => f.getAttribute('data-letter'));
+    const currentLetters = Array.from(answersGrid.querySelectorAll('.answer-row')).map(f => f.getAttribute('data-letter'));
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let newLetter = '';
     
@@ -1043,35 +1082,43 @@ function addNewAnswer() {
     }
     
     const newAnswerHtml = `
-        <div class="answer-field" data-letter="${newLetter}">
+        <div class="answer-row" data-letter="${newLetter}">
+            <input type="checkbox" class="answer-check-modern" data-letter="${newLetter}">
             <span class="answer-letter">${newLetter}</span>
-            <input type="text" class="answer-input" data-letter="${newLetter}" value="" placeholder="Testo risposta">
-            <div class="answer-actions">
-                <button type="button" class="remove-answer" data-letter="${newLetter}">✖</button>
-            </div>
+            <input type="text" class="answer-input answer-text-modern" data-letter="${newLetter}" value="" placeholder="Testo risposta">
+            <button type="button" class="remove-answer" data-letter="${newLetter}">🗑️</button>
         </div>
     `;
     
     answersGrid.insertAdjacentHTML('beforeend', newAnswerHtml);
     
+    // Add remove handler
     const removeBtn = answersGrid.querySelector(`.remove-answer[data-letter="${newLetter}"]`);
     if (removeBtn) {
         removeBtn.addEventListener('click', () => removeAnswer(newLetter));
     }
     
+    // Add input handlers
     const newInput = answersGrid.querySelector(`.answer-input[data-letter="${newLetter}"]`);
     if (newInput) {
         newInput.addEventListener('input', () => markDirty());
         newInput.addEventListener('change', () => markDirty());
+        newInput.focus();
+    }
+    
+    // Add checkbox handler
+    const newCheckbox = answersGrid.querySelector(`.answer-check-modern[data-letter="${newLetter}"]`);
+    if (newCheckbox) {
+        newCheckbox.addEventListener('change', () => markDirty());
     }
     
     const correctOptions = document.getElementById('correctOptions');
-    const newCheckbox = `
+    const correctCheckboxHtml = `
         <label class="correct-check">
             <input type="checkbox" class="correct-checkbox" value="${newLetter}"> ${newLetter}
         </label>
     `;
-    correctOptions.insertAdjacentHTML('beforeend', newCheckbox);
+    correctOptions.insertAdjacentHTML('beforeend', correctCheckboxHtml);
     
     const newCb = correctOptions.querySelector(`.correct-checkbox[value="${newLetter}"]`);
     if (newCb) {
@@ -1082,11 +1129,8 @@ function addNewAnswer() {
 }
 
 function removeAnswer(letter) {
-    const answerField = document.querySelector(`.answer-field[data-letter="${letter}"]`);
-    if (answerField) answerField.remove();
-    
-    const checkbox = document.querySelector(`.correct-checkbox[value="${letter}"]`);
-    if (checkbox) checkbox.closest('.correct-check')?.remove();
+    const answerRow = document.querySelector(`.answer-row[data-letter="${letter}"]`);
+    if (answerRow) answerRow.remove();
     
     markDirty();
 }
@@ -1134,11 +1178,14 @@ function collectFormData(originalId = null) {
         if (letter) answers[letter] = inp.value;
     });
     
-    // Collect correct
+    // Collect correct from modern answer checkboxes
     const correct = [];
-    const checkboxes = document.querySelectorAll('.correct-checkbox');
+    const checkboxes = document.querySelectorAll('.answer-check-modern');
     checkboxes.forEach(cb => {
-        if (cb.checked) correct.push(cb.value);
+        const letter = cb.getAttribute('data-letter');
+        if (cb.checked && letter) {
+            correct.push(letter);
+        }
     });
     if (correct.length === 0) correct.push("null");
     
@@ -1969,18 +2016,19 @@ window.removeCategory = removeCategory;
 window.renameCategory = renameCategory;
 
 // Event listeners
-searchInput.addEventListener('input', () => renderQuestionList());
-
-document.getElementById('btnCategories').addEventListener('click', showCategoriesModal);
-document.getElementById('btnReload').addEventListener('click', async () => {
-    if (isDirty) {
-        const confirmed = confirm('Ci sono modifiche non salvate. Procedere con la ricarica?');
-        if (!confirmed) return;
-    }
-    await loadQuestions();
-});
-document.getElementById('btnStats').addEventListener('click', showStats);
-document.getElementById('btnBackup').addEventListener('click', showBackups);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        searchInput.addEventListener('input', () => renderQuestionList());
+        document.getElementById('btnCategories').addEventListener('click', showCategoriesModal);
+        document.getElementById('btnReload').addEventListener('click', async () => {
+            if (isDirty) {
+                const confirmed = confirm('Ci sono modifiche non salvate. Procedere con la ricarica?');
+                if (!confirmed) return;
+            }
+            await loadQuestions();
+        });
+        document.getElementById('btnStats').addEventListener('click', showStats);
+        document.getElementById('btnBackup').addEventListener('click', showBackups);
 
 // Settings dropdown toggle
 const btnSettings = document.getElementById('btnSettings');
@@ -2086,5 +2134,7 @@ function checkUrlParameter() {
 }
 
 // Initial load
-loadQuestions();
-checkUrlParameter();
+        loadQuestions();
+        checkUrlParameter();
+    });
+}

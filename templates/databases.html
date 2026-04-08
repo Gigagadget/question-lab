@@ -7,42 +7,78 @@
     <link rel="apple-touch-icon" href="/static/favicon.svg?v=1">
     <title>QuestionLab - Databases</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
     <link rel="stylesheet" href="/static/css/theme.css">
     <link rel="stylesheet" href="/static/css/databases.css">
 </head>
 <body>
-    <div class="app-container">
-        <div class="header">
-            <h1>🗃️ Gestione Database</h1>
-            <p>Seleziona, crea e gestisci i tuoi database di domande</p>
+    <div class="app">
+        <!-- Sidebar minimal a icone -->
+        <div class="sidebar">
+            <div class="logo">📚</div>
+            <div class="nav-items">
+                <a href="/" class="nav-item">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="/editor" class="nav-item">
+                    <span class="nav-icon">✏️</span>
+                    <span>Editor</span>
+                </a>
+                <a href="/quiz" class="nav-item">
+                    <span class="nav-icon">🎯</span>
+                    <span>Quiz</span>
+                </a>
+                <a href="/view" class="nav-item">
+                    <span class="nav-icon">👁️</span>
+                    <span>View</span>
+                </a>
+                <a href="/databases" class="nav-item active">
+                    <span class="nav-icon">🗃️</span>
+                    <span>Database</span>
+                </a>
+            </div>
+            <div class="nav-item" onclick="toggleTheme()">
+                <span class="nav-icon" id="themeIcon">🌙</span>
+                <span>Tema</span>
+            </div>
         </div>
 
-        <div class="toolbar">
-            <button id="btnHome" class="info">🏠 Home</button>
-            <button id="btnHelp" class="info">❓ Aiuto</button>
-            <button id="btnNew" class="primary">➕ Nuovo Database</button>
-            <button id="btnUpload" class="secondary">📤 Upload JSON</button>
-            <button id="btnScan" class="info">🔄 Aggiorna</button>
-            <div class="status" id="statusMsg">Pronto</div>
-        </div>
-
-        <div class="databases-layout">
-            <!-- Lista Database -->
-            <div class="databases-list-panel">
-                <div class="list-header">
-                    <span class="databases-title">📊 Database Disponibili (<span id="dbCount">0</span>)</span>
-                </div>
-                <div id="databasesList" class="databases-list">
-                    <div class="empty-list">Caricamento database...</div>
+        <!-- Main content -->
+        <div class="main-content">
+            <!-- Top bar -->
+            <div class="top-bar">
+                <h1 class="page-title">🗃️ Gestione Database</h1>
+                <div class="header-actions">
+                    <button id="btnHelp" class="btn-icon-modern">❓ Aiuto</button>
+                    <button id="btnScan" class="btn-icon-modern">🔄 Aggiorna</button>
+                    <button id="btnUpload" class="btn-icon-modern">📤 Upload JSON</button>
+                    <button id="btnNew" class="btn-primary">➕ Nuovo Database</button>
+                    <div class="status" id="statusMsg">Pronto</div>
                 </div>
             </div>
 
-            <!-- Dettaglio Database -->
-            <div class="database-detail-panel" id="detailPanel">
-                <div class="detail-placeholder">
-                    <div class="placeholder-icon">📖</div>
-                    <h3>Seleziona un database</h3>
-                    <p>Scegli un database dalla lista per visualizzarne i dettagli</p>
+            <!-- Workspace - 2 colonne -->
+            <div class="workspace">
+                <!-- Panel 1: Lista Database -->
+                <div class="questions-panel" style="width: 380px;">
+                    <div class="questions-toolbar">
+                        <span class="questions-count">📊 Database Disponibili (<span id="dbCount">0</span>)</span>
+                    </div>
+
+                    <div id="databasesList" class="questions-list">
+                        <div class="empty-list">Caricamento database...</div>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Dettaglio Database -->
+                <div class="detail-panel" id="detailPanel">
+                    <div class="detail-placeholder">
+                        <div class="placeholder-icon">📖</div>
+                        <h3>Seleziona un database</h3>
+                        <p>Scegli un database dalla lista per visualizzarne i dettagli</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -55,12 +91,12 @@
             <h3>➕ Nuovo Database</h3>
             <div class="form-group">
                 <label for="newDbName">Nome database:</label>
-                <input type="text" id="newDbName" placeholder="es. esame_oncologia" maxlength="50">
+                <input type="text" id="newDbName" placeholder="es. esame_oncologia" maxlength="50" class="form-input">
                 <small>Il nome verrà sanitizzato automaticamente (minuscolo, senza spazi)</small>
             </div>
             <div class="modal-actions">
-                <button id="btnCreateDb" class="primary">Crea Database</button>
-                <button id="btnCancelNew" class="secondary">Annulla</button>
+                <button id="btnCreateDb" class="btn-primary">Crea Database</button>
+                <button id="btnCancelNew" class="btn-outline">Annulla</button>
             </div>
         </div>
     </div>
@@ -72,15 +108,15 @@
             <h3>📤 Upload Database</h3>
             <div class="form-group">
                 <label for="uploadFile">File JSON:</label>
-                <input type="file" id="uploadFile" accept=".json">
+                <input type="file" id="uploadFile" accept=".json" class="form-input">
             </div>
             <div class="form-group">
                 <label for="uploadName">Nome database (opzionale):</label>
-                <input type="text" id="uploadName" placeholder="Lascia vuoto per usare il nome del file">
+                <input type="text" id="uploadName" placeholder="Lascia vuoto per usare il nome del file" class="form-input">
             </div>
             <div class="modal-actions">
-                <button id="btnDoUpload" class="primary">Carica</button>
-                <button id="btnCancelUpload" class="secondary">Annulla</button>
+                <button id="btnDoUpload" class="btn-primary">Carica</button>
+                <button id="btnCancelUpload" class="btn-outline">Annulla</button>
             </div>
         </div>
     </div>
@@ -92,12 +128,12 @@
             <h3>✏️ Rinomina Database</h3>
             <div class="form-group">
                 <label for="renameNewName">Nuovo nome:</label>
-                <input type="text" id="renameNewName" maxlength="50">
+                <input type="text" id="renameNewName" maxlength="50" class="form-input">
                 <input type="hidden" id="renameOldName">
             </div>
             <div class="modal-actions">
-                <button id="btnDoRename" class="primary">Rinomina</button>
-                <button id="btnCancelRename" class="secondary">Annulla</button>
+                <button id="btnDoRename" class="btn-primary">Rinomina</button>
+                <button id="btnCancelRename" class="btn-outline">Annulla</button>
             </div>
         </div>
     </div>
@@ -109,8 +145,8 @@
             <h3>⚠️ Conferma Eliminazione</h3>
             <p id="deleteMessage"></p>
             <div class="modal-actions">
-                <button id="btnDoDelete" class="danger">Elimina</button>
-                <button id="btnCancelDelete" class="secondary">Annulla</button>
+                <button id="btnDoDelete" class="btn-outline" style="color: var(--accent-red); border-color: var(--accent-red);">Elimina</button>
+                <button id="btnCancelDelete" class="btn-outline">Annulla</button>
             </div>
         </div>
     </div>
@@ -122,8 +158,8 @@
             <h3>🚨 Ultima Conferma</h3>
             <p>Questa azione eliminerà anche <strong>tutti i backup</strong> del database. Sei <strong>assolutamente sicuro</strong>?</p>
             <div class="modal-actions">
-                <button id="btnDoDelete2" class="danger">Sì, elimina tutto</button>
-                <button id="btnCancelDelete2" class="secondary">Annulla</button>
+                <button id="btnDoDelete2" class="btn-outline" style="color: var(--accent-red); border-color: var(--accent-red);">Sì, elimina tutto</button>
+                <button id="btnCancelDelete2" class="btn-outline">Annulla</button>
             </div>
         </div>
     </div>
