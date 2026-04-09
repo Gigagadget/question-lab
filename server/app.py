@@ -400,10 +400,11 @@ def get_stats():
                 questions_with_no_answers += 1
 
             # Controlla risposte corrette
+            # Conta SOLO se c'è ALMENO UNA RISPOSTA non vuota
             correct = q.get('correct', [])
             # Filtra "null" e valori vuoti
             valid_correct = [c for c in correct if c and c != "null"]
-            if len(valid_correct) == 0:
+            if non_empty_answers > 0 and len(valid_correct) == 0:
                 questions_with_no_correct += 1
 
         stats = {

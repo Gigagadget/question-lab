@@ -26,11 +26,10 @@ function initDatabasesPage() {
 
 function setupEventListeners() {
     // Toolbar buttons
-    document.getElementById('btnHome').addEventListener('click', () => window.location.href = '/');
-    document.getElementById('btnHelp').addEventListener('click', () => showModal('helpModal'));
-    document.getElementById('btnNew').addEventListener('click', () => showModal('newDbModal'));
-    document.getElementById('btnUpload').addEventListener('click', () => showModal('uploadModal'));
-    document.getElementById('btnScan').addEventListener('click', scanDatabases);
+    document.getElementById('btnHelp')?.addEventListener('click', () => showModal('helpModal'));
+    document.getElementById('btnNew')?.addEventListener('click', () => showModal('newDbModal'));
+    document.getElementById('btnUpload')?.addEventListener('click', () => showModal('uploadModal'));
+    document.getElementById('btnScan')?.addEventListener('click', scanDatabases);
     
     // Modal: New Database
     document.getElementById('btnCreateDb').addEventListener('click', createDatabase);

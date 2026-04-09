@@ -3,6 +3,7 @@ const API_BASE_URL = '/api';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Load active database name
+    document.getElementById('btnNewQuestion')?.addEventListener('click', createNewQuestion);
     fetch('/api/databases/active')
         .then(res => res.json())
         .then(data => {
@@ -478,8 +479,12 @@ function filterQuestions(questionsList) {
     if (noAnswersChecked || withAnswersChecked || noCorrectChecked) {
         filtered = filtered.filter(q => {
             const answers = q.answers || {};
-            const hasAnswers = Object.keys(answers).length > 0;
-            const hasCorrect = (q.correct || []).length > 0;
+            // Count ONLY non-empty answers (match backend logic)
+            const nonEmptyAnswers = Object.values(answers).filter(v => v && v.trim()).length;
+            const hasAnswers = nonEmptyAnswers > 0;
+            // Count ONLY valid correct answers (exclude "null" and empty values - match backend logic)
+            const validCorrect = (q.correct || []).filter(c => c && c !== "null").length;
+            const hasCorrect = validCorrect > 0;
             
             if (noAnswersChecked && !hasAnswers) return true;
             if (withAnswersChecked && hasAnswers) return true;
@@ -733,7 +738,7 @@ async function batchChangeCategory() {
     const modal = document.createElement('div');
     modal.id = 'batchCategoryModal';
     modal.className = 'modal';
-    modal.style.display = 'block';
+    modal.classList.add('show');
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 500px;">
             <span class="close" onclick="document.getElementById('batchCategoryModal').style.display='none'">&times;</span>
@@ -1039,8 +1044,7 @@ function renderFormForId(id) {
             markDirty();
         });
     });
-    
-    document.getElementById('btnNewQuestion')?.addEventListener('click', createNewQuestion);
+
     document.getElementById('btnDeleteQuestion')?.addEventListener('click', () => deleteQuestionById(id));
     document.getElementById('btnDuplicate')?.addEventListener('click', () => duplicateQuestion(id));
     document.getElementById('btnFlagQuestion')?.addEventListener('click', () => toggleQuestionFlag(id));
@@ -1467,64 +1471,103 @@ async function showStats() {
         const primaryDomainsSorted = Object.entries(stats.primary_domain_count).sort((a, b) => b[1] - a[1]);
         const subdomainsSorted = Object.entries(stats.subdomain_count).sort((a, b) => b[1] - a[1]);
         
+        // Calculate percentages for progress bars
+        const total = stats.total_questions || 1;
+        const percentageOneAnswer = total > 0 ? ((stats.questions_with_one_answer / total) * 100).toFixed(1) : 0;
+        const percentageNoAnswers = total > 0 ? ((stats.questions_with_no_answers / total) * 100).toFixed(1) : 0;
+        const percentageNoCorrect = total > 0 ? ((stats.questions_with_no_correct / total) * 100).toFixed(1) : 0;
+        const percentageDuplicates = total > 0 ? ((stats.total_duplicates / total) * 100).toFixed(1) : 0;
+        
+        // Generate random colors for categories (consistent for each domain)
+        const categoryColors = [
+            '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', 
+            '#ef4444', '#ec489a', '#06b6d4', '#84cc16'
+        ];
+        
         content.innerHTML = `
-            <div class="stats-section">
-                <h4>📊 Panoramica Generale</h4>
-                <div class="stats-total">
-                    <span>Totale Domande:</span>
-                    <strong>${stats.total_questions}</strong>
+            <!-- Card Panoramica -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-value">${stats.total_questions}</div>
+                    <div class="stat-label">Totale Domande</div>
                 </div>
-                <div class="stats-total" style="background: #fff3e0; margin-top: 5px;">
-                    <span>Domande con Duplicati:</span>
-                    <strong>${stats.total_duplicates}</strong>
-                </div>
-            </div>
-            
-            <div class="stats-section">
-                <h4>📝 Statistiche Risposte</h4>
-                <div class="stats-grid">
-                    <div class="stats-item">
-                        <span class="category-name">Domande con una sola risposta:</span>
-                        <span class="category-count">${stats.questions_with_one_answer}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="category-name">Domande senza risposte:</span>
-                        <span class="category-count">${stats.questions_with_no_answers}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="category-name">Domande senza risposte corrette:</span>
-                        <span class="category-count">${stats.questions_with_no_correct}</span>
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-value">${stats.total_duplicates}</div>
+                    <div class="stat-label">
+                        Domande con Duplicati
+                        ${percentageDuplicates > 0 ? `<span class="warning-badge">⚠️ ${percentageDuplicates}%</span>` : ''}
                     </div>
                 </div>
             </div>
-            
+
+            <!-- Statistiche Risposte -->
             <div class="stats-section">
-                <h4>🏷️ Distribuzione per Dominio Principale</h4>
+                <h3 class="section-title">📝 Statistiche Risposte</h3>
                 <div class="stats-grid">
-                    ${primaryDomainsSorted.map(([domain, count]) => `
-                        <div class="stats-item">
-                            <span class="category-name">${escapeHtml(domain)}</span>
+                    <div class="stat-card">
+                        <div class="stat-icon">✏️</div>
+                        <div class="stat-value">${stats.questions_with_one_answer}</div>
+                        <div class="stat-label">Una sola risposta</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${percentageOneAnswer}%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-value">${stats.questions_with_no_answers}</div>
+                        <div class="stat-label">Senza risposte</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${percentageNoAnswers}%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-value">${stats.questions_with_no_correct}</div>
+                        <div class="stat-label">Senza risposta corretta</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${percentageNoCorrect}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribuzione per Dominio -->
+            <div class="stats-section">
+                <h3 class="section-title">🏷️ Distribuzione per Dominio Principale</h3>
+                <div class="distribution-list">
+                    ${primaryDomainsSorted.map(([domain, count], index) => `
+                        <div class="distribution-item">
+                            <span class="category-name">
+                                <span class="category-badge" style="background: ${categoryColors[index % categoryColors.length]};"></span>
+                                ${escapeHtml(domain)}
+                            </span>
                             <span class="category-count">${count}</span>
                         </div>
                     `).join('')}
                 </div>
-                ${primaryDomainsSorted.length === 0 ? '<p style="color:#94a3b8; text-align:center;">Nessun dato disponibile</p>' : ''}
+                ${primaryDomainsSorted.length === 0 ? '<p style="color:#94a3b8; text-align:center; padding: 20px;">Nessun dato disponibile</p>' : ''}
             </div>
-            
+
+            <!-- Distribuzione per Sottodominio -->
             <div class="stats-section">
-                <h4>📂 Distribuzione per Sottodominio</h4>
-                <div class="stats-grid">
-                    ${subdomainsSorted.map(([sub, count]) => `
-                        <div class="stats-item">
-                            <span class="category-name">${escapeHtml(sub)}</span>
+                <h3 class="section-title">📂 Distribuzione per Sottodominio</h3>
+                <div class="distribution-list">
+                    ${subdomainsSorted.map(([sub, count], index) => `
+                        <div class="distribution-item">
+                            <span class="category-name">
+                                <span class="category-badge" style="background: ${categoryColors[(index + 3) % categoryColors.length]};"></span>
+                                ${escapeHtml(sub)}
+                            </span>
                             <span class="category-count">${count}</span>
                         </div>
                     `).join('')}
                 </div>
-                ${subdomainsSorted.length === 0 ? '<p style="color:#94a3b8; text-align:center;">Nessun dato disponibile</p>' : ''}
+                ${subdomainsSorted.length === 0 ? '<p style="color:#94a3b8; text-align:center; padding: 20px;">Nessun dato disponibile</p>' : ''}
             </div>
         `;
-        modal.style.display = 'block';
+        modal.classList.add('show');
     } catch (err) {
         console.error(err);
         setStatus('Errore nel caricamento statistiche', true);
@@ -1576,7 +1619,7 @@ async function showBackups() {
                 });
             });
         }
-        modal.style.display = 'block';
+        modal.classList.add('show');
     } catch (err) {
         console.error(err);
         setStatus('Errore nel caricamento dei backup', true);
@@ -1712,7 +1755,7 @@ async function showCategoriesModal() {
     content.innerHTML = treeHtml;
 
     // Show modal AFTER inserting content
-    modal.style.display = 'block';
+    modal.classList.add('show');
 
     // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
@@ -1759,7 +1802,7 @@ async function showCategoriesModal() {
         healthContent.innerHTML = `<p style="color: #c44536; text-align: center;">Errore nel caricamento health: ${escapeHtml(err.message)}</p>`;
     }
 
-    modal.style.display = 'block';
+    modal.classList.add('show');
 }
 
 // Tab switching
@@ -2039,6 +2082,8 @@ if (document.readyState === 'loading') {
         });
         document.getElementById('btnStats').addEventListener('click', showStats);
         document.getElementById('btnBackup').addEventListener('click', showBackups);
+    });
+}
 
 // Settings dropdown toggle
 const btnSettings = document.getElementById('btnSettings');
@@ -2081,27 +2126,27 @@ const helpClose = helpModal?.querySelector('.close');
     const btn = document.getElementById(btnId);
     if (btn && helpModal) {
         btn.addEventListener('click', function() {
-            helpModal.style.display = 'block';
+            helpModal.classList.add('show');
         });
     }
 });
 
 if (helpClose) {
     helpClose.addEventListener('click', function() {
-        helpModal.style.display = 'none';
+        helpModal.classList.remove('show');
     });
 }
 
 // Modal close handlers
 document.querySelectorAll('.modal .close').forEach(close => {
     close.addEventListener('click', function() {
-        this.closest('.modal').style.display = 'none';
+        this.closest('.modal').classList.remove('show');
     });
 });
 
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
+        event.target.classList.remove('show');
     }
 };
 
@@ -2146,7 +2191,12 @@ function checkUrlParameter() {
 }
 
 // Initial load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
         loadQuestions();
         checkUrlParameter();
     });
+} else {
+    loadQuestions();
+    checkUrlParameter();
 }
