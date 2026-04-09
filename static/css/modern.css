@@ -293,6 +293,33 @@
     flex-shrink: 0;
 }
 
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-bar-left #statusMsg {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.title-db-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    white-space: nowrap;
+}
+
+.auto-save-indicator {
+    font-size: 0.75rem;
+    color: #27ae60;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 .page-title {
     font-size: 20px;
     font-weight: 600;

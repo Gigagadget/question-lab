@@ -63,17 +63,19 @@
         <div class="main-content">
             <!-- Top bar -->
             <div class="top-bar">
-                <h1 class="page-title">Editor Domande</h1>
+                <div class="top-bar-left">
+                    <h1 class="page-title">Editor</h1>
+                    <span id="activeDbName" class="title-db-name"></span>
+                    <span id="statusMsg"></span>
+                    <span class="auto-save-indicator" id="autoSaveIndicator">● Auto</span>
+                </div>
                 <div class="header-actions">
                     <button id="btnStats" class="btn-icon-modern">📊 Statistiche</button>
                     <button id="btnCategories" class="btn-icon-modern">🏷️ Categorie</button>
                     <button id="btnBackup" class="btn-icon-modern">💿 Backup</button>
                     <button class="btn-primary" id="btnNewQuestion">+ Nuova domanda</button>
-                    <span id="statusMsg" style="display: none;"></span>
-                    <span id="activeDbName" style="display: none;"></span>
                     <button id="btnSettings" style="display: none;"></button>
                     <button id="btnReload" style="display: none;"></button>
-                    <div class="auto-save-indicator" id="autoSaveIndicator">● Auto</div>
                 </div>
             </div>
 
@@ -95,7 +97,7 @@
                 <!-- Panel 1: Filtri -->
                 <div class="filters-panel">
                     <div class="filters-header">
-                        <h3>📋 Domande</h3>
+                        <h3 style="margin-top: 0px;">Filtri</h3>
                         <div class="search-box" style="margin-bottom: 12px;">
                             <input type="text" id="searchInput" placeholder="Cerca per ID o testo...">
                         </div>
@@ -122,9 +124,12 @@
                             <button id="toggleDuplicatesBtn" class="btn-outline">🔍 Mostra Duplicati</button>
                         </div>
 
-                        <div class="filter-actions-modern">
-                            <button class="btn-outline" id="btnSelectAll">✓ Sel. tutto</button>
-                            <button class="btn-outline" id="btnClearSelection">✗ Deseleziona</button>
+                        <div class="filter-group" id="filterDomains">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <div class="filter-actions-modern" id="filterActions">
+                            <!-- Populated by JS -->
                         </div>
 
                         <div id="batchActionsDiv" style="display: none; margin-top: 12px;">

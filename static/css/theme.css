@@ -244,6 +244,14 @@ select:focus {
     color: var(--accent-primary);
 }
 
+[data-theme="dark"] .auto-save-indicator {
+    color: #4ade80;
+}
+
+[data-theme="dark"] .top-bar-left #statusMsg {
+    color: var(--text-secondary);
+}
+
 /* Accordion */
 .accordion {
     background: var(--bg-tertiary);
@@ -1280,11 +1288,6 @@ select:focus {
 
 [data-theme="dark"] .answer-actions button:hover {
     background: var(--accent-red);
-}
-
-/* Editor - Correct options (checkboxes) */
-[data-theme="dark"] .correct-options {
-    /* container */
 }
 
 [data-theme="dark"] .correct-check {

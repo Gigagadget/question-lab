@@ -377,30 +377,27 @@ async function loadQuestions() {
 
 // Create filter UI with categories from server
 function createFilterUI() {
-    const searchBox = document.querySelector('.search-box');
-    if (!searchBox) return;
+    const domainsContainer = document.getElementById('filterDomains');
+    const actionsContainer = document.getElementById('filterActions');
+    if (!domainsContainer || !actionsContainer) return;
 
     // Save current filter values before recreating
     const savedPrimaryDomain = primaryDomainFilter?.value || '';
     const savedSubdomain = subdomainFilter?.value || '';
 
-    // Check if filter container already exists
-    let filterContainer = document.getElementById('filterContainer');
-    if (!filterContainer) {
-        filterContainer = document.createElement('div');
-        filterContainer.id = 'filterContainer';
-        filterContainer.style.cssText = 'margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;';
-        searchBox.appendChild(filterContainer);
-    }
-
-    filterContainer.innerHTML = `
-        <select id="primaryDomainFilter" style="flex: 1; min-width: 150px;">
+    domainsContainer.innerHTML = `
+        <div class="filter-label">Dominio</div>
+        <select id="primaryDomainFilter" class="filter-select-modern" style="margin-bottom: 12px;">
             <option value="">Tutti i Domini</option>
             ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('')}
         </select>
-        <select id="subdomainFilter" style="flex: 1; min-width: 150px;"></select>
-        <button id="clearFiltersBtn" class="small-btn">Azzera Filtri</button>
-        <button id="refreshCategoriesBtn" class="small-btn" style="background: #5a6e7a;">🔄 Aggiorna</button>
+        <div class="filter-label">Sottodominio</div>
+        <select id="subdomainFilter" class="filter-select-modern"></select>
+    `;
+
+    actionsContainer.innerHTML = `
+        <button id="clearFiltersBtn" class="btn-outline">↺ Azzera</button>
+        <button id="refreshCategoriesBtn" class="btn-outline">⟳ Aggiorna</button>
     `;
 
     primaryDomainFilter = document.getElementById('primaryDomainFilter');
