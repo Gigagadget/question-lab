@@ -66,14 +66,27 @@
      */
     function updateToggleButtons(theme) {
         const toggles = document.querySelectorAll('.theme-toggle');
-        
+
         toggles.forEach(toggle => {
             const icon = toggle.querySelector('.theme-toggle-icon');
-            
+
             if (icon) {
                 icon.textContent = theme === DARK_THEME ? '🌙' : '☀️';
             }
         });
+
+        // Aggiorna l'icona nella navbar laterale
+        const moonIcon = document.querySelector('.theme-icon-moon');
+        const sunIcon = document.querySelector('.theme-icon-sun');
+        if (moonIcon && sunIcon) {
+            if (theme === DARK_THEME) {
+                moonIcon.style.display = 'block';
+                sunIcon.style.display = 'none';
+            } else {
+                moonIcon.style.display = 'none';
+                sunIcon.style.display = 'block';
+            }
+        }
     }
 
     /**
@@ -83,7 +96,15 @@
         const currentTheme = document.documentElement.getAttribute('data-theme') || LIGHT_THEME;
         const newTheme = currentTheme === DARK_THEME ? LIGHT_THEME : DARK_THEME;
         applyTheme(newTheme);
-        
+
+        // Aggiorna le icone nella navbar
+        const moonIcon = document.querySelector('.theme-icon-moon');
+        const sunIcon = document.querySelector('.theme-icon-sun');
+        if (moonIcon && sunIcon) {
+            moonIcon.style.display = newTheme === DARK_THEME ? 'block' : 'none';
+            sunIcon.style.display = newTheme === DARK_THEME ? 'none' : 'block';
+        }
+
         // Log per debug
         console.log(`Theme changed to: ${newTheme}`);
     }
@@ -143,10 +164,18 @@
         // Applica il tema preferito
         const preferredTheme = await getPreferredTheme();
         applyTheme(preferredTheme);
-        
+
         // Crea il toggle button
         createThemeToggle();
-        
+
+        // Aggiorna le icone nella navbar laterale
+        const moonIcon = document.querySelector('.theme-icon-moon');
+        const sunIcon = document.querySelector('.theme-icon-sun');
+        if (moonIcon && sunIcon) {
+            moonIcon.style.display = preferredTheme === DARK_THEME ? 'block' : 'none';
+            sunIcon.style.display = preferredTheme === DARK_THEME ? 'none' : 'block';
+        }
+
         // Ascolta i cambiamenti della preferenza di sistema
         if (window.matchMedia) {
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async (e) => {

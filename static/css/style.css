@@ -64,7 +64,6 @@ button {
 }
 
 button:hover {
-    background: #1e2f4a;
     transform: translateY(-1px);
 }
 
@@ -574,15 +573,6 @@ body.dark .help-content strong,
     font-size: 0.7rem;
 }
 
-#clearFiltersBtn {
-    background: #6c757d;
-    padding: 5px 10px;
-    font-size: 0.7rem;
-}
-
-#clearFiltersBtn:hover {
-    background: #5a6268;
-}
 
 button.active {
     background: #e67e22;

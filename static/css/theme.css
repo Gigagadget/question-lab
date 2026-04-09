@@ -116,10 +116,6 @@ button {
     background: var(--accent-gray);
 }
 
-button:hover {
-    background: var(--accent-primary);
-}
-
 button.primary {
     background: var(--accent-blue);
 }
@@ -1233,6 +1229,42 @@ select:focus {
     background: rgba(239, 68, 68, 0.12);
     border-color: #ef4444;
     color: #ef4444;
+}
+
+[data-theme="dark"] .btn-filter-toggle.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+}
+
+[data-theme="dark"] .btn-batch {
+    border-color: var(--border-color, #475569);
+    background: var(--bg-tertiary, #1e293b);
+    color: var(--text-secondary, #94a3b8);
+}
+
+[data-theme="dark"] .btn-batch:hover {
+    border-color: var(--accent-blue, #3b82f6);
+    color: var(--accent-blue, #3b82f6);
+}
+
+[data-theme="dark"] .btn-batch-delete {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+[data-theme="dark"] .btn-batch-delete:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #ef4444;
+}
+
+[data-theme="dark"] .filter-flag-svg {
+    opacity: 0.5;
+}
+
+[data-theme="dark"] .batch-count {
+    background: rgba(44, 122, 160, 0.2);
+    color: #7dd3fc;
 }
 
 [data-theme="dark"] .remove-answer:hover {

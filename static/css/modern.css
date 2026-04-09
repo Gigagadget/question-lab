@@ -372,7 +372,7 @@
 
 .search-box input {
     width: 100%;
-    padding: 10px 12px 10px 36px;
+    padding: 10px 12px 10px 34px;
     border: 1px solid var(--border-color);
     border-radius: 10px;
     font-size: 13px;
@@ -391,10 +391,12 @@
 .search-box::before {
     content: "🔍";
     position: absolute;
-    left: 12px;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 14px;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .filter-group {
@@ -448,10 +450,86 @@
 
 .filter-actions-modern {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px solid var(--border-light);
+}
+
+/* Filter toggle button */
+.btn-filter-toggle {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-family: inherit;
+    text-align: center;
+}
+
+.btn-filter-toggle:hover {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.btn-filter-toggle.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+}
+
+/* Filter flag SVG */
+.filter-flag-svg {
+    vertical-align: middle;
+    margin-right: 4px;
+    opacity: 0.7;
+}
+
+/* Batch actions */
+.batch-count {
+    font-size: 0.75rem;
+    color: #2c7da0;
+    background: #e0f2fe;
+    padding: 5px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.btn-batch {
+    padding: 5px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.btn-batch:hover {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.btn-batch-delete {
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, 0.3);
+}
+
+.btn-batch-delete:hover {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: #dc2626;
+    color: #dc2626;
 }
 
 .active-filters-info {
@@ -772,9 +850,6 @@ textarea.form-input {
     font-weight: 600;
     font-size: 13px;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
     transition: all 0.2s;
     text-decoration: none;
     font-family: inherit;
@@ -918,6 +993,21 @@ textarea.form-input {
 .modal[style*="display: block"],
 .modal.show {
     display: flex !important;
+}
+
+/* Modal close button */
+.close-modal {
+    color: var(--text-muted, #94a3b8);
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.close-modal:hover {
+    color: var(--text-primary, #0f172a);
 }
 
 @keyframes modalFadeIn {

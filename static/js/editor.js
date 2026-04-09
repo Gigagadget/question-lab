@@ -65,6 +65,7 @@ let subdomainFilter = null;
 let filterNoAnswers = null;
 let filterWithAnswers = null;
 let filterNoCorrect = null;
+let filterHasCorrect = null;
 let categoriesModalPrimaryContext = '';
 let normalizationToastTimeout = null;
 
@@ -228,6 +229,10 @@ async function refreshCategoriesFromServer() {
 // Helper: show status message
 let statusTimeout;
 function setStatus(msg, isError = false) {
+    if (!msg) {
+        statusSpan.textContent = '';
+        return;
+    }
     if (statusTimeout) clearTimeout(statusTimeout);
     statusSpan.textContent = msg;
     statusSpan.style.color = isError ? '#c44536' : '#2c7da0';
@@ -335,11 +340,13 @@ async function loadQuestions() {
         filterNoAnswers = document.getElementById('filterNoAnswers');
         filterWithAnswers = document.getElementById('filterWithAnswers');
         filterNoCorrect = document.getElementById('filterNoCorrect');
+        filterHasCorrect = document.getElementById('filterHasCorrect');
 
         // Add event listeners for answer filters
         if (filterNoAnswers) filterNoAnswers.addEventListener('change', () => renderQuestionList());
         if (filterWithAnswers) filterWithAnswers.addEventListener('change', () => renderQuestionList());
         if (filterNoCorrect) filterNoCorrect.addEventListener('change', () => renderQuestionList());
+        if (filterHasCorrect) filterHasCorrect.addEventListener('change', () => renderQuestionList());
         
         // Flagged filter
         const filterFlaggedEl = document.getElementById('filterFlaggedOnly');
@@ -350,6 +357,12 @@ async function loadQuestions() {
                 renderQuestionList();
             });
         }
+
+        // Batch action buttons
+        document.getElementById('btnBatchSelectAll')?.addEventListener('click', selectAllVisibleQuestions);
+        document.getElementById('btnBatchDelete')?.addEventListener('click', batchDeleteQuestions);
+        document.getElementById('btnBatchCategory')?.addEventListener('click', batchChangeCategory);
+        document.getElementById('btnBatchClear')?.addEventListener('click', clearBatchSelection);
 
         renderQuestionList();
 
@@ -396,7 +409,7 @@ function createFilterUI() {
     `;
 
     actionsContainer.innerHTML = `
-        <button id="clearFiltersBtn" class="btn-outline">↺ Azzera</button>
+        <button id="clearFiltersBtn" class="btn-outline">↺ Azzera filtri</button>
         <button id="refreshCategoriesBtn" class="btn-outline">⟳ Aggiorna</button>
     `;
 
@@ -420,8 +433,16 @@ function createFilterUI() {
 
     if (clearFiltersBtn) {
         clearFiltersBtn.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
             if (primaryDomainFilter) primaryDomainFilter.value = '';
             refreshFilterSubdomainOptions('');
+            if (filterNoAnswers) filterNoAnswers.checked = false;
+            if (filterWithAnswers) filterWithAnswers.checked = false;
+            if (filterNoCorrect) filterNoCorrect.checked = false;
+            if (filterHasCorrect) filterHasCorrect.checked = false;
+            const flaggedEl = document.getElementById('filterFlaggedOnly');
+            if (flaggedEl) { flaggedEl.checked = false; filterFlaggedOnly = false; }
+            if (showDuplicatesOnly) { showDuplicatesOnly = false; updateToggleDuplicatesBtn(); }
             renderQuestionList();
         });
     }
@@ -472,8 +493,9 @@ function filterQuestions(questionsList) {
     const noAnswersChecked = filterNoAnswers?.checked;
     const withAnswersChecked = filterWithAnswers?.checked;
     const noCorrectChecked = filterNoCorrect?.checked;
-    
-    if (noAnswersChecked || withAnswersChecked || noCorrectChecked) {
+    const hasCorrectChecked = filterHasCorrect?.checked;
+
+    if (noAnswersChecked || withAnswersChecked || noCorrectChecked || hasCorrectChecked) {
         filtered = filtered.filter(q => {
             const answers = q.answers || {};
             // Count ONLY non-empty answers (match backend logic)
@@ -482,11 +504,12 @@ function filterQuestions(questionsList) {
             // Count ONLY valid correct answers (exclude "null" and empty values - match backend logic)
             const validCorrect = (q.correct || []).filter(c => c && c !== "null").length;
             const hasCorrect = validCorrect > 0;
-            
+
             if (noAnswersChecked && !hasAnswers) return true;
             if (withAnswersChecked && hasAnswers) return true;
             if (noCorrectChecked && hasAnswers && !hasCorrect) return true;
-            
+            if (hasCorrectChecked && hasCorrect) return true;
+
             return false;
         });
     }
@@ -640,47 +663,17 @@ function clearBatchSelection() {
 // Aggiorna UI per azioni batch (contatore e bottoni)
 function updateBatchActionUI() {
     const count = selectedQuestionIds.size;
-    let batchActionsDiv = document.getElementById('batchActionsDiv');
+    const batchActionsDiv = document.getElementById('batchActionsDiv');
+    if (!batchActionsDiv) return;
 
-    if (!batchActionsDiv) {
-        // Crea i bottoni se non esistono
-        const listHeader = document.querySelector('.list-header');
-        if (listHeader) {
-            const existingActions = listHeader.querySelector('#batchActionsDiv');
-            if (!existingActions) {
-                const div = document.createElement('div');
-                div.id = 'batchActionsDiv';
-                div.style.cssText = 'display: none; gap: 6px; margin-left: auto; align-items: center;';
-                div.innerHTML = `
-                    <span id="batchCountSpan" style="font-size: 0.7rem; color: #2c7da0; background: #e0f2fe; padding: 2px 8px; border-radius: 12px; white-space: nowrap;"></span>
-                    <button id="btnBatchSelectAll" class="small-btn" style="background: #2c6e2f; flex: 1;">✓ Sel. tutto</button>
-                    <button id="btnBatchDelete" class="small-btn" style="background: #ff1900; flex: 1;">🗑️ Elimina</button>
-                    <button id="btnBatchCategory" class="small-btn" style="background: #2c7da0; flex: 1;">🏷️ Categoria</button>
-                    <button id="btnBatchClear" class="small-btn" style="background: #6c757d; flex: 1;">✕ Deseleziona</button>
-                `;
-                listHeader.appendChild(div);
-                batchActionsDiv = div;
-
-                // Aggiungi event listener
-                document.getElementById('btnBatchSelectAll')?.addEventListener('click', selectAllVisibleQuestions);
-                document.getElementById('btnBatchDelete')?.addEventListener('click', batchDeleteQuestions);
-                document.getElementById('btnBatchCategory')?.addEventListener('click', batchChangeCategory);
-                document.getElementById('btnBatchClear')?.addEventListener('click', clearBatchSelection);
-            }
-        }
-    }
-
-    // Mostra/nascondi e aggiorna contatore
     if (count > 0) {
-        if (batchActionsDiv) {
-            batchActionsDiv.style.display = 'flex';
-            const countSpan = document.getElementById('batchCountSpan');
-            if (countSpan) {
-                countSpan.textContent = `${count} selez.`;
-            }
+        batchActionsDiv.style.display = 'flex';
+        const countSpan = document.getElementById('batchCountSpan');
+        if (countSpan) {
+            countSpan.textContent = `${count} selez.`;
         }
     } else {
-        if (batchActionsDiv) batchActionsDiv.style.display = 'none';
+        batchActionsDiv.style.display = 'none';
     }
 }
 
@@ -738,37 +731,41 @@ async function batchChangeCategory() {
     const count = selectedQuestionIds.size;
     if (count === 0) return;
 
-    // Crea un modal per selezionare le nuove categorie
     const modal = document.createElement('div');
     modal.id = 'batchCategoryModal';
     modal.className = 'modal';
-    modal.classList.add('show');
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
-            <span class="close" onclick="document.getElementById('batchCategoryModal').style.display='none'">&times;</span>
-            <h3>🏷️ Cambia Categoria a ${count} domande</h3>
-            <div style="margin: 20px 0;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 style="padding: 0px 20px;">🏷️ Cambia Categoria</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px; padding: 0px 20px;">Seleziona la nuova categoria per ${count} domande</p>
+            <div>
                 <div class="form-group">
-                    <label>Nuovo Dominio Principale</label>
-                    <select id="batchPrimaryDomain" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                    <label class="form-label">Nuovo Dominio Principale</label>
+                    <select id="batchPrimaryDomain" class="form-input">
                         <option value="">-- Seleziona --</option>
                         ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('')}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Nuovo Sottodominio</label>
-                    <select id="batchSubdomain" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" disabled>
+                    <label class="form-label">Nuovo Sottodominio</label>
+                    <select id="batchSubdomain" class="form-input" disabled>
                         <option value="">-- Seleziona prima un dominio --</option>
                     </select>
                 </div>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="btnBatchCategoryCancel" class="small-btn" style="background: #6c757d; flex: 1;">Annulla</button>
-                <button id="btnBatchCategoryConfirm" class="small-btn" style="background: #2c7da0; flex: 1;">Applica</button>
+                <button id="btnBatchCategoryCancel" class="btn-outline" style="flex: 1;">Annulla</button>
+                <button id="btnBatchCategoryConfirm" class="btn-primary" style="flex: 1;">Applica</button>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
+    modal.classList.add('show');
+
+    // Close handler
+    modal.querySelector('.close-modal').addEventListener('click', () => { modal.classList.remove('show'); setTimeout(() => modal.remove(), 200); });
+    modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.remove('show'); setTimeout(() => modal.remove(), 200); } });
 
     // Event listener
     const batchPrimarySelect = document.getElementById('batchPrimaryDomain');
@@ -1627,47 +1624,103 @@ async function showBackups() {
         const response = await fetch(`${API_BASE_URL}/backups`);
         if (!response.ok) throw new Error('Recupero backup fallito');
         const data = await response.json();
-        
+
         const modal = document.getElementById('backupModal');
         const content = document.getElementById('backupContent');
         const actionsDiv = document.getElementById('backupActions');
 
-        // Reset selection
         selectedBackups.clear();
         updateBackupSelectionUI();
 
         if (data.backups.length === 0) {
-            content.innerHTML = '<p>Nessun backup disponibile.</p>';
+            content.innerHTML = '<p style="color: var(--text-secondary); padding: 20px 0; text-align: center;">Nessun backup disponibile.</p>';
             actionsDiv.style.display = 'none';
         } else {
             content.innerHTML = `
-                <ul style="list-style: none; padding: 0;">
+                <ul style="list-style: none; padding: 0; margin: 0;">
                     ${data.backups.map(backup => `
-                        <li style="padding: 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" class="backup-checkbox" data-name="${backup.name}" style="cursor: pointer;">
-                            <div style="flex: 1;">
-                                <strong>${backup.name}</strong><br>
-                                <small>Dimensione: ${(backup.size / 1024).toFixed(2)} KB | Modificato: ${new Date(backup.modified).toLocaleString()}</small>
+                        <li style="padding: 12px 14px; border-bottom: 1px solid var(--border-light, #e2e8f0); display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" class="backup-checkbox" data-name="${backup.name}" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-blue);">
+                            <div style="flex: 1; min-width: 0;">
+                                <strong style="font-size: 13px;">${backup.name}</strong><br>
+                                <small style="color: var(--text-secondary); font-size: 0.8rem;">${(backup.size / 1024).toFixed(1)} KB · ${new Date(backup.modified).toLocaleString()}</small>
                             </div>
-                            <button onclick="window.restoreBackup('${backup.name}')" style="padding: 4px 12px;">Ripristina</button>
+                            <button class="btn-restore" data-name="${backup.name}" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: transparent; cursor: pointer; font-size: 12px; font-family: inherit; color: var(--accent-blue); transition: all 0.2s; white-space: nowrap;">Ripristina</button>
+                            <button class="btn-delete-backup" data-name="${backup.name}" style="padding: 6px 12px; border: 1px solid rgba(220,38,38,0.3); border-radius: 8px; background: transparent; cursor: pointer; font-size: 12px; font-family: inherit; color: #dc2626; transition: all 0.2s; white-space: nowrap;">Elimina</button>
                         </li>
                     `).join('')}
                 </ul>
             `;
             actionsDiv.style.display = 'block';
 
-            // Add event listeners for checkboxes
             document.querySelectorAll('.backup-checkbox').forEach(cb => {
                 cb.addEventListener('change', (e) => {
                     const name = e.target.getAttribute('data-name');
                     toggleBackupSelection(name);
                 });
             });
+
+            document.querySelectorAll('.btn-restore').forEach(btn => {
+                btn.addEventListener('click', () => window.restoreBackup(btn.getAttribute('data-name')));
+                btn.addEventListener('mouseenter', () => { btn.style.background = 'var(--bg-tertiary)'; });
+                btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; });
+            });
+
+            document.querySelectorAll('.btn-delete-backup').forEach(btn => {
+                btn.addEventListener('click', () => deleteSingleBackup(btn.getAttribute('data-name')));
+                btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(220,38,38,0.08)'; });
+                btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; });
+            });
+
+            // Select all button handler
+            const selectAllBtn = document.getElementById('btnSelectAllBackups');
+            if (selectAllBtn) {
+                selectAllBtn.addEventListener('click', () => {
+                    const allCheckboxes = document.querySelectorAll('.backup-checkbox');
+                    const allSelected = selectedBackups.size === allCheckboxes.length;
+
+                    if (allSelected) {
+                        selectedBackups.clear();
+                        allCheckboxes.forEach(cb => { cb.checked = false; });
+                    } else {
+                        allCheckboxes.forEach(cb => {
+                            cb.checked = true;
+                            selectedBackups.add(cb.getAttribute('data-name'));
+                        });
+                    }
+                    updateBackupSelectionUI();
+                });
+
+                selectAllBtn.addEventListener('mouseenter', () => {
+                    selectAllBtn.style.background = 'var(--bg-tertiary, #f1f5f9)';
+                });
+                selectAllBtn.addEventListener('mouseleave', () => {
+                    selectAllBtn.style.background = 'transparent';
+                });
+            }
         }
         modal.classList.add('show');
     } catch (err) {
         console.error(err);
         setStatus('Errore nel caricamento dei backup', true);
+    }
+}
+
+async function deleteSingleBackup(backupName) {
+    if (!confirm(`Eliminare il backup "${backupName}"?`)) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/backups`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ backups: [backupName] })
+        });
+        if (!response.ok) throw new Error('Cancellazione backup fallita');
+        const result = await response.json();
+        setStatus(result.message);
+        showBackups();
+    } catch (err) {
+        console.error(err);
+        setStatus('Errore nella cancellazione del backup', true);
     }
 }
 
@@ -1684,18 +1737,19 @@ function updateBackupSelectionUI() {
     const count = selectedBackups.size;
     const countSpan = document.getElementById('selectedBackupsCount');
     const deleteBtn = document.getElementById('btnDeleteSelectedBackups');
-    const selectAllCb = document.getElementById('selectAllBackups');
-    
+    const selectAllBtn = document.getElementById('btnSelectAllBackups');
+
     if (countSpan) {
         countSpan.textContent = `${count} selezionati`;
     }
     if (deleteBtn) {
         deleteBtn.disabled = count === 0;
+        deleteBtn.style.opacity = count === 0 ? '0.5' : '1';
     }
-    if (selectAllCb) {
-        // Check if all backups are selected
+    if (selectAllBtn) {
         const allCheckboxes = document.querySelectorAll('.backup-checkbox');
-        selectAllCb.checked = allCheckboxes.length > 0 && allCheckboxes.length === count;
+        const allSelected = allCheckboxes.length > 0 && allCheckboxes.length === count;
+        selectAllBtn.textContent = allSelected ? 'Deseleziona tutti' : 'Seleziona tutti';
     }
 }
 
@@ -2056,18 +2110,26 @@ async function renameCategory(type, oldValue, primaryDomain = '') {
     }
 }
 
-function toggleShowDuplicates() {
-    showDuplicatesOnly = !showDuplicatesOnly;
+function updateToggleDuplicatesBtn() {
     if (toggleDuplicatesBtn) {
         if (showDuplicatesOnly) {
             toggleDuplicatesBtn.classList.add('active');
-            toggleDuplicatesBtn.style.background = '#e67e22';
-            toggleDuplicatesBtn.textContent = '🔍 Mostra Tutto';
+            toggleDuplicatesBtn.textContent = 'Mostra tutti';
         } else {
             toggleDuplicatesBtn.classList.remove('active');
-            toggleDuplicatesBtn.style.background = '';
-            toggleDuplicatesBtn.textContent = '🔍 Mostra Duplicati';
+            toggleDuplicatesBtn.textContent = 'Mostra duplicati';
         }
+    }
+}
+
+function toggleShowDuplicates() {
+    showDuplicatesOnly = !showDuplicatesOnly;
+    if (showDuplicatesOnly) {
+        toggleDuplicatesBtn?.classList.add('active');
+        toggleDuplicatesBtn.textContent = 'Mostra tutti';
+    } else {
+        toggleDuplicatesBtn?.classList.remove('active');
+        toggleDuplicatesBtn.textContent = 'Mostra duplicati';
     }
     renderQuestionList();
 }
@@ -2109,6 +2171,7 @@ function navigateToNext() {
 // Make functions global for modal buttons
 window.toggleAccordion = toggleAccordion;
 window.restoreBackup = restoreBackup;
+window.deleteSingleBackup = deleteSingleBackup;
 window.addCategory = addCategory;
 window.removeCategory = removeCategory;
 window.renameCategory = renameCategory;
@@ -2126,7 +2189,8 @@ if (document.readyState === 'loading') {
             await loadQuestions();
         });
         document.getElementById('btnStats').addEventListener('click', showStats);
-        document.getElementById('btnBackup').addEventListener('click', showBackups);
+        document.getElementById('btnBackup')?.addEventListener('click', showBackups);
+        document.getElementById('btnBackupSidebar')?.addEventListener('click', showBackups);
     });
 }
 
@@ -2161,7 +2225,6 @@ if (toggleDuplicatesBtn) {
 
 // Backup actions
 document.getElementById('btnDeleteSelectedBackups')?.addEventListener('click', deleteSelectedBackups);
-document.getElementById('selectAllBackups')?.addEventListener('change', selectAllBackups);
 
 // Help button functionality
 const helpModal = document.getElementById('helpModal');
@@ -2183,11 +2246,15 @@ if (helpClose) {
 }
 
 // Modal close handlers
-document.querySelectorAll('.modal .close').forEach(close => {
-    close.addEventListener('click', function() {
-        this.closest('.modal').classList.remove('show');
+function setupModalCloseHandlers() {
+    document.querySelectorAll('.modal .close, .modal .close-modal').forEach(close => {
+        close.addEventListener('click', function() {
+            this.closest('.modal').classList.remove('show');
+        });
     });
-});
+}
+
+setupModalCloseHandlers();
 
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
@@ -2240,8 +2307,24 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         loadQuestions();
         checkUrlParameter();
+        // Update theme icons on initial load
+        updateThemeIcons();
     });
 } else {
     loadQuestions();
     checkUrlParameter();
+    updateThemeIcons();
 }
+
+function updateThemeIcons() {
+    const moonIcon = document.querySelector('.theme-icon-moon');
+    const sunIcon = document.querySelector('.theme-icon-sun');
+    if (moonIcon && sunIcon) {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        moonIcon.style.display = isDark ? 'block' : 'none';
+        sunIcon.style.display = isDark ? 'none' : 'block';
+    }
+}
+
+// Listen for theme changes to update icons
+document.addEventListener('themeChanged', updateThemeIcons);
