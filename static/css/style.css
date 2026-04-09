@@ -451,12 +451,8 @@ textarea {
 .duplicate-item-detail {
     padding: 6px;
     font-size: 0.8rem;
-}
-
-.duplicate-item-detail strong {
-    color: #b45309;
-    font-family: monospace;
-    font-size: 0.7rem;
+    display: grid;
+    grid-template-columns: 70px 1fr;
 }
 
 /* Modal styles */
@@ -676,24 +672,6 @@ button.active {
     font-weight: 600;
     display: flex;
     justify-content: space-between;
-}
-
-/* Navigation buttons */
-.nav-buttons {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-    justify-content: flex-end;
-}
-
-.nav-buttons button {
-    padding: 4px 10px;
-    font-size: 0.7rem;
-    background: #5a6e7a;
-}
-
-.nav-buttons button:hover {
-    background: #2c3e66;
 }
 
 /* Flag feature styles */
