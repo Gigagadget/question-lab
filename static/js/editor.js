@@ -524,29 +524,36 @@ function renderQuestionList() {
         const isDuplicate = q.duplicate_count > 0;
         const isSelected = selectedQuestionIds.has(q.id);
         const isFlagged = q.flagged || false;
-        const hasAnswers = q.answers && q.answers.length > 0;
-        const hasCorrectAnswer = q.correct_options && q.correct_options.length > 0;
-        
+        const answerKeys = q.answers ? Object.keys(q.answers) : [];
+        const validCorrect = (q.correct || []).filter(c => c && c !== "null");
+        const hasAnswers = answerKeys.length > 0;
+        const hasCorrectAnswer = validCorrect.length > 0;
+
         // Determine status badge
         let statusBadge = '';
-        if (!hasAnswers) {
-            statusBadge = '<span class="status-badge status-unanswered">Senza risposta</span>';
-        } else if (!hasCorrectAnswer) {
+        if (!hasCorrectAnswer) {
             statusBadge = '<span class="status-badge status-unanswered">Senza corretta</span>';
+        } else if (!hasAnswers) {
+            statusBadge = '<span class="status-badge status-unanswered">Senza risposta</span>';
         } else {
             statusBadge = '<span class="status-badge status-answered">Con risposta</span>';
         }
-        
+
         if (isFlagged) {
-            statusBadge += '<span class="status-badge status-flag">Flag</span>';
+            statusBadge += `<span class="status-badge status-flag">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                    <line x1="4" y1="22" x2="4" y2="15"></line>
+                </svg>
+            </span>`;
         }
-        
+
         return `
             <div class="question-card-modern ${selectedId === q.id ? 'selected' : ''} ${isSelected ? 'batch-selected' : ''} ${isDuplicate ? 'duplicate-item' : ''} ${isFlagged ? 'flagged-item' : ''}" data-id="${q.id}">
                 <div class="card-header">
                     <span class="question-id-modern">${escapeHtml(q.id)}</span>
                     <div style="display: flex; gap: 6px; align-items: center;">
-                        ${isDuplicate ? `<span class="status-badge status-flag">${q.duplicate_count} dup</span>` : ''}
+                        ${isDuplicate ? `<span class="status-badge status-duplicate">dup</span>` : ''}
                         ${statusBadge}
                         <input type="checkbox" class="batch-select-checkbox" data-id="${q.id}" ${isSelected ? 'checked' : ''}>
                     </div>

@@ -519,21 +519,34 @@
     padding: 3px 8px;
     border-radius: 20px;
     font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
 }
 
 .status-unanswered {
-    background: var(--status-wrong-bg);
-    color: var(--status-wrong-text);
+    background: #fee2e2;
+    color: #dc2626;
 }
 
 .status-answered {
-    background: var(--status-correct-bg);
-    color: var(--status-correct-text);
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.status-duplicate {
+    background: #fef3c7;
+    color: #d97706;
 }
 
 .status-flag {
-    background: var(--status-warning-bg);
-    color: var(--status-warning-text);
+    background: #ffedd5;
+    color: #ea580c;
+    padding: 3px 5px;
+}
+
+.status-flag svg {
+    display: block;
 }
 
 .question-text-modern {
@@ -542,6 +555,10 @@
     color: var(--text-primary);
     margin-bottom: 8px;
     line-height: 1.4;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .questions-toolbar {
