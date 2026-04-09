@@ -63,13 +63,88 @@
 .detail-title-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+}
+
+/* Flag button */
+.btn-flag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-flag svg {
+    width: 30px;
+    height: 30px;
+}
+
+.btn-flag:hover {
+    background: var(--bg-tertiary, #f1f5f9);
+    color: var(--text-primary, #0f172a);
+}
+
+.btn-flag[data-flagged="true"] {
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.btn-flag[data-flagged="true"]:hover {
+    background: rgba(245, 158, 11, 0.12);
 }
 
 .id-group {
     display: flex;
     flex-direction: column;
     gap: 0;
+}
+
+/* Secondary action buttons (under ID) */
+.detail-secondary-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+.btn-secondary-action {
+    background: transparent;
+    border: 1px solid var(--border-color, #e2e8f0);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-secondary, #475569);
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-secondary-action:hover {
+    background: var(--bg-tertiary, #f1f5f9);
+    border-color: var(--accent-blue, #3b82f6);
+    color: var(--accent-blue, #3b82f6);
+}
+
+.btn-delete-action {
+    color: #dc2626;
+}
+
+.btn-delete-action:hover {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: #dc2626;
+    color: #dc2626;
 }
 
 .detail-id-input {
@@ -122,16 +197,6 @@
     vertical-align: middle;
     margin-right: 3px;
     opacity: 0.6;
-}
-
-/* Accordion header with duplicate color */
-.accordion-header {
-    background: #fef3c7;
-    color: #d97706;
-}
-
-.accordion-header:hover {
-    background: #fde68a;
 }
 
 /* Answers header row */
@@ -513,8 +578,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 20px;
     border-bottom: 1px solid var(--border-light);
 }
 

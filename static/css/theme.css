@@ -252,26 +252,19 @@ select:focus {
 
 .accordion-header {
     background: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .accordion-header:hover {
     background: var(--bg-tertiary);
 }
 
-.duplicate-info {
-    background: var(--status-warning-bg);
+.accordion-arrow {
+    color: var(--text-muted);
 }
 
-.duplicate-info h4 {
-    color: var(--status-warning-text);
-}
-
-.duplicate-item-detail {
-    border-bottom: 1px solid var(--status-warning-border);
-}
-
-.duplicate-item-detail strong {
-    color: var(--status-warning-text);
+.duplicate-id {
+    color: var(--accent-blue);
 }
 
 /* Stats */
@@ -1175,6 +1168,42 @@ select:focus {
 [data-theme="dark"] .detail-id-input:focus {
     background: var(--bg-secondary, #0f172a);
     border-color: var(--accent-blue, #3b82f6);
+}
+
+[data-theme="dark"] .btn-flag {
+    color: #64748b;
+}
+
+[data-theme="dark"] .btn-flag:hover {
+    background: var(--bg-tertiary, #1e293b);
+    color: var(--text-primary, #f1f5f9);
+}
+
+[data-theme="dark"] .btn-flag[data-flagged="true"] {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+[data-theme="dark"] .btn-secondary-action {
+    border-color: var(--border-color, #475569);
+    color: var(--text-secondary, #94a3b8);
+}
+
+[data-theme="dark"] .btn-secondary-action:hover {
+    background: var(--bg-tertiary, #1e293b);
+    border-color: var(--accent-blue, #3b82f6);
+    color: var(--accent-blue, #3b82f6);
+}
+
+[data-theme="dark"] .btn-delete-action {
+    color: #ef4444;
+}
+
+[data-theme="dark"] .btn-delete-action:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #ef4444;
+    color: #ef4444;
 }
 
 [data-theme="dark"] .remove-answer:hover {

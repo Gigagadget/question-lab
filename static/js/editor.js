@@ -645,7 +645,7 @@ function updateBatchActionUI() {
                 div.innerHTML = `
                     <span id="batchCountSpan" style="font-size: 0.7rem; color: #2c7da0; background: #e0f2fe; padding: 2px 8px; border-radius: 12px; white-space: nowrap;"></span>
                     <button id="btnBatchSelectAll" class="small-btn" style="background: #2c6e2f; flex: 1;">✓ Sel. tutto</button>
-                    <button id="btnBatchDelete" class="small-btn" style="background: #c44536; flex: 1;">🗑️ Elimina</button>
+                    <button id="btnBatchDelete" class="small-btn" style="background: #ff1900; flex: 1;">🗑️ Elimina</button>
                     <button id="btnBatchCategory" class="small-btn" style="background: #2c7da0; flex: 1;">🏷️ Categoria</button>
                     <button id="btnBatchClear" class="small-btn" style="background: #6c757d; flex: 1;">✕ Deseleziona</button>
                 `;
@@ -869,27 +869,32 @@ function renderFormForId(id) {
     const detailActionsHtml = `
         <div class="detail-actions">
             <div class="detail-title-row">
+                <button id="btnFlagQuestion" class="btn-flag" title="${isFlagged ? 'Rimuovi flag' : 'Segna'}" ${isFlagged ? 'data-flagged="true"' : ''}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFlagged ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                        <line x1="4" y1="22" x2="4" y2="15"></line>
+                    </svg>
+                </button>
                 <div class="id-group">
                     <input type="text" class="detail-id-input" id="field_id" value="${escapeHtml(question.id)}" placeholder="es., Q1257" maxlength="50">
                     <div id="idError" style="color: #c44536; font-size: 0.65rem; margin-top: 2px; display: none;"></div>
                 </div>
             </div>
-            <div class="action-group">
-                <button id="btnDuplicate" class="btn-icon-modern">📑 Duplica</button>
-                <button id="btnDeleteQuestion" class="btn-icon-modern" style="color: #dc2626;">🗑️ Elimina</button>
-                <button id="btnFlagQuestion" class="btn-icon-modern" style="${isFlagged ? 'border-color: #f59e0b; color: #f59e0b;' : ''}">🚩 ${isFlagged ? 'Segnata' : 'Segna'}</button>
+            <div class="nav-buttons-modern">
+                <button id="navPrevBtn" class="nav-btn-modern" ${currentIndex === 0 ? 'disabled' : ''}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Precedente
+                </button>
+                <span class="nav-counter">${currentIndex + 1} / ${total}</span>
+                <button id="navNextBtn" class="nav-btn-modern" ${currentIndex === total - 1 ? 'disabled' : ''}>
+                    Successivo
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
             </div>
         </div>
-        <div class="nav-buttons-modern">
-            <button id="navPrevBtn" class="nav-btn-modern" ${currentIndex === 0 ? 'disabled' : ''}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Precedente
-            </button>
-            <span class="nav-counter">${currentIndex + 1} / ${total}</span>
-            <button id="navNextBtn" class="nav-btn-modern" ${currentIndex === total - 1 ? 'disabled' : ''}>
-                Successivo
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
+        <div class="detail-secondary-actions">
+            <button id="btnDuplicate" class="btn-secondary-action">📑 Duplica</button>
+            <button id="btnDeleteQuestion" class="btn-secondary-action btn-delete-action">🗑️ Elimina</button>
         </div>
     `;
 
@@ -932,18 +937,18 @@ function renderFormForId(id) {
         duplicateHtml = `
             <div class="accordion">
                 <div class="accordion-header" onclick="window.toggleAccordion(this)">
-                    <span>📋 Duplicati (${question.duplicate_count})</span>
-                    <span class="arrow">▶</span>
+                    <span>Duplicati (${question.duplicate_count})</span>
+                    <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 4L10 8L6 12"/>
+                    </svg>
                 </div>
                 <div class="accordion-content">
-                    <div class="duplicate-info">
-                        ${duplicatesList.map(d => `
-                            <div class="duplicate-item-detail">
-                                <strong>${escapeHtml(d.id)}</strong><br>
-                                ${escapeHtml(d.text)}
-                            </div>
-                        `).join('')}
-                    </div>
+                    ${duplicatesList.map(d => `
+                        <div class="duplicate-item-detail">
+                            <span class="duplicate-id">${escapeHtml(d.id)}</span>
+                            <span class="duplicate-text">${escapeHtml(d.text)}</span>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
         `;
