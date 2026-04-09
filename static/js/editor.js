@@ -1031,6 +1031,15 @@ function renderFormForId(id) {
     document.querySelectorAll('.answer-check-modern').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
             const letter = checkbox.getAttribute('data-letter');
+            const answerInput = document.querySelector(`.answer-input[data-letter="${letter}"]`);
+            
+            // Prevent marking empty answer as correct
+            if (checkbox.checked && answerInput && !answerInput.value.trim()) {
+                checkbox.checked = false;
+                setStatus('Non puoi segnare come corretta una risposta vuota', true);
+                return;
+            }
+            
             if (!Array.isArray(question.correct)) question.correct = [];
             
             if (checkbox.checked) {
@@ -1123,7 +1132,28 @@ function addNewAnswer() {
     // Add checkbox handler
     const newCheckbox = answersGrid.querySelector(`.answer-check-modern[data-letter="${newLetter}"]`);
     if (newCheckbox) {
-        newCheckbox.addEventListener('change', () => markDirty());
+        newCheckbox.addEventListener('change', (e) => {
+            const answerInput = document.querySelector(`.answer-input[data-letter="${newLetter}"]`);
+            
+            // Prevent marking empty answer as correct
+            if (newCheckbox.checked && answerInput && !answerInput.value.trim()) {
+                newCheckbox.checked = false;
+                setStatus('Non puoi segnare come corretta una risposta vuota', true);
+                return;
+            }
+            
+            if (!Array.isArray(question.correct)) question.correct = [];
+            
+            if (newCheckbox.checked) {
+                if (!question.correct.includes(newLetter)) {
+                    question.correct.push(newLetter);
+                }
+            } else {
+                question.correct = question.correct.filter(l => l !== newLetter);
+            }
+            
+            markDirty();
+        });
     }
     
     const correctOptions = document.getElementById('correctOptions');
@@ -1197,7 +1227,9 @@ function collectFormData(originalId = null) {
     const checkboxes = document.querySelectorAll('.answer-check-modern');
     checkboxes.forEach(cb => {
         const letter = cb.getAttribute('data-letter');
-        if (cb.checked && letter) {
+        const answerInput = document.querySelector(`.answer-input[data-letter="${letter}"]`);
+        // Only add to correct if checkbox is checked AND answer is not empty
+        if (cb.checked && letter && answerInput && answerInput.value.trim()) {
             correct.push(letter);
         }
     });
@@ -1477,6 +1509,7 @@ async function showStats() {
         const percentageNoAnswers = total > 0 ? ((stats.questions_with_no_answers / total) * 100).toFixed(1) : 0;
         const percentageNoCorrect = total > 0 ? ((stats.questions_with_no_correct / total) * 100).toFixed(1) : 0;
         const percentageDuplicates = total > 0 ? ((stats.total_duplicates / total) * 100).toFixed(1) : 0;
+        const percentageFlagged = total > 0 ? ((stats.questions_flagged / total) * 100).toFixed(1) : 0;
         
         // Generate random colors for categories (consistent for each domain)
         const categoryColors = [
@@ -1491,6 +1524,14 @@ async function showStats() {
                     <div class="stat-icon">📋</div>
                     <div class="stat-value">${stats.total_questions}</div>
                     <div class="stat-label">Totale Domande</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚩</div>
+                    <div class="stat-value">${stats.questions_flagged}</div>
+                    <div class="stat-label">
+                        Domande Flaggate
+                        ${percentageFlagged > 0 ? `<span class="warning-badge">⚠️ ${percentageFlagged}%</span>` : ''}
+                    </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">🔄</div>

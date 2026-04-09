@@ -301,6 +301,16 @@ def save_questions():
         data = request.get_json()
         if not isinstance(data, list):
             return jsonify({"error": "Formato dati non valido, previsto un array"}), 400
+        
+        # Validate: empty answers cannot be marked as correct
+        for question in data:
+            answers = question.get('answers', {})
+            correct = question.get('correct', [])
+            # Filter out correct answers that point to empty responses
+            question['correct'] = [
+                c for c in correct 
+                if c in answers and answers.get(c) and answers.get(c).strip()
+            ]
 
         # Costruisce/aggiorna le categorie a partire dai dati in ingresso
         categories = get_unique_categories(data)
@@ -337,6 +347,15 @@ def update_question(question_id):
 
         if not updated_question:
             return jsonify({"error": "Nessun dato fornito"}), 400
+            
+        # Validate: empty answers cannot be marked as correct
+        answers = updated_question.get('answers', {})
+        correct = updated_question.get('correct', [])
+        # Filter out correct answers that point to empty responses
+        updated_question['correct'] = [
+            c for c in correct 
+            if c in answers and answers.get(c) and answers.get(c).strip()
+        ]
 
         new_id = updated_question.get('id')
         if new_id != question_id and any(q.get('id') == new_id for q in questions):
@@ -370,7 +389,7 @@ def get_stats():
     try:
         questions = load_database()
         if questions is None:
-            return jsonify({"error": "Nessun database selezionato", "total_questions": 0, "total_duplicates": 0, "primary_domain_count": {}, "subdomain_count": {}, "questions_with_one_answer": 0, "questions_with_no_answers": 0, "questions_with_no_correct": 0}), 400
+            return jsonify({"error": "Nessun database selezionato", "total_questions": 0, "total_duplicates": 0, "primary_domain_count": {}, "subdomain_count": {}, "questions_with_one_answer": 0, "questions_with_no_answers": 0, "questions_with_no_correct": 0, "questions_flagged": 0}), 400
 
         # Count per primary domain
         primary_domain_count = {}
@@ -388,6 +407,7 @@ def get_stats():
         questions_with_one_answer = 0
         questions_with_no_answers = 0
         questions_with_no_correct = 0
+        questions_flagged = 0
 
         for q in questions:
             answers = q.get('answers', {})
@@ -400,12 +420,15 @@ def get_stats():
                 questions_with_no_answers += 1
 
             # Controlla risposte corrette
-            # Conta SOLO se c'è ALMENO UNA RISPOSTA non vuota
             correct = q.get('correct', [])
             # Filtra "null" e valori vuoti
             valid_correct = [c for c in correct if c and c != "null"]
             if non_empty_answers > 0 and len(valid_correct) == 0:
                 questions_with_no_correct += 1
+            
+            # Conta domande flaggate
+            if q.get('flagged', False):
+                questions_flagged += 1
 
         stats = {
             "total_questions": len(questions),
@@ -414,7 +437,8 @@ def get_stats():
             "subdomain_count": subdomain_count,
             "questions_with_one_answer": questions_with_one_answer,
             "questions_with_no_answers": questions_with_no_answers,
-            "questions_with_no_correct": questions_with_no_correct
+            "questions_with_no_correct": questions_with_no_correct,
+            "questions_flagged": questions_flagged
         }
         return jsonify(stats), 200
     except Exception as e:

@@ -655,6 +655,11 @@ textarea.form-input {
     background: var(--bg-hover);
 }
 
+.answer-row:has(input.answer-check-modern:checked:not(:disabled)) {
+    border: 1px solid var(--accent-blue);
+    background: var(--status-info-bg);
+}
+
 .answer-check-modern {
     width: 18px;
     height: 18px;
