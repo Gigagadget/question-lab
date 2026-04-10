@@ -50,10 +50,6 @@
         display: none;
     }
 
-    .detail-panel {
-        padding: 16px;
-    }
-
     .detail-card {
         padding: 16px;
         border-radius: 12px;
@@ -477,6 +473,11 @@
 
 /* ==================== RESPONSIVE MOBILE ==================== */
 @media (max-width: 768px) {
+    /* Prevent body overscroll on mobile */
+    body {
+        overscroll-behavior-y: none;
+    }
+
     /* Sidebar: thin icon bar, always visible */
     .sidebar {
         width: 48px !important;
@@ -547,17 +548,19 @@
         flex-shrink: 0;
     }
 
-    /* Mobile panel toggle bar */
+    /* Mobile panel tabs - styled */
     .mobile-panel-tabs {
         display: flex;
         background: var(--bg-secondary);
         border-bottom: 1px solid var(--border-light);
         flex-shrink: 0;
+        padding: 0 8px;
+        gap: 2px;
     }
 
     .mobile-panel-tab {
         flex: 1;
-        padding: 10px 8px;
+        padding: 12px 8px;
         text-align: center;
         font-size: 12px;
         font-weight: 600;
@@ -567,10 +570,17 @@
         border-bottom: 2px solid transparent;
         cursor: pointer;
         transition: all 0.2s;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .mobile-panel-tab:hover {
+        color: var(--text-primary);
+        background: var(--bg-tertiary);
     }
 
     .mobile-panel-tab.active {
         color: var(--accent-blue);
+        background: var(--bg-primary);
         border-bottom-color: var(--accent-blue);
     }
 
@@ -579,34 +589,55 @@
         flex-direction: column;
         height: calc(100vh - 57px);
         overflow: hidden;
+        overscroll-behavior: none;
     }
 
-    /* Panels: only one visible at a time on mobile */
+    /* Panels: ALL hidden by default on mobile */
     .filters-panel,
-    .questions-panel {
-        width: 100% !important;
-        min-width: 0 !important;
-        flex: 1 !important;
-        border-right: none !important;
-        overflow-y: auto;
-        display: none;
-    }
-
+    .questions-panel,
     .detail-panel {
-        width: 100% !important;
-        min-width: 0 !important;
-        flex: 1 !important;
-        border-right: none !important;
-        overflow-y: auto;
-        display: none;
+        display: none !important;
     }
 
-    /* Show active panel */
+    /* Only the mobile-active panel is visible */
     .filters-panel.mobile-active,
     .questions-panel.mobile-active,
     .detail-panel.mobile-active {
-        display: flex;
+        display: flex !important;
         flex-direction: column;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        flex: 1 !important;
+        border-right: none !important;
+        border-left: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    /* Filters panel content: prevent scroll bubbling */
+    .filters-panel.mobile-active .filters-header {
+        overscroll-behavior: contain;
+    }
+
+    /* Questions list: full width, no extra spacing */
+    .questions-panel.mobile-active .questions-toolbar {
+        padding: 12px 16px;
+    }
+
+    .questions-panel.mobile-active .questions-list {
+        padding: 8px;
+        overscroll-behavior: contain;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .questions-panel.mobile-active .question-card-modern {
+        width: 100%;
+        box-sizing: border-box;
     }
 
     /* Collapsed panels on mobile: hide completely with visible toggle */
@@ -620,33 +651,6 @@
         padding: 0;
     }
 
-    /* Mobile panel toggle bar */
-    .mobile-panel-tabs {
-        display: flex;
-        background: var(--bg-secondary);
-        border-bottom: 1px solid var(--border-light);
-        flex-shrink: 0;
-    }
-
-    .mobile-panel-tab {
-        flex: 1;
-        padding: 10px 8px;
-        text-align: center;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-muted);
-        background: transparent;
-        border: none;
-        border-bottom: 2px solid transparent;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .mobile-panel-tab.active {
-        color: var(--accent-blue);
-        border-bottom-color: var(--accent-blue);
-    }
-
     /* Panel collapse toggle on mobile: hidden, use tabs instead */
     .panel-collapse-toggle {
         display: none !important;
@@ -657,14 +661,58 @@
         display: flex !important;
     }
 
-    /* Detail panel: full height minus topbar */
-    .detail-panel {
-        padding: 16px;
+    /* Detail panel: full edge-to-edge on mobile, no padding */
+    .detail-panel.mobile-active {
+        padding: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
     }
 
-    .detail-card {
-        padding: 16px;
-        border-radius: 12px;
+    .detail-panel.mobile-active .detail-card {
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 12px;
+    }
+
+    .detail-panel.mobile-active .detail-actions {
+        flex-wrap: wrap;
+    }
+
+    .detail-panel.mobile-active .nav-buttons-modern {
+        flex-wrap: wrap;
+    }
+
+    .detail-panel.mobile-active .answers-list {
+        overflow-x: hidden;
+    }
+
+    .detail-panel.mobile-active .answer-row {
+        padding: 10px 8px;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    .detail-panel.mobile-active .answer-letter {
+        font-size: 13px;
+        min-width: 16px;
+        flex-shrink: 0;
+    }
+
+    .detail-panel.mobile-active .answer-input {
+        min-width: 0;
+        font-size: 14px;
+        flex-shrink: 1;
+    }
+
+    .detail-panel.mobile-active .answer-check-modern {
+        flex-shrink: 0;
+    }
+
+    .detail-panel.mobile-active .remove-answer {
+        flex-shrink: 0;
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
     }
 
     /* Nav buttons: icon only */

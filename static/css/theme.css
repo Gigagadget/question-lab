@@ -1272,6 +1272,20 @@ select:focus {
     border-top-color: var(--border-color, #334155);
 }
 
+[data-theme="dark"] .mobile-panel-tab {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .mobile-panel-tab:hover {
+    background: var(--bg-tertiary, #1e293b);
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .mobile-panel-tab.active {
+    background: var(--bg-tertiary, #0f172a);
+    color: #60a5fa;
+}
+
 [data-theme="dark"] .remove-answer:hover {
     background: rgba(220, 38, 38, 0.15);
 }

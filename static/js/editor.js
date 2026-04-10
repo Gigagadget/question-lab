@@ -2375,12 +2375,26 @@ document.querySelectorAll('.mobile-panel-tab').forEach(tab => {
 
 // Set default mobile panel on load
 function setDefaultMobilePanel() {
+    const filtersPanel = document.getElementById('filtersPanel');
+    const questionsPanel = document.getElementById('questionsPanel');
+    const detailPanel = document.getElementById('formPanel');
+
     if (window.innerWidth <= 768) {
-        const detailPanel = document.getElementById('formPanel');
+        // Remove all mobile-active classes first
+        filtersPanel.classList.remove('mobile-active');
+        questionsPanel.classList.remove('mobile-active');
+        detailPanel.classList.remove('mobile-active');
+
+        // Set Editor tab as active by default
         detailPanel.classList.add('mobile-active');
-        // Set Editor tab as active
+
         document.querySelectorAll('.mobile-panel-tab').forEach(t => t.classList.remove('active'));
         document.querySelector('.mobile-panel-tab[data-panel="detail"]')?.classList.add('active');
+    } else {
+        // Remove mobile classes on desktop - show all panels normally
+        filtersPanel.classList.remove('mobile-active');
+        questionsPanel.classList.remove('mobile-active');
+        detailPanel.classList.remove('mobile-active');
     }
 }
 
@@ -2393,11 +2407,13 @@ if (document.readyState === 'loading') {
 // Also update on resize
 window.addEventListener('resize', () => {
     if (window.innerWidth <= 768) {
+        // Switching to mobile: set default mobile panel
         setDefaultMobilePanel();
     } else {
-        // Remove mobile classes on desktop
+        // Switching to desktop: remove mobile classes, show all panels
         document.getElementById('filtersPanel')?.classList.remove('mobile-active');
         document.getElementById('questionsPanel')?.classList.remove('mobile-active');
         document.getElementById('formPanel')?.classList.remove('mobile-active');
+        document.querySelectorAll('.mobile-panel-tab').forEach(t => t.classList.remove('active'));
     }
 });

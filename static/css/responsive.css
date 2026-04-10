@@ -55,10 +55,6 @@
         max-height: 40vh;
     }
 
-    .questions-list {
-        max-height: 30vh;
-    }
-
     .form-panel {
         min-width: auto !important;
         max-height: none;
