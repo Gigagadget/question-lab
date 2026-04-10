@@ -1639,7 +1639,7 @@ async function showBackups() {
             content.innerHTML = `
                 <ul style="list-style: none; padding: 0; margin: 0;">
                     ${data.backups.map(backup => `
-                        <li style="padding: 12px 14px; border-bottom: 1px solid var(--border-light, #e2e8f0); display: flex; align-items: center; gap: 10px;">
+                        <li style="padding: 12px 0; border-bottom: 1px solid var(--border-light, #e2e8f0); display: flex; align-items: center; gap: 10px;">
                             <input type="checkbox" class="backup-checkbox" data-name="${backup.name}" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-blue);">
                             <div style="flex: 1; min-width: 0;">
                                 <strong style="font-size: 13px;">${backup.name}</strong><br>
@@ -1651,7 +1651,7 @@ async function showBackups() {
                     `).join('')}
                 </ul>
             `;
-            actionsDiv.style.display = 'block';
+            actionsDiv.style.display = 'flex';
 
             document.querySelectorAll('.backup-checkbox').forEach(cb => {
                 cb.addEventListener('change', (e) => {

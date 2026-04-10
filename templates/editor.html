@@ -191,16 +191,14 @@
 
     <!-- Modal for backups -->
     <div id="backupModal" class="modal">
-        <div class="modal-content modal-content-wide">
+        <div class="modal-content modal-content-wide modal-backup-layout">
             <span class="close-modal">&times;</span>
-            <h3 style="padding: 24px;">💾 Backup</h3>
-            <div id="backupContent"></div>
-            <div id="backupActions" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-light, #e2e8f0);">
-                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <button id="btnSelectAllBackups" style="padding: 8px 14px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 10px; background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.2s; white-space: nowrap;">Seleziona tutti</button>
-                    <span id="selectedBackupsCount" style="color: var(--text-secondary); font-size: 0.8rem;">0 selezionati</span>
-                    <button id="btnDeleteSelectedBackups" disabled style="padding: 8px 14px; border: 1px solid rgba(220,38,38,0.4); border-radius: 10px; background: #dc2626; color: #fff; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; opacity: 0.5; white-space: nowrap;">Elimina selezionati</button>
-                </div>
+            <h3 style="padding: 0 0 16px; border-bottom: 1px solid var(--border-light, #e2e8f0);">💾 Backup</h3>
+            <div id="backupContent" class="modal-scroll-content"></div>
+            <div id="backupActions" class="modal-footer-actions">
+                <button id="btnSelectAllBackups" style="padding: 8px 14px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 10px; background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.2s; white-space: nowrap;">Seleziona tutti</button>
+                <span id="selectedBackupsCount" style="color: var(--text-secondary); font-size: 0.8rem;">0 selezionati</span>
+                <button id="btnDeleteSelectedBackups" disabled style="padding: 8px 14px; border: 1px solid rgba(220,38,38,0.4); border-radius: 10px; background: #dc2626; color: #fff; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; opacity: 0.5; white-space: nowrap;">Elimina selezionati</button>
             </div>
         </div>
     </div>

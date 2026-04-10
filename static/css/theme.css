@@ -1267,6 +1267,11 @@ select:focus {
     color: #7dd3fc;
 }
 
+[data-theme="dark"] .modal-footer-actions {
+    background: var(--bg-tertiary, #1e293b);
+    border-top-color: var(--border-color, #334155);
+}
+
 [data-theme="dark"] .remove-answer:hover {
     background: rgba(220, 38, 38, 0.15);
 }
