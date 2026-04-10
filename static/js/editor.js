@@ -2244,7 +2244,7 @@ document.getElementById('toggleQuestions')?.addEventListener('click', () => {
 
 // Help button functionality
 const helpModal = document.getElementById('helpModal');
-const helpClose = helpModal?.querySelector('.close');
+const helpClose = helpModal?.querySelector('.close-modal');
 
 ['btnHelp', 'btnHelpSidebar'].forEach(btnId => {
     const btn = document.getElementById(btnId);

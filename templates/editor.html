@@ -188,10 +188,10 @@
 
     <!-- Modal for stats -->
     <div id="statsModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content modal-stats-layout">
             <span class="close-modal">&times;</span>
             <h3>📊 Statistiche</h3>
-            <div id="statsContent"></div>
+            <div id="statsContent" class="modal-scroll-content"></div>
         </div>
     </div>
 
@@ -233,93 +233,85 @@
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h3>ℹ️ Guida all'Editor Domande</h3>
-            <div class="help-content">
-                <h4>🚀 Come iniziare</h4>
+            <h3>ℹ️ Guida all'Editor</h3>
+            <div class="modal-body help-content">
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 20px;">
+                    <div class="stat-card" style="padding: 12px;">
+                        <div class="stat-icon">✏️</div>
+                        <div class="stat-value" style="font-size: 14px;">Editor</div>
+                        <div class="stat-label" style="font-size: 11px;">Crea e modifica domande</div>
+                    </div>
+                    <div class="stat-card" style="padding: 12px;">
+                        <div class="stat-icon">💾</div>
+                        <div class="stat-value" style="font-size: 14px;">Auto-save</div>
+                        <div class="stat-label" style="font-size: 11px;">Salvataggio automatico</div>
+                    </div>
+                    <div class="stat-card" style="padding: 12px;">
+                        <div class="stat-icon">🔍</div>
+                        <div class="stat-value" style="font-size: 14px;">Filtri</div>
+                        <div class="stat-label" style="font-size: 11px;">Ricerca avanzata</div>
+                    </div>
+                    <div class="stat-card" style="padding: 12px;">
+                        <div class="stat-icon">🏷️</div>
+                        <div class="stat-value" style="font-size: 14px;">Categorie</div>
+                        <div class="stat-label" style="font-size: 11px;">Gestione domini</div>
+                    </div>
+                </div>
+
+                <h4>🚀 Base</h4>
                 <ul>
-                    <li><strong>Creare una domanda</strong>: Clicca "➕ Nuova" e compila i campi</li>
-                    <li><strong>Modificare una domanda</strong>: Cliccala dalla lista a sinistra</li>
-                    <li><strong>Salvataggio</strong>: Automatico! Non devi premere nessun pulsante</li>
+                    <li><strong>Nuova domanda</strong>: Clicca <code>+ Nuova domanda</code> in alto a destra</li>
+                    <li><strong>Modifica</strong>: Seleziona una domanda dalla lista centrale</li>
+                    <li><strong>Salvataggio</strong>: Automatico dopo 300ms dall'ultima modifica</li>
+                    <li><strong>Stato</strong>: <span style="color:#27ae60">● Auto</span> = salvato, <span style="color:#e67e22">● Modifiche</span> = in corso</li>
                 </ul>
 
-                <h4>💾 Salvataggio Automatico</h4>
+                <h4>📐 Layout e Pannelli</h4>
                 <ul>
-                    <li><strong>"● Auto"</strong> (in alto a destra): Tutto salvato ✓</li>
-                    <li><strong>"● Modifiche in sospeso"</strong>: Salvataggio in corso...</li>
-                    <li>Il sistema salva da solo 300ms dopo che hai finito di scrivere</li>
+                    <li><strong>Collassa pannelli</strong>: Usa il bottone <code>◀</code> in alto a destra di ogni pannello</li>
+                    <li><strong>Filtri (sinistra)</strong>: Ricerca, filtri per stato, domini e duplicati</li>
+                    <li><strong>Lista (centro)</strong>: Tutte le domande filtrate con badge di stato</li>
+                    <li><strong>Dettaglio (destra)</strong>: Modifica completa della domanda selezionata</li>
                 </ul>
 
-                <h4>🔍 Cercare e Filtrare</h4>
+                <h4>🔍 Filtri e Ricerca</h4>
                 <ul>
-                    <li><strong>Barra di ricerca</strong>: Scrivi l'ID o il testo della domanda</li>
-                    <li><strong>Filtri risposte</strong>: Mostra domande senza risposta, con risposte, o senza risposta corretta</li>
-                    <li><strong>🚩 Solo flaggate</strong>: Vedi solo le domande che hai contrassegnato</li>
-                    <li><strong>🔍 Mostra Duplicati</strong>: Filtra per vedere solo le domande duplicate</li>
+                    <li><strong>Barra di ricerca</strong>: Cerca per ID o testo della domanda</li>
+                    <li><strong>Stato risposte</strong>: Filtra per senza risposta, con risposte o senza corretta</li>
+                    <li><strong>Domini/Sottodomini</strong>: Filtra per categoria specifica</li>
+                    <li><strong>Duplicati</strong>: Mostra solo domande duplicate</li>
+                    <li><strong>🚩 Flag</strong>: Mostra solo domande contrassegnate</li>
+                    <li><strong>Azzera filtri</strong>: Ripristina tutti i filtri allo stato iniziale</li>
                 </ul>
 
-                <h4>🚩 Contrassegnare Domande (Flag)</h4>
+                <h4>🏷️ Gestione Categorie</h4>
                 <ul>
-                    <li>Clicca il pulsante 🚩 su una domanda per "segnarla"</li>
-                    <li>Utile per trovare dopo le domande da rivedere o controllare</li>
-                    <li>Usa il filtro "🚩 Solo flaggate" per vederle tutte insieme</li>
+                    <li><strong>Modal Categorie</strong>: Aperto dal bottone <code>🏷️ Categorie</code> in alto</li>
+                    <li><strong>Tab Gestisci</strong>: Visualizza, aggiungi, rinomina o elimina domini</li>
+                    <li><strong>Tab Unisci</strong>: Unisci più categorie in una sola</li>
+                    <li><strong>Tab Integrità</strong>: Verifica lo stato e la salute delle categorie</li>
+                    <li><strong>Normalizzazione</strong>: Il sistema, sistema automaticamente categorie non valide</li>
                 </ul>
 
-                <h4>📑 Duplicati</h4>
+                <h4>⚡ Funzionalità Avanzate</h4>
                 <ul>
-                    <li><strong>Domande duplicate</strong>: Appaiono con sfondo giallo nella lista</li>
-                    <li><strong>Badge "X duplicati"</strong>: Ti dice quanti duplicati esistono</li>
-                    <li><strong>📑 Duplica</strong>: Crea una copia della domanda con un nuovo ID</li>
-                    <li><strong>🔍 Mostra Duplicati</strong>: Filtra per vedere solo le domande duplicate</li>
+                    <li><strong>🚩 Flag</strong>: Contrassegna domande da rivedere (pulsante bandiera nel dettaglio)</li>
+                    <li><strong>📑 Duplica</strong>: Crea una copia esatta della domanda con nuovo ID</li>
+                    <li><strong>Selezione Batch</strong>: Seleziona più domande con le checkbox per eliminarle o cambiarne categoria</li>
+                    <li><strong>Accordion Duplicati</strong>: Nel dettaglio, visualizza l'elenco completo dei duplicati</li>
+                    <li><strong>Navigazione</strong>: Usa <code>Prec</code>/<code>Succ</code> o frecce tastiera per navigare</li>
                 </ul>
 
-                <h4>🔖 Selezionare Più Domande (Batch)</h4>
+                <h4>📊 Statistiche e Backup</h4>
                 <ul>
-                    <li><strong>Checkbox</strong>: Accanto a ogni domanda, seleziona quelle che ti interessano</li>
-                    <li><strong>"✓ Sel. tutto"</strong>: Seleziona tutte le domande visibili</li>
-                    <li><strong>"🗑️ Elimina"</strong>: Cancella tutte le domande selezionate</li>
-                    <li><strong>"🏷️ Categoria"</strong>: Sposta le domande selezionate in un'altra categoria</li>
-                    <li><strong>"✗ Deseleziona"</strong>: Annulla la selezione</li>
+                    <li><strong>Statistiche</strong>: Totale domande, distribuzione per categoria, stato risposte</li>
+                    <li><strong>Backup</strong>: Ogni salvataggio crea un backup automatico, ripristinabile</li>
                 </ul>
 
-                <h4>⚠️ Normalizzazione Categorie</h4>
+                <h4>⌨️ Scorciatoie</h4>
                 <ul>
-                    <li>Se una categoria non è più valida, il sistema la sistema da sola</li>
-                    <li><strong>Alert in alto</strong>: Ti dice quante domande sono state sistemate</li>
-                    <li><strong>"Dettagli"</strong>: Clicca per vedere esattamente cosa è cambiato</li>
-                    <li><strong>Toast in basso</strong>: Un messaggio veloce conferma l'operazione</li>
-                </ul>
-
-                <h4>🏷️ Categorie</h4>
-                <ul>
-                    <li><strong>"🏷️ Categorie"</strong>: Apre il pannello per gestire domini e sottodomini</li>
-                    <li><strong>"✏️ Rinomina"</strong>: Cambia nome a una categoria (aggiorna anche le domande)</li>
-                </ul>
-
-                <h4>📊 Statistiche</h4>
-                <ul>
-                    <li>Vedi il totale delle domande, i duplicati e la distribuzione per categoria</li>
-                    <li>Controlla quante domande hanno una sola risposta, nessuna risposta, o nessuna risposta corretta</li>
-                </ul>
-
-                <h4>💾 Backup</h4>
-                <ul>
-                    <li><strong>Ogni salvataggio crea un backup automatico</strong></li>
-                    <li>Puoi ripristinare un backup precedente dalla lista</li>
-                </ul>
-
-                <h4>⌨️ Scorciatoie da Tastiera</h4>
-                <ul>
-                    <li><strong>Freccia sinistra/destra</strong>: Vai alla domanda precedente/successiva</li>
-                </ul>
-
-                <h4>💡 Consigli Utili</h4>
-                <ul>
-                    <li>Le domande duplicate sono in giallo con il numero di duplicati</li>
-                    <li>Seleziona più domande per eliminarle o spostarle insieme</li>
-                    <li>Usa il filtro 🚩 per trovare subito le domande importanti</li>
-                    <li>Se vedi "Modifiche in sospeso", il sistema sta salvando da solo</li>
-                    <li>L'ID deve essere unico: se lo cambi, il sistema controlla subito</li>
-                    <li>Usa "📑 Duplica" per creare velocemente una domanda simile</li>
+                    <li><strong>← Freccia sinistra</strong>: Domanda precedente (solo quando non sei in un campo)</li>
+                    <li><strong>→ Freccia destra</strong>: Domanda successiva (solo quando non sei in un campo)</li>
                 </ul>
             </div>
         </div>

@@ -1192,6 +1192,35 @@ textarea.form-input {
     min-height: 0;
 }
 
+/* Stats modal layout */
+.modal-stats-layout {
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    max-width: 600px;
+    width: 90%;
+}
+
+.modal-stats-layout .close-modal {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    z-index: 1;
+}
+
+.modal-stats-layout h3 {
+    padding: 20px 24px 16px !important;
+    margin: 0 20px;
+    flex-shrink: 0;
+}
+
+.modal-stats-layout .modal-scroll-content {
+    padding: 0 24px 24px;
+}
+
 .modal-footer-actions {
     display: flex;
     gap: 10px;
@@ -1204,8 +1233,22 @@ textarea.form-input {
 }
 
 @media (max-width: 768px) {
-    .modal-backup-layout {
+    .modal-backup-layout,
+    .modal-stats-layout {
         max-height: 90vh;
+        width: 95%;
+    }
+
+    .stat-card {
+        padding: 14px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+    }
+
+    .stat-icon {
+        font-size: 24px;
     }
 }
 
@@ -1231,6 +1274,14 @@ textarea.form-input {
     box-shadow: 0 25px 50px -12px var(--shadow-color);
     display: flex;
     flex-direction: column;
+    position: relative;
+}
+
+.modal > .modal-content .close-modal {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    z-index: 10;
 }
 
 /* Modal header */
@@ -1239,7 +1290,7 @@ textarea.form-input {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
+    padding: 20px 56px 20px 24px;
     border-bottom: 1px solid var(--border-light);
     background: var(--bg-secondary);
     margin: 0;
@@ -1320,6 +1371,12 @@ textarea.form-input {
     font-size: 13px;
     color: var(--text-muted);
     margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    line-height: 1.4;
 }
 
 /* Stats section */
@@ -1409,11 +1466,11 @@ textarea.form-input {
 .warning-badge {
     background: var(--status-warning-bg);
     color: var(--status-warning-text);
-    padding: 4px 10px;
-    border-radius: 20px;
+    padding: 2px 8px;
+    border-radius: 12px;
     font-size: 11px;
-    font-weight: 500;
-    margin-left: 8px;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 /* Modal footer */
@@ -1453,4 +1510,70 @@ textarea.form-input {
     .category-count {
         align-self: flex-end;
     }
+}
+
+/* Help modal modern styling */
+#helpModal .modal-content {
+    max-width: 720px;
+}
+
+#helpModal .help-content {
+    padding: 0 24px 24px;
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+#helpModal .help-content h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 20px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent-blue);
+    display: inline-block;
+}
+
+#helpModal .help-content ul {
+    margin: 0 0 8px 24px;
+    padding: 0;
+}
+
+#helpModal .help-content li {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+#helpModal .help-content code {
+    background: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--accent-blue);
+}
+
+#helpModal .help-content .stats-grid {
+    margin: 0 -4px 16px;
+}
+
+#helpModal .help-content .stat-card {
+    border: 1px solid var(--border-light);
+    margin: 0;
+}
+
+#helpModal .help-content .stat-card .stat-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+#helpModal .help-content .stat-card .stat-value {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+#helpModal .help-content .stat-card .stat-label {
+    font-size: 10px;
+    margin-top: 2px;
 }
