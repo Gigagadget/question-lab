@@ -99,7 +99,10 @@
             <!-- Workspace 3 colonne -->
             <div class="workspace">
                 <!-- Panel 1: Filtri -->
-                <div class="filters-panel">
+                <div class="filters-panel" id="filtersPanel">
+                    <div class="panel-collapse-toggle" id="toggleFilters" title="Nascondi filtri">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4L8 8L12 12"/></svg>
+                    </div>
                     <div class="filters-header">
                         <h3 style="margin-top: 0px;">Filtri</h3>
                         <div class="search-box" style="margin-bottom: 12px;">
@@ -155,7 +158,10 @@
                 </div>
 
                 <!-- Panel 2: Lista domande -->
-                <div class="questions-panel">
+                <div class="questions-panel" id="questionsPanel">
+                    <div class="panel-collapse-toggle" id="toggleQuestions" title="Nascondi lista">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4L8 8L12 12"/></svg>
+                    </div>
                     <div class="questions-toolbar">
                         <span class="questions-count">📄 <span id="questionCountDisplay">0</span> domande</span>
                     </div>

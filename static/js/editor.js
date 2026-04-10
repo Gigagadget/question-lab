@@ -894,11 +894,11 @@ function renderFormForId(id) {
             <div class="nav-buttons-modern">
                 <button id="navPrevBtn" class="nav-btn-modern" ${currentIndex === 0 ? 'disabled' : ''}>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    Precedente
+                    <span class="nav-btn-text">Prec</span>
                 </button>
                 <span class="nav-counter">${currentIndex + 1} / ${total}</span>
                 <button id="navNextBtn" class="nav-btn-modern" ${currentIndex === total - 1 ? 'disabled' : ''}>
-                    Successivo
+                    <span class="nav-btn-text">Succ</span>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
             </div>
@@ -2230,6 +2230,17 @@ if (toggleDuplicatesBtn) {
 
 // Backup actions
 document.getElementById('btnDeleteSelectedBackups')?.addEventListener('click', deleteSelectedBackups);
+
+// Panel collapse toggles
+document.getElementById('toggleFilters')?.addEventListener('click', () => {
+    const panel = document.getElementById('filtersPanel');
+    panel?.classList.toggle('collapsed');
+});
+
+document.getElementById('toggleQuestions')?.addEventListener('click', () => {
+    const panel = document.getElementById('questionsPanel');
+    panel?.classList.toggle('collapsed');
+});
 
 // Help button functionality
 const helpModal = document.getElementById('helpModal');
