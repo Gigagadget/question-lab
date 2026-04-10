@@ -436,6 +436,7 @@ function createFilterUI() {
             if (searchInput) searchInput.value = '';
             if (primaryDomainFilter) primaryDomainFilter.value = '';
             refreshFilterSubdomainOptions('');
+            if (subdomainFilter) subdomainFilter.value = '';
             if (filterNoAnswers) filterNoAnswers.checked = false;
             if (filterWithAnswers) filterWithAnswers.checked = false;
             if (filterNoCorrect) filterNoCorrect.checked = false;
@@ -831,13 +832,17 @@ async function batchChangeCategory() {
         // Pulisci selezione
         selectedQuestionIds.clear();
 
-        // Aggiorna filtri se necessario
-        if (primaryDomainFilter && newPrimaryDomain && primaryDomainFilter.value !== newPrimaryDomain) {
+        // Aggiorna filtri per riflettere le nuove categorie
+        if (primaryDomainFilter && newPrimaryDomain) {
             primaryDomainFilter.value = newPrimaryDomain;
-            refreshFilterSubdomainOptions('');
         }
-        if (subdomainFilter && newSubdomain && subdomainFilter.value !== newSubdomain) {
-            subdomainFilter.value = newSubdomain;
+        if (subdomainFilter) {
+            if (newSubdomain) {
+                subdomainFilter.value = newSubdomain;
+            } else if (newPrimaryDomain) {
+                // Only domain changed, reset subdomain filter to "all"
+                refreshFilterSubdomainOptions('');
+            }
         }
 
         renderQuestionList();
