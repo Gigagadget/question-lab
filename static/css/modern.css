@@ -475,28 +475,225 @@
     transform: rotate(180deg);
 }
 
+/* ==================== RESPONSIVE MOBILE ==================== */
 @media (max-width: 768px) {
+    /* Sidebar: thin icon bar, always visible */
+    .sidebar {
+        width: 48px !important;
+        padding: 8px 0;
+    }
+
+    .sidebar .nav-item span:not(.nav-icon) {
+        display: none;
+    }
+
+    .sidebar .nav-item {
+        padding: 8px 0;
+    }
+
+    /* Ensure nav icons are visible */
+    .sidebar .nav-icon {
+        font-size: 18px;
+    }
+
+    /* Theme toggle icons */
+    .sidebar .theme-icon-moon,
+    .sidebar .theme-icon-sun {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Topbar: wrap and scroll horizontally */
+    .top-bar {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+        position: relative;
+        z-index: 50;
+    }
+
+    .top-bar-left {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .top-bar-left .page-title {
+        font-size: 16px;
+    }
+
+    .top-bar-left #statusMsg,
+    .top-bar-left .auto-save-indicator {
+        font-size: 0.7rem;
+    }
+
+    .header-actions {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 6px;
+        padding-bottom: 4px;
+    }
+
+    .header-actions .btn-icon-modern {
+        padding: 6px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .header-actions .btn-primary {
+        padding: 8px 14px;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+
+    /* Mobile panel toggle bar */
+    .mobile-panel-tabs {
+        display: flex;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-light);
+        flex-shrink: 0;
+    }
+
+    .mobile-panel-tab {
+        flex: 1;
+        padding: 10px 8px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .mobile-panel-tab.active {
+        color: var(--accent-blue);
+        border-bottom-color: var(--accent-blue);
+    }
+
+    /* Workspace: stack panels vertically on mobile */
+    .workspace {
+        flex-direction: column;
+        height: calc(100vh - 57px);
+        overflow: hidden;
+    }
+
+    /* Panels: only one visible at a time on mobile */
+    .filters-panel,
+    .questions-panel {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: 1 !important;
+        border-right: none !important;
+        overflow-y: auto;
+        display: none;
+    }
+
+    .detail-panel {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: 1 !important;
+        border-right: none !important;
+        overflow-y: auto;
+        display: none;
+    }
+
+    /* Show active panel */
+    .filters-panel.mobile-active,
+    .questions-panel.mobile-active,
+    .detail-panel.mobile-active {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Collapsed panels on mobile: hide completely with visible toggle */
     .filters-panel.collapsed,
     .questions-panel.collapsed {
-        width: 0;
-        min-width: 0;
-        padding: 0;
+        width: 0 !important;
+        min-width: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden;
         border: none;
+        padding: 0;
     }
 
-    .filters-panel.collapsed .panel-collapse-toggle,
-    .questions-panel.collapsed .panel-collapse-toggle {
-        position: fixed;
-        top: 60px;
-        z-index: 100;
+    /* Mobile panel toggle bar */
+    .mobile-panel-tabs {
+        display: flex;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-light);
+        flex-shrink: 0;
     }
 
-    .filters-panel.collapsed .panel-collapse-toggle {
-        left: 8px;
+    .mobile-panel-tab {
+        flex: 1;
+        padding: 10px 8px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
     }
 
-    .questions-panel.collapsed .panel-collapse-toggle {
-        left: 40px;
+    .mobile-panel-tab.active {
+        color: var(--accent-blue);
+        border-bottom-color: var(--accent-blue);
+    }
+
+    /* Panel collapse toggle on mobile: hidden, use tabs instead */
+    .panel-collapse-toggle {
+        display: none !important;
+    }
+
+    /* Show mobile tabs */
+    .mobile-panel-tabs {
+        display: flex !important;
+    }
+
+    /* Detail panel: full height minus topbar */
+    .detail-panel {
+        padding: 16px;
+    }
+
+    .detail-card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    /* Nav buttons: icon only */
+    .nav-buttons-modern {
+        gap: 4px;
+    }
+
+    .nav-btn-modern {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+
+    .nav-btn-modern .nav-btn-text {
+        display: none;
+    }
+
+    /* Modals */
+    .modal > .modal-content {
+        width: 95%;
+        max-width: none;
+        border-radius: 16px;
+        max-height: 90vh;
+    }
+
+    .modal-backup-layout,
+    .modal-stats-layout {
+        width: 95%;
+        max-width: none;
+        border-radius: 16px;
     }
 }
 
@@ -1090,39 +1287,7 @@ textarea.form-input {
 }
 
 @media (max-width: 900px) {
-    .sidebar {
-        width: 60px;
-    }
-    .filters-panel {
-        position: absolute;
-        z-index: 10;
-        height: calc(100vh - 57px);
-        transform: translateX(-100%);
-        transition: transform 0.3s;
-    }
-    .filters-panel.open {
-        transform: translateX(0);
-    }
-    .workspace {
-        position: relative;
-    }
-    .questions-panel {
-        width: 100%;
-        border-right: none;
-    }
-    .detail-panel {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        transform: translateX(100%);
-        transition: transform 0.3s;
-        z-index: 5;
-    }
-    .detail-panel.open {
-        transform: translateX(0);
-    }
+    /* Let mobile responsive at 768px handle this instead */
 }
 
 /* ==================== MODAL MODERN DESIGN SYSTEM ==================== */

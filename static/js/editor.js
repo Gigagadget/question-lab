@@ -2344,3 +2344,60 @@ function updateThemeIcons() {
 
 // Listen for theme changes to update icons
 document.addEventListener('themeChanged', updateThemeIcons);
+
+// Mobile panel tabs
+document.querySelectorAll('.mobile-panel-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        const panel = tab.getAttribute('data-panel');
+        const filtersPanel = document.getElementById('filtersPanel');
+        const questionsPanel = document.getElementById('questionsPanel');
+        const detailPanel = document.getElementById('formPanel');
+
+        // Update active tab
+        document.querySelectorAll('.mobile-panel-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // Remove mobile-active from all
+        filtersPanel.classList.remove('mobile-active');
+        questionsPanel.classList.remove('mobile-active');
+        detailPanel.classList.remove('mobile-active');
+
+        // Add mobile-active to selected
+        if (panel === 'filters') {
+            filtersPanel.classList.add('mobile-active');
+        } else if (panel === 'questions') {
+            questionsPanel.classList.add('mobile-active');
+        } else {
+            detailPanel.classList.add('mobile-active');
+        }
+    });
+});
+
+// Set default mobile panel on load
+function setDefaultMobilePanel() {
+    if (window.innerWidth <= 768) {
+        const detailPanel = document.getElementById('formPanel');
+        detailPanel.classList.add('mobile-active');
+        // Set Editor tab as active
+        document.querySelectorAll('.mobile-panel-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.mobile-panel-tab[data-panel="detail"]')?.classList.add('active');
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setDefaultMobilePanel);
+} else {
+    setDefaultMobilePanel();
+}
+
+// Also update on resize
+window.addEventListener('resize', () => {
+    if (window.innerWidth <= 768) {
+        setDefaultMobilePanel();
+    } else {
+        // Remove mobile classes on desktop
+        document.getElementById('filtersPanel')?.classList.remove('mobile-active');
+        document.getElementById('questionsPanel')?.classList.remove('mobile-active');
+        document.getElementById('formPanel')?.classList.remove('mobile-active');
+    }
+});
