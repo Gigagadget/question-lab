@@ -211,21 +211,23 @@
 
     <!-- Modal for categories management -->
     <div id="categoriesModal" class="modal">
-        <div class="modal-content modal-content-wide">
+        <div class="modal-content modal-content-wide modal-backup-layout">
             <span class="close-modal">&times;</span>
             <h3>🏷️ Gestione Categorie</h3>
             
             <!-- Tabs navigation -->
-            <div class="cm-tabs">
+            <div class="cm-tabs" style="padding: 0 24px;">
                 <button class="cm-tab-btn active" data-tab="manage">📝 Gestisci</button>
                 <button class="cm-tab-btn" data-tab="merge">🔀 Unisci</button>
                 <button class="cm-tab-btn" data-tab="health">🏥 Integrità</button>
             </div>
 
             <!-- Tab contents -->
-            <div id="categoriesContent" class="cm-tab-content active"></div>
-            <div id="cmMergeContent" class="cm-tab-content"></div>
-            <div id="cmHealthContent" class="cm-tab-content"></div>
+            <div class="modal-scroll-content" style="padding: 0 24px 16px;">
+                <div id="categoriesContent" class="cm-tab-content active"></div>
+                <div id="cmMergeContent" class="cm-tab-content"></div>
+                <div id="cmHealthContent" class="cm-tab-content"></div>
+            </div>
         </div>
     </div>
 
