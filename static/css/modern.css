@@ -513,18 +513,25 @@
         z-index: 50;
     }
 
+    /* Topbar left: wrap status & auto-save below title */
     .top-bar-left {
         flex-wrap: wrap;
-        gap: 4px;
+        gap: 2px;
     }
 
     .top-bar-left .page-title {
         font-size: 16px;
     }
 
-    .top-bar-left #statusMsg,
+    .top-bar-left #statusMsg {
+        font-size: 0.7rem;
+        width: 100%;
+        order: 10;
+    }
+
     .top-bar-left .auto-save-indicator {
         font-size: 0.7rem;
+        order: 11;
     }
 
     .header-actions {

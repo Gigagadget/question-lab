@@ -1331,8 +1331,6 @@ body.dark .cm-health-label,
 }
 
 :root[data-theme="dark"] .cm-manage-footer {
-    background: var(--bg-tertiary);
-    border-color: var(--border-color);
     color: var(--text-muted);
 }
 
