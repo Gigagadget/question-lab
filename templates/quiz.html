@@ -70,7 +70,7 @@
                     <span id="statusMsg"></span>
                 </div>
                 <div class="header-actions">
-                    <button id="btnLogs" class="btn-icon-modern">📋 Log Quiz</button>
+                    <button id="btnLogs" class="btn-icon-modern">Log Quiz</button>
                 </div>
             </div>
 
@@ -79,11 +79,11 @@
                 <!-- Schermata di configurazione quiz -->
                 <div id="quizSetup" class="quiz-container">
                     <div class="detail-card setup-card">
-                        <h2>⚙️ Configura il tuo Quiz</h2>
+                        <h2>Configura il tuo Quiz</h2>
                         <p class="subtitle">Scegli categorie e numero di domande</p>
 
                         <div class="setup-section">
-                            <h3>📚 Seleziona Categorie</h3>
+                            <h3>Seleziona Categorie</h3>
                             <div id="categoriesContainer" class="categories-grid">
                                 <!-- Le categorie verranno caricate dinamicamente -->
                             </div>
@@ -93,7 +93,7 @@
                         </div>
 
                         <div class="setup-section">
-                            <h3>📊 Numero di Domande</h3>
+                            <h3>Numero di Domande</h3>
                             <div class="question-count-options">
                                 <button class="count-btn" data-count="5">5</button>
                                 <button class="count-btn" data-count="10">10</button>
@@ -127,7 +127,7 @@
                         </div>
 
                         <div class="setup-actions">
-                            <button id="btnStartQuiz" class="btn-primary" disabled>🚀 Inizia Quiz</button>
+                            <button id="btnStartQuiz" class="btn-primary" disabled>Inizia Quiz</button>
                         </div>
                     </div>
                 </div>
@@ -140,16 +140,25 @@
                                 <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span>
                             </div>
                             <div class="quiz-timer">
-                                ⏱️ <span id="timer">00:00</span>
+                                <svg class="timer-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span id="timer">00:00</span>
                             </div>
                             <div class="quiz-score">
-                                ✅ <span id="correctCount">0</span> | 
-                                ⚠️ <span id="partialCount">0</span> | 
-                                ❌ <span id="wrongCount">0</span>
+                                <span class="score-correct">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <span id="correctCount">0</span>
+                                </span>
+                                <span class="score-partial">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    <span id="partialCount">0</span>
+                                </span>
+                                <span class="score-wrong">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    <span id="wrongCount">0</span>
+                                </span>
                             </div>
                         </div>
 
-                        <div class="question-category" id="questionCategory"></div>
                         <div class="question-text" id="questionText"></div>
                         
                         <div class="answers-container" id="answersContainer">
@@ -171,38 +180,38 @@
                 <!-- Schermata dei risultati -->
                 <div id="quizResults" class="quiz-container quiz-results" style="display: none;">
                     <div class="detail-card results-card">
-                        <h2>🎉 Quiz Completato!</h2>
+                        <h2>Quiz Completato</h2>
                         <div class="score-circle">
                             <div class="score-value" id="finalScore">0%</div>
-                            <div style="font-size: 12px;">Punteggio</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Punteggio</div>
                         </div>
                         <div class="results-summary">
-                            <div class="result-item">
-                                <span class="result-label">Risposte Corrette:</span>
+                            <div class="result-item result-correct">
+                                <span class="result-label">Corrette</span>
                                 <span class="result-value" id="finalCorrect">0</span>
                             </div>
-                            <div class="result-item">
-                                <span class="result-label">Risposte Parziali:</span>
+                            <div class="result-item result-partial">
+                                <span class="result-label">Parziali</span>
                                 <span class="result-value" id="finalPartial">0</span>
                             </div>
-                            <div class="result-item">
-                                <span class="result-label">Risposte Sbagliate:</span>
+                            <div class="result-item result-wrong">
+                                <span class="result-label">Sbagliate</span>
                                 <span class="result-value" id="finalWrong">0</span>
                             </div>
                             <div class="result-item">
-                                <span class="result-label">Tempo Totale:</span>
+                                <span class="result-label">Tempo Totale</span>
                                 <span class="result-value" id="finalTime">00:00</span>
                             </div>
                             <div class="result-item">
-                                <span class="result-label">Media per Domanda:</span>
+                                <span class="result-label">Media per Domanda</span>
                                 <span class="result-value" id="avgTime">00:00</span>
                             </div>
                         </div>
 
                         <div class="results-actions">
-                            <button id="btnReview" class="btn-primary">📖 Rivedi Risposte</button>
-                            <button id="btnNewQuiz" class="btn-outline">🔄 Nuovo Quiz</button>
-                            <button id="btnBackHome" class="btn-outline">🏠 Torna alla Home</button>
+                            <button id="btnReview" class="btn-primary">Rivedi Risposte</button>
+                            <button id="btnNewQuiz" class="btn-outline btn-lg">Nuovo Quiz</button>
+                            <button id="btnBackHome" class="btn-outline btn-lg">Torna alla Home</button>
                         </div>
                     </div>
                 </div>
@@ -210,7 +219,7 @@
                 <!-- Schermata di review -->
                 <div id="quizReview" class="review-container" style="display: none;">
                     <div class="review-header">
-                        <h2>📖 Review delle Risposte</h2>
+                        <h2>Review delle Risposte</h2>
                         <button id="btnBackToResults" class="btn-outline">← Torna ai Risultati</button>
                     </div>
                     
@@ -222,9 +231,9 @@
                 <!-- Schermata dei log -->
                 <div id="quizLogs" class="logs-container" style="display: none;">
                     <div class="logs-header">
-                        <h2>📋 Log dei Quiz</h2>
+                        <h2>Log dei Quiz</h2>
                         <div class="logs-actions">
-                            <button id="btnDeleteAllLogs" class="btn-outline" style="color: var(--accent-red);">🗑️ Cancella Tutti</button>
+                            <button id="btnDeleteAllLogs" class="btn-outline" style="color: var(--accent-red);">Cancella Tutti</button>
                             <button id="btnBackFromLogs" class="btn-outline">← Torna al Quiz</button>
                         </div>
                     </div>
@@ -237,7 +246,7 @@
                 <!-- Schermata review log -->
                 <div id="logReview" class="review-container" style="display: none;">
                     <div class="review-header">
-                        <h2>📖 Review Quiz Completato</h2>
+                        <h2>Review Quiz Completato</h2>
                         <button id="btnBackToLogs" class="btn-outline">← Torna ai Log</button>
                     </div>
                     
@@ -255,10 +264,10 @@
             <span class="close-modal">&times;</span>
             <h3>ℹ️ Guida alla Modalità Quiz</h3>
             <div class="help-content">
-                <h4>🎯 Panoramica</h4>
+                <h4>Panoramica</h4>
                 <p>La modalità Quiz ti permette di testare le tue conoscenze rispondendo alle domande del database. Puoi scegliere le categorie e il numero di domande.</p>
-                
-                <h4>⚙️ Configurazione del Quiz</h4>
+
+                <h4>Configurazione del Quiz</h4>
                 <ul>
                     <li><strong>Seleziona Categorie</strong>: Scegli una o più categorie di domande (o "Tutte" per includerle tutte)</li>
                     <li><strong>Numero di Domande</strong>: Scegli tra le opzioni predefinite (5, 10, 50, 100, 200) o inserisci un numero personalizzato</li>

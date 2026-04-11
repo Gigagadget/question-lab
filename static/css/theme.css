@@ -868,8 +868,13 @@ select:focus {
 }
 
 [data-theme="dark"] .category-btn.selected {
-    background: var(--status-info-bg);
-    color: var(--accent-primary);
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+}
+
+[data-theme="dark"] .category-btn.selected .category-name {
+    color: white;
 }
 
 [data-theme="dark"] .category-count {
@@ -1414,6 +1419,71 @@ select:focus {
 
 /* ==================== QUIZ DARK MODE OVERRIDES ==================== */
 
+[data-theme="dark"] .answer-option {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .answer-option.selected {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: #60a5fa;
+}
+
+[data-theme="dark"] .answer-option.correct {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: #4ade80;
+}
+
+[data-theme="dark"] .answer-option.wrong {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #f87171;
+}
+
+[data-theme="dark"] .answer-letter {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .review-answer {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .review-answer.correct {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: #4ade80;
+}
+
+[data-theme="dark"] .review-answer.wrong {
+    background: rgba(239, 68, 68, 0.10);
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+[data-theme="dark"] .correct-marker {
+    color: #4ade80;
+}
+
+[data-theme="dark"] .review-question-text {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .review-status.correct {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+}
+
+[data-theme="dark"] .review-status.partial {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+}
+
+[data-theme="dark"] .review-status.wrong,
+[data-theme="dark"] .review-status.unanswered {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+}
+
 /* Quiz mobile adjustments */
 @media (max-width: 768px) {
     [data-theme="dark"] .quiz-workspace {
@@ -1425,6 +1495,26 @@ select:focus {
     [data-theme="dark"] .results-card {
         background: var(--bg-secondary);
         border: 1px solid var(--border-color);
+    }
+
+    [data-theme="dark"] .quiz-timer {
+        background: var(--bg-tertiary);
+    }
+
+    [data-theme="dark"] .timer-icon {
+        color: #60a5fa;
+    }
+
+    [data-theme="dark"] .score-correct {
+        color: #4ade80;
+    }
+
+    [data-theme="dark"] .score-partial {
+        color: #fbbf24;
+    }
+
+    [data-theme="dark"] .score-wrong {
+        color: #f87171;
     }
 }
 
@@ -1467,9 +1557,13 @@ select:focus {
 }
 
 [data-theme="dark"] .category-btn.selected {
-    background: var(--status-info-bg);
+    background: var(--accent-blue);
     border-color: var(--accent-blue);
-    color: var(--accent-primary);
+    color: white;
+}
+
+[data-theme="dark"] .category-btn.selected .category-name {
+    color: white;
 }
 
 [data-theme="dark"] .category-count {

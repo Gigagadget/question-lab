@@ -14,6 +14,17 @@
     min-height: 0;
 }
 
+/* Quiz game: fixed min-height for question container */
+.quiz-question-container {
+    min-height: 400px;
+}
+
+@media (max-width: 768px) {
+    .quiz-question-container {
+        min-height: 320px;
+    }
+}
+
 /* Hide status message on quiz page (not used) */
 .top-bar-left #statusMsg {
     display: none;
@@ -139,6 +150,11 @@
 .category-name {
     font-weight: 500;
     flex: 1;
+    color: inherit;
+}
+
+.category-btn.selected .category-name {
+    color: white;
 }
 
 .category-count {
@@ -336,8 +352,11 @@
 }
 
 .quiz-timer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-family: monospace;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--accent-blue);
     background: var(--bg-tertiary);
@@ -345,9 +364,37 @@
     border-radius: 40px;
 }
 
+.timer-icon {
+    color: var(--accent-blue);
+    flex-shrink: 0;
+}
+
 .quiz-score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.score-correct,
+.score-partial,
+.score-wrong {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     font-size: 0.85rem;
-    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.score-correct {
+    color: #16a34a;
+}
+
+.score-partial {
+    color: #d97706;
+}
+
+.score-wrong {
+    color: #dc2626;
 }
 
 .quiz-question-container {
@@ -355,6 +402,17 @@
     border-radius: 28px;
     padding: 32px;
     box-shadow: 0 4px 20px var(--shadow-color);
+    min-height: 400px;
+    max-width: 700px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .quiz-question-container {
+        padding: 20px 16px;
+        border-radius: 20px;
+        min-height: 320px;
+    }
 }
 
 .question-category {
@@ -392,11 +450,12 @@
     align-items: center;
     gap: 14px;
     padding: 14px 18px;
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     border-radius: 16px;
     cursor: pointer;
     transition: all 0.2s;
-    background: var(--bg-tertiary);
+    background: var(--bg-secondary);
+    position: relative;
 }
 
 .answer-option:hover {
@@ -406,17 +465,25 @@
 
 .answer-option.selected {
     border-color: var(--accent-blue);
-    background: var(--accent-blue-soft);
+    background: rgba(59, 130, 246, 0.12);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
 }
 
 .answer-option.correct {
-    border-color: var(--accent-green);
-    background: var(--accent-green-soft);
+    border-color: #16a34a;
+    background: rgba(22, 163, 74, 0.12);
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.15);
 }
 
 .answer-option.wrong {
-    border-color: var(--accent-red);
-    background: var(--accent-red-soft);
+    border-color: #dc2626;
+    background: rgba(220, 38, 38, 0.10);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.12);
+}
+
+.answer-option.disabled {
+    cursor: default;
+    pointer-events: none;
 }
 
 .answer-letter {
@@ -510,7 +577,8 @@
 .results-card h2 {
     color: var(--text-primary);
     margin-bottom: 30px;
-    font-size: 2rem;
+    font-size: 24px;
+    font-weight: 600;
 }
 
 .score-circle {
@@ -543,6 +611,19 @@
 .result-item {
     text-align: center;
     min-width: 80px;
+    padding: 8px 12px;
+}
+
+.result-correct .result-value {
+    color: #16a34a;
+}
+
+.result-partial .result-value {
+    color: #d97706;
+}
+
+.result-wrong .result-value {
+    color: #dc2626;
 }
 
 .result-label {
@@ -561,9 +642,17 @@
 
 .results-actions {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     justify-content: center;
     flex-wrap: wrap;
+}
+
+/* Large button variant */
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 180px;
 }
 
 /* ==================== REVIEW ==================== */
@@ -599,11 +688,15 @@
 }
 
 .review-question.partial {
-    border-left-color: var(--accent-yellow);
+    border-left-color: #d97706;
 }
 
 .review-question.wrong {
-    border-left-color: var(--accent-red);
+    border-left-color: #dc2626;
+}
+
+.review-question.unanswered {
+    border-left-color: var(--border-color);
 }
 
 .review-question-title {
@@ -612,30 +705,140 @@
     color: var(--text-primary);
 }
 
-.answers-review {
-    margin-top: 12px;
+.review-answers {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
 }
 
-.answer-review {
-    padding: 8px 12px;
-    background: var(--bg-tertiary);
+.review-answer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
     border-radius: 10px;
-    margin-bottom: 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    font-size: 13px;
 }
 
-.answer-review.correct {
-    background: var(--accent-green-soft);
-    color: var(--accent-green);
+.review-answer.correct {
+    background: rgba(22, 163, 74, 0.10);
+    border-color: #16a34a;
 }
 
-.correct-badge {
-    color: var(--accent-green);
+.review-answer.wrong {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: rgba(220, 38, 38, 0.3);
+}
+
+.review-answer.selected {
+    border-color: var(--accent-blue);
+}
+
+.review-answer-letter {
+    font-weight: 700;
+    min-width: 20px;
+    color: var(--text-secondary);
+}
+
+.review-answer-text {
+    flex: 1;
+    color: var(--text-primary);
+}
+
+.correct-marker {
+    color: #16a34a;
+    display: flex;
+    align-items: center;
+}
+
+.user-marker {
+    color: var(--accent-blue);
+    display: flex;
+    align-items: center;
+}
+
+/* Review status badge */
+.review-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.review-status.correct {
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+}
+
+.review-status.partial {
+    background: rgba(217, 119, 6, 0.12);
+    color: #d97706;
+}
+
+.review-status.wrong,
+.review-status.unanswered {
+    background: rgba(220, 38, 38, 0.10);
+    color: #dc2626;
+}
+
+.review-question-text {
+    font-size: 15px;
     font-weight: 500;
-    margin-top: 8px;
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin: 12px 0;
     display: block;
 }
 
+.review-feedback {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
 /* ==================== LOGS ==================== */
+
+/* Log review summary stats */
+.log-review-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.stat-item {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.stat-score strong {
+    color: var(--accent-blue);
+    font-size: 16px;
+}
+
+.stat-correct strong {
+    color: #16a34a;
+}
+
+.stat-partial strong {
+    color: #d97706;
+}
+
+.stat-wrong strong {
+    color: #dc2626;
+}
+
+.stat-time strong {
+    color: var(--text-primary);
+    font-family: monospace;
+}
 
 .logs-header {
     display: flex;
@@ -881,6 +1084,11 @@ button.danger:hover {
         margin-bottom: 24px;
     }
 
+    /* Setup section labels */
+    .setup-section h3 {
+        font-size: 12px;
+    }
+
     /* Category grid: smaller on mobile */
     .categories-grid {
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -920,13 +1128,27 @@ button.danger:hover {
         gap: 8px;
     }
 
-    .quiz-progress,
-    .quiz-timer,
-    .quiz-score {
+    .quiz-progress {
         font-size: 12px;
+        font-weight: 600;
+    }
+
+    .quiz-timer {
+        font-size: 14px;
+        padding: 4px 10px;
+    }
+
+    .quiz-score {
+        width: 100%;
+        justify-content: center;
     }
 
     /* Answer options: compact */
+    .question-text {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
     .answer-option {
         padding: 12px 14px;
     }
@@ -967,6 +1189,53 @@ button.danger:hover {
 
     .log-score-badge {
         font-size: 10px;
+    }
+
+    .log-details {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .log-actions {
+        flex-direction: column;
+    }
+
+    .log-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Log review stats: compact on mobile */
+    .log-review-stats {
+        gap: 8px;
+    }
+
+    .stat-item {
+        font-size: 12px;
+    }
+
+    .stat-score strong {
+        font-size: 14px;
+    }
+
+    /* Review: compact on mobile */
+    .review-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .review-answers {
+        gap: 6px;
+    }
+
+    .review-answer {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .review-question-text {
+        font-size: 14px;
     }
 
     /* Topbar: ensure db name is visible */

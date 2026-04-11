@@ -581,8 +581,7 @@ class QuizManagerFrontend {
         
         // Update question text
         document.getElementById('questionText').textContent = question.raw_text;
-        document.getElementById('questionCategory').textContent = question.primary_domain;
-        
+
         // Render answers
         this.renderAnswers(question);
         
@@ -606,27 +605,26 @@ class QuizManagerFrontend {
             const answerDiv = document.createElement('div');
             answerDiv.className = 'answer-option';
             answerDiv.dataset.letter = letter;
-            
+
             answerDiv.innerHTML = `
+                <input type="checkbox" value="${letter}" style="position: absolute; opacity: 0; pointer-events: none;">
                 <span class="answer-letter">${letter}</span>
                 <span class="answer-text">${answers[letter]}</span>
             `;
-            
+
             // Add click handler
             answerDiv.addEventListener('click', (e) => {
                 // Check if answers are disabled (during feedback)
                 if (answerDiv.classList.contains('disabled')) {
                     return;
                 }
-                
-                if (e.target.type !== 'checkbox') {
-                    const checkbox = answerDiv.querySelector('input[type="checkbox"]');
-                    checkbox.checked = !checkbox.checked;
-                }
+
+                const checkbox = answerDiv.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
                 this.toggleAnswerSelection(answerDiv);
                 this.updateSubmitButton();
             });
-            
+
             container.appendChild(answerDiv);
         });
     }
@@ -699,7 +697,7 @@ class QuizManagerFrontend {
             // Update next button text
             const nextBtn = document.getElementById('btnNextQuestion');
             if (this.currentQuestionIndex === this.questions.length - 1) {
-                nextBtn.textContent = '🏁 Termina Quiz';
+                nextBtn.textContent = 'Termina Quiz';
             } else {
                 nextBtn.textContent = 'Prossima Domanda →';
             }
@@ -722,13 +720,13 @@ class QuizManagerFrontend {
         
         if (result.is_correct) {
             feedbackContainer.classList.add('correct');
-            feedbackMessage.innerHTML = '✅ <strong>Risposta Corretta!</strong>';
+            feedbackMessage.innerHTML = '<strong>Risposta Corretta</strong>';
         } else if (result.is_partial) {
             feedbackContainer.classList.add('partial');
-            feedbackMessage.innerHTML = '⚠️ <strong>Risposta Parziale</strong>';
+            feedbackMessage.innerHTML = '<strong>Risposta Parziale</strong>';
         } else {
             feedbackContainer.classList.add('wrong');
-            feedbackMessage.innerHTML = '❌ <strong>Risposta Sbagliata</strong>';
+            feedbackMessage.innerHTML = '<strong>Risposta Sbagliata</strong>';
         }
         
         // Show correct answers
@@ -741,7 +739,7 @@ class QuizManagerFrontend {
         const question = this.questions[this.currentQuestionIndex];
         if (question.notes && question.notes.trim()) {
             if (feedbackContent) feedbackContent += '<br><br>';
-            feedbackContent += `<strong>📝 Note:</strong> ${question.notes}`;
+            feedbackContent += `<strong>Note:</strong> ${question.notes}`;
         }
         
         correctAnswers.innerHTML = feedbackContent;
@@ -934,15 +932,15 @@ class QuizManagerFrontend {
                 else if (result.is_partial) statusClass = 'partial';
                 else statusClass = 'wrong';
             }
-            
+
             reviewDiv.classList.add(statusClass);
-            
+
+            const statusLabel = result?.is_correct ? 'Corretta' : result?.is_partial ? 'Parziale' : result ? 'Sbagliata' : 'Non risposta';
+
             reviewDiv.innerHTML = `
                 <div class="review-header">
                     <span class="review-number">Domanda ${index + 1}</span>
-                    <span class="review-status ${statusClass}">
-                        ${result?.is_correct ? '✅ Corretta' : result?.is_partial ? '⚠️ Parziale' : '❌ Sbagliata'}
-                    </span>
+                    <span class="review-status ${statusClass}">${statusLabel}</span>
                 </div>
                 <div class="review-question-text">${question.raw_text}</div>
                 <div class="review-answers">
@@ -953,13 +951,13 @@ class QuizManagerFrontend {
                         if (isCorrect) className += ' correct';
                         if (isUserSelected && !isCorrect) className += ' wrong';
                         if (isUserSelected) className += ' selected';
-                        
+
                         return `
                             <div class="${className}">
                                 <span class="review-answer-letter">${letter}.</span>
                                 <span class="review-answer-text">${text}</span>
-                                ${isCorrect ? '<span class="correct-marker">✓</span>' : ''}
-                                ${isUserSelected ? '<span class="user-marker">👤</span>' : ''}
+                                ${isCorrect ? '<span class="correct-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
+                                ${isUserSelected ? '<span class="user-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span>' : ''}
                             </div>
                         `;
                     }).join('')}
@@ -1019,19 +1017,19 @@ class QuizManagerFrontend {
             
             logDiv.innerHTML = `
                 <div class="log-header">
-                    <span class="log-date">📅 ${formattedDate}</span>
+                    <span class="log-date">${formattedDate}</span>
                     <span class="score-badge ${scoreClass}">${log.score_percentage}%</span>
                 </div>
                 <div class="log-details">
-                    <span>📂 Categorie: ${log.categories.join(', ')}</span>
-                    <span>📊 Domande: ${log.total_questions}</span>
-                    <span>✓ Corrette: ${log.correct_answers}</span>
-                    <span>⏱️ Tempo: ${this.formatTime(log.total_time_seconds * 1000)}</span>
+                    <span>Categorie: ${log.categories.join(', ')}</span>
+                    <span>Domande: ${log.total_questions}</span>
+                    <span>Corrette: ${log.correct_answers}</span>
+                    <span>Tempo: ${this.formatTime(log.total_time_seconds * 1000)}</span>
                     </div>
                 </div>
                 <div class="log-actions">
-                    <button class="log-btn view" data-log-id="${log.id}">👁️ Visualizza</button>
-                    <button class="log-btn delete" data-log-id="${log.id}">🗑️ Cancella</button>
+                    <button class="log-btn view" data-log-id="${log.id}">Visualizza</button>
+                    <button class="log-btn delete" data-log-id="${log.id}">Elimina</button>
                 </div>
             `;
             
@@ -1085,11 +1083,11 @@ class QuizManagerFrontend {
                     minute: '2-digit'
                 })}</h3>
                 <div class="log-review-stats">
-                    <span class="stat-item">📊 Punteggio: <strong>${logData.score_percentage}%</strong></span>
-                    <span class="stat-item">✅ Corrette: <strong>${logData.correct_answers}</strong></span>
-                    <span class="stat-item">⚠️ Parziali: <strong>${logData.partial_answers}</strong></span>
-                    <span class="stat-item">❌ Sbagliate: <strong>${logData.wrong_answers}</strong></span>
-                    <span class="stat-item">⏱️ Tempo: <strong>${this.formatTime(logData.total_time_seconds * 1000)}</strong></span>
+                    <span class="stat-item stat-score">Punteggio: <strong>${logData.score_percentage}%</strong></span>
+                    <span class="stat-item stat-correct">Corrette: <strong>${logData.correct_answers}</strong></span>
+                    <span class="stat-item stat-partial">Parziali: <strong>${logData.partial_answers}</strong></span>
+                    <span class="stat-item stat-wrong">Sbagliate: <strong>${logData.wrong_answers}</strong></span>
+                    <span class="stat-item stat-time">Tempo: <strong>${this.formatTime(logData.total_time_seconds * 1000)}</strong></span>
                 </div>
             </div>
         `;
@@ -1208,12 +1206,18 @@ class QuizManagerFrontend {
     showQuiz() {
         this.hideAllScreens();
         document.getElementById('quizGame').style.display = 'block';
+        // Hide log button during quiz
+        const btnLogs = document.getElementById('btnLogs');
+        if (btnLogs) btnLogs.style.display = 'none';
     }
 
     showResults() {
         this.hideAllScreens();
         document.getElementById('quizResults').style.display = 'block';
         this.stopTimer();
+        // Show log button after quiz
+        const btnLogs = document.getElementById('btnLogs');
+        if (btnLogs) btnLogs.style.display = '';
     }
 
     showReviewScreen() {
