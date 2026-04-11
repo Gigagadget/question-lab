@@ -75,9 +75,9 @@
             </div>
 
             <!-- Workspace - Single panel for quiz -->
-            <div class="workspace" style="padding: 24px;">
+            <div class="workspace quiz-workspace">
                 <!-- Schermata di configurazione quiz -->
-                <div id="quizSetup" class="quiz-container" style="max-width: 800px; margin: 0 auto; width: 100%;">
+                <div id="quizSetup" class="quiz-container">
                     <div class="detail-card setup-card">
                         <h2>⚙️ Configura il tuo Quiz</h2>
                         <p class="subtitle">Scegli categorie e numero di domande</p>
@@ -133,8 +133,8 @@
                 </div>
 
                 <!-- Schermata del quiz -->
-                <div id="quizGame" class="quiz-container" style="display: none; max-width: 900px; margin: 0 auto; width: 100%;">
-                    <div class="detail-card quiz-question-container" style="padding: 20px;">
+                <div id="quizGame" class="quiz-container quiz-game" style="display: none;">
+                    <div class="detail-card quiz-question-container">
                         <div class="quiz-header">
                             <div class="quiz-progress">
                                 <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span>
@@ -169,7 +169,7 @@
                 </div>
 
                 <!-- Schermata dei risultati -->
-                <div id="quizResults" class="quiz-container" style="display: none; max-width: 600px; margin: 0 auto; width: 100%;">
+                <div id="quizResults" class="quiz-container quiz-results" style="display: none;">
                     <div class="detail-card results-card">
                         <h2>🎉 Quiz Completato!</h2>
                         <div class="score-circle">
@@ -208,7 +208,7 @@
                 </div>
 
                 <!-- Schermata di review -->
-                <div id="quizReview" class="quiz-container" style="display: none; max-width: 900px; margin: 0 auto; width: 100%;">
+                <div id="quizReview" class="review-container" style="display: none;">
                     <div class="review-header">
                         <h2>📖 Review delle Risposte</h2>
                         <button id="btnBackToResults" class="btn-outline">← Torna ai Risultati</button>
@@ -220,7 +220,7 @@
                 </div>
 
                 <!-- Schermata dei log -->
-                <div id="quizLogs" class="quiz-container" style="display: none; max-width: 900px; margin: 0 auto; width: 100%;">
+                <div id="quizLogs" class="logs-container" style="display: none;">
                     <div class="logs-header">
                         <h2>📋 Log dei Quiz</h2>
                         <div class="logs-actions">
@@ -235,7 +235,7 @@
                 </div>
 
                 <!-- Schermata review log -->
-                <div id="logReview" class="quiz-container" style="display: none; max-width: 900px; margin: 0 auto; width: 100%;">
+                <div id="logReview" class="review-container" style="display: none;">
                     <div class="review-header">
                         <h2>📖 Review Quiz Completato</h2>
                         <button id="btnBackToLogs" class="btn-outline">← Torna ai Log</button>
@@ -252,7 +252,7 @@
     <!-- Help Modal -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close-modal">&times;</span>
             <h3>ℹ️ Guida alla Modalità Quiz</h3>
             <div class="help-content">
                 <h4>🎯 Panoramica</h4>

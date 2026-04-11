@@ -1,12 +1,47 @@
 /* ==================== QUIZ STYLES ==================== */
 
 .quiz-container {
-    max-width: 900px;
+    max-width: 700px;
     margin: 0 auto;
     padding: 15px;
 }
 
-/* ==================== SETUP CARD ==================== */
+/* Workspace centering for quiz */
+.quiz-workspace {
+    padding: 32px 24px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Hide status message on quiz page (not used) */
+.top-bar-left #statusMsg {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .quiz-workspace {
+        height: calc(100vh - 57px);
+        padding: 16px 8px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Game container - slightly wider for quiz interface */
+.quiz-game {
+    max-width: 700px;
+}
+
+/* Results container - compact */
+.quiz-results {
+    max-width: 600px;
+}
+
+/* Setup card - wider for configuration */
+.setup-card {
+    max-width: 800px;
+}
 
 .setup-card {
     background: var(--bg-secondary);
@@ -820,5 +855,136 @@ button.danger:hover {
     
     .log-actions {
         justify-content: center;
+    }
+}
+
+/* ==================== MOBILE QUIZ ADJUSTMENTS ==================== */
+@media (max-width: 768px) {
+    /* Compact card padding on mobile */
+    .setup-card,
+    .quiz-question-container,
+    .results-card,
+    .review-card,
+    .logs-container .detail-card {
+        padding: 20px 16px;
+        border-radius: 20px;
+    }
+
+    /* Smaller headings on mobile */
+    .setup-card h2,
+    .results-card h2 {
+        font-size: 20px;
+    }
+
+    .setup-card .subtitle {
+        font-size: 13px;
+        margin-bottom: 24px;
+    }
+
+    /* Category grid: smaller on mobile */
+    .categories-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 8px;
+    }
+
+    .category-chip {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    /* Number pills: smaller */
+    .count-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+
+    /* Summary bar: stack on mobile */
+    .results-summary {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    /* Score circle: smaller on mobile */
+    .score-circle {
+        width: 100px;
+        height: 100px;
+    }
+
+    .score-value {
+        font-size: 28px;
+    }
+
+    /* Quiz header: compact on mobile */
+    .quiz-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .quiz-progress,
+    .quiz-timer,
+    .quiz-score {
+        font-size: 12px;
+    }
+
+    /* Answer options: compact */
+    .answer-option {
+        padding: 12px 14px;
+    }
+
+    .answer-letter {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+    }
+
+    .answer-text {
+        font-size: 13px;
+    }
+
+    /* Buttons: full width on mobile */
+    .btn-start,
+    .btn-confirm,
+    .btn-next {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Review questions: compact */
+    .review-question {
+        padding: 16px;
+    }
+
+    /* Log items: compact */
+    .log-item {
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .log-header {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .log-score-badge {
+        font-size: 10px;
+    }
+
+    /* Topbar: ensure db name is visible */
+    .top-bar-left .title-db-name {
+        font-size: 14px;
+    }
+
+    /* Header actions: scrollable on mobile */
+    .header-actions {
+        width: 100%;
+        overflow-x: auto;
+        gap: 6px;
+    }
+
+    .header-actions .btn-icon-modern {
+        padding: 6px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 }

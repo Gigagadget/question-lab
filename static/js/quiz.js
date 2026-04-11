@@ -25,6 +25,13 @@ class QuizManagerFrontend {
         fetch('/api/databases/active')
             .then(res => res.json())
             .then(data => {
+                // Update active database name in topbar
+                const dbName = data.active_database || 'Nessuno';
+                const activeDbNameEl = document.getElementById('activeDbName');
+                if (activeDbNameEl) {
+                    activeDbNameEl.textContent = dbName;
+                }
+
                 // Show/hide blocker based on active database
                 const blocker = document.getElementById('noDbBlocker');
                 if (blocker) {
@@ -48,7 +55,7 @@ class QuizManagerFrontend {
     initializeEventListeners() {
         // Help button
         const helpModal = document.getElementById('helpModal');
-        const helpClose = helpModal?.querySelector('.close');
+        const helpClose = helpModal?.querySelector('.close-modal') || helpModal?.querySelector('.close');
 
         // Support both old and new button for backwards compatibility
         ['btnHelp', 'btnHelpSidebar'].forEach(btnId => {
@@ -1246,4 +1253,20 @@ class QuizManagerFrontend {
 // Initialize the quiz manager when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     new QuizManagerFrontend();
+
+    // Update theme icons on initial load
+    updateQuizThemeIcons();
 });
+
+function updateQuizThemeIcons() {
+    const moonIcon = document.querySelector('.theme-icon-moon');
+    const sunIcon = document.querySelector('.theme-icon-sun');
+    if (moonIcon && sunIcon) {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        moonIcon.style.display = isDark ? 'block' : 'none';
+        sunIcon.style.display = isDark ? 'none' : 'block';
+    }
+}
+
+// Listen for theme changes to update icons
+document.addEventListener('themeChanged', updateQuizThemeIcons);

@@ -1414,6 +1414,20 @@ select:focus {
 
 /* ==================== QUIZ DARK MODE OVERRIDES ==================== */
 
+/* Quiz mobile adjustments */
+@media (max-width: 768px) {
+    [data-theme="dark"] .quiz-workspace {
+        background: var(--bg-primary);
+    }
+
+    [data-theme="dark"] .setup-card,
+    [data-theme="dark"] .quiz-question-container,
+    [data-theme="dark"] .results-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+    }
+}
+
 [data-theme="dark"] .custom-count {
     background: var(--bg-tertiary);
     border-color: var(--border-color);
