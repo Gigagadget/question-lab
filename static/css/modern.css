@@ -554,34 +554,34 @@
         background: var(--bg-secondary);
         border-bottom: 1px solid var(--border-light);
         flex-shrink: 0;
-        padding: 0 8px;
-        gap: 2px;
+        
     }
 
     .mobile-panel-tab {
         flex: 1;
-        padding: 12px 8px;
+        padding: 8px 6px;
         text-align: center;
         font-size: 12px;
         font-weight: 600;
         color: var(--text-muted);
         background: transparent;
         border: none;
-        border-bottom: 2px solid transparent;
         cursor: pointer;
         transition: all 0.2s;
-        border-radius: 8px 8px 0 0;
+        border-radius: 6px 6px 6px 6px;
     }
 
     .mobile-panel-tab:hover {
         color: var(--text-primary);
         background: var(--bg-tertiary);
+        transform: none;
     }
 
     .mobile-panel-tab.active {
         color: var(--accent-blue);
         background: var(--bg-primary);
         border-bottom-color: var(--accent-blue);
+        transform: none;
     }
 
     /* Workspace: stack panels vertically on mobile */
@@ -661,6 +661,169 @@
         display: flex !important;
     }
 
+    /* === COMPACT FONT SIZES FOR MOBILE === */
+
+    /* Filters panel */
+    .filters-panel.mobile-active .filter-label {
+        font-size: 10px;
+    }
+
+    .filters-panel.mobile-active .filter-option {
+        font-size: 12px;
+    }
+
+    .filters-panel.mobile-active .filter-select-modern,
+    .filters-panel.mobile-active select.filter-select-modern {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .filters-panel.mobile-active .search-box input {
+        font-size: 12px;
+        padding: 8px 10px 8px 30px;
+    }
+
+    .filters-panel.mobile-active .btn-filter-toggle {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    /* Questions list */
+    .questions-panel.mobile-active .questions-toolbar {
+        padding: 8px 12px;
+    }
+
+    .questions-panel.mobile-active .questions-count {
+        font-size: 12px;
+    }
+
+    .questions-panel.mobile-active .question-card-modern {
+        padding: 10px 12px;
+        margin-bottom: 6px;
+    }
+
+    .questions-panel.mobile-active .question-id-modern {
+        font-size: 11px;
+    }
+
+    .questions-panel.mobile-active .question-text-modern {
+        font-size: 12px;
+    }
+
+    .questions-panel.mobile-active .question-meta-modern {
+        font-size: 10px;
+    }
+
+    .questions-panel.mobile-active .status-badge {
+        font-size: 9px;
+        padding: 2px 6px;
+    }
+
+    /* Detail panel / Editor */
+    .detail-panel.mobile-active .detail-card {
+        padding: 10px;
+    }
+
+    .detail-panel.mobile-active .detail-actions {
+        padding: 10px;
+        margin-bottom: 12px;
+    }
+
+    .detail-panel.mobile-active .detail-id-input {
+        font-size: 14px;
+        padding: 3px 6px;
+        max-width: 150px;
+    }
+
+    .detail-panel.mobile-active .btn-flag {
+    }
+
+    .detail-panel.mobile-active .btn-flag svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .detail-panel.mobile-active .btn-icon-modern {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .detail-panel.mobile-active .form-label {
+        font-size: 11px;
+    }
+
+    .detail-panel.mobile-active .form-input,
+    .detail-panel.mobile-active select.form-input,
+    .detail-panel.mobile-active textarea.form-input {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+
+    .detail-panel.mobile-active .answers-header .form-label {
+        font-size: 11px;
+    }
+
+    .detail-panel.mobile-active .answers-list {
+        margin: 12px 0;
+    }
+
+    .detail-panel.mobile-active .answer-row {
+        padding: 8px 6px;
+        margin-bottom: 6px;
+        gap: 4px;
+    }
+
+    .detail-panel.mobile-active .answer-letter {
+        font-size: 12px;
+        min-width: 14px;
+    }
+
+    .detail-panel.mobile-active .answer-input {
+        font-size: 13px;
+    }
+
+    .detail-panel.mobile-active .remove-answer {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+    }
+
+    .detail-panel.mobile-active .secondary-actions {
+        padding: 6px 0;
+        margin-top: 10px;
+    }
+
+    .detail-panel.mobile-active .btn-secondary-action {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .detail-panel.mobile-active .accordion-header {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+
+    .detail-panel.mobile-active .duplicate-item-detail {
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+
+    /* Nav buttons */
+    .nav-buttons-modern {
+        gap: 4px;
+        padding: 6px 0;
+    }
+
+    .nav-btn-modern {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+
+    .nav-counter {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
     /* Detail panel: full edge-to-edge on mobile, no padding */
     .detail-panel.mobile-active {
         padding: 0 !important;
@@ -684,49 +847,6 @@
 
     .detail-panel.mobile-active .answers-list {
         overflow-x: hidden;
-    }
-
-    .detail-panel.mobile-active .answer-row {
-        padding: 10px 8px;
-        gap: 6px;
-        min-width: 0;
-    }
-
-    .detail-panel.mobile-active .answer-letter {
-        font-size: 13px;
-        min-width: 16px;
-        flex-shrink: 0;
-    }
-
-    .detail-panel.mobile-active .answer-input {
-        min-width: 0;
-        font-size: 14px;
-        flex-shrink: 1;
-    }
-
-    .detail-panel.mobile-active .answer-check-modern {
-        flex-shrink: 0;
-    }
-
-    .detail-panel.mobile-active .remove-answer {
-        flex-shrink: 0;
-        width: 28px;
-        height: 28px;
-        min-width: 28px;
-    }
-
-    /* Nav buttons: icon only */
-    .nav-buttons-modern {
-        gap: 4px;
-    }
-
-    .nav-btn-modern {
-        padding: 6px 8px;
-        font-size: 0.75rem;
-    }
-
-    .nav-btn-modern .nav-btn-text {
-        display: none;
     }
 
     /* Modals */

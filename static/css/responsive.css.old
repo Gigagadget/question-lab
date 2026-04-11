@@ -220,10 +220,6 @@
         flex-wrap: wrap;
     }
 
-    .answer-input {
-        min-width: calc(100% - 80px);
-    }
-
     /* Correct Answers */
     .correct-check {
         min-width: 45%;
@@ -316,9 +312,5 @@
     .modal-content {
         -webkit-overflow-scrolling: touch;
         scrollbar-width: thin;
-    }
-
-    input, textarea, select {
-        font-size: 16px !important; /* Previene zoom automatico su Safari iOS */
     }
 }
