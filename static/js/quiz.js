@@ -47,15 +47,18 @@ class QuizManagerFrontend {
 
     initializeEventListeners() {
         // Help button
-        const btnHelp = document.getElementById('btnHelp');
         const helpModal = document.getElementById('helpModal');
         const helpClose = helpModal?.querySelector('.close');
 
-        if (btnHelp && helpModal) {
-            btnHelp.addEventListener('click', () => {
-                helpModal.style.display = 'block';
-            });
-        }
+        // Support both old and new button for backwards compatibility
+        ['btnHelp', 'btnHelpSidebar'].forEach(btnId => {
+            const btn = document.getElementById(btnId);
+            if (btn && helpModal) {
+                btn.addEventListener('click', () => {
+                    helpModal.style.display = 'block';
+                });
+            }
+        });
 
         if (helpClose) {
             helpClose.addEventListener('click', () => {
@@ -71,18 +74,21 @@ class QuizManagerFrontend {
         });
 
         // Navigation
-        document.getElementById('btnHome').addEventListener('click', () => {
-            if (this.quizInProgress) {
-                if (confirm('Sei sicuro di voler tornare alla home? Il quiz in corso verrà perso e salvato nel log.')) {
-                    this.finishQuiz(true);
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 1000);
+        const btnHome = document.getElementById('btnHome');
+        if (btnHome) {
+            btnHome.addEventListener('click', () => {
+                if (this.quizInProgress) {
+                    if (confirm('Sei sicuro di voler tornare alla home? Il quiz in corso verrà perso e salvato nel log.')) {
+                        this.finishQuiz(true);
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    }
+                } else {
+                    window.location.href = '/';
                 }
-            } else {
-                window.location.href = '/';
-            }
-        });
+            });
+        }
 
         document.getElementById('btnLogs').addEventListener('click', () => {
             if (this.quizInProgress) {
