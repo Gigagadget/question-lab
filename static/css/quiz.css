@@ -10,22 +10,29 @@
 
 .setup-card {
     background: var(--bg-secondary);
-    border-radius: 20px;
-    padding: 28px;
+    border-radius: 24px;
+    padding: 32px;
     box-shadow: 0 1px 3px var(--shadow-color);
 }
 
 .setup-card h2 {
     color: var(--text-primary);
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 1.4rem;
+    margin-bottom: 8px;
+    text-align: left;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.setup-card .subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .setup-section {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 32px;
 }
 
 .setup-section:last-child {
@@ -35,17 +42,19 @@
 }
 
 .setup-section h3 {
+    font-size: 13px;
+    font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 12px;
-    font-size: 1rem;
+    margin-bottom: 16px;
+    display: block;
 }
 
 /* ==================== CATEGORIES ==================== */
 
 .categories-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
     margin-bottom: 10px;
 }
 
@@ -55,24 +64,25 @@
     align-items: center;
     padding: 10px 14px;
     border: 1px solid var(--border-color);
-    border-radius: 10px;
-    background: var(--bg-secondary);
+    border-radius: 12px;
+    background: var(--bg-tertiary);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s;
     text-align: left;
     color: var(--text-primary);
-    font-size: 0.85rem;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .category-btn:hover {
     border-color: var(--accent-blue);
-    background: var(--bg-tertiary);
+    background: var(--accent-blue-soft);
 }
 
 .category-btn.selected {
     border-color: var(--accent-blue);
-    background: var(--accent-blue-soft);
-    color: var(--accent-blue);
+    background: var(--accent-blue);
+    color: white;
 }
 
 .category-btn.all {
@@ -97,15 +107,15 @@
 }
 
 .category-count {
-    background: var(--bg-tertiary);
+    font-size: 11px;
+    background: var(--bg-secondary);
     padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    border-radius: 20px;
     color: var(--text-secondary);
 }
 
 .category-btn.selected .category-count {
-    background: var(--accent-blue);
+    background: rgba(255, 255, 255, 0.2);
     color: white;
 }
 
@@ -124,26 +134,26 @@
 
 .question-count-options {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
 }
 
 .count-btn {
-    padding: 8px 16px;
+    padding: 8px 18px;
     border: 1px solid var(--border-color);
-    border-radius: 20px;
-    background: var(--bg-secondary);
+    border-radius: 40px;
+    background: var(--bg-tertiary);
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s;
     font-weight: 500;
     color: var(--text-primary);
-    font-size: 0.85rem;
+    font-size: 13px;
 }
 
 .count-btn:hover {
     border-color: var(--accent-blue);
-    background: var(--bg-tertiary);
+    background: var(--accent-blue-soft);
 }
 
 .count-btn.selected {
@@ -154,29 +164,25 @@
 
 .custom-count {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
     margin-bottom: 12px;
-    padding: 10px 14px;
-    background: var(--bg-tertiary);
-    border-radius: 10px;
-    border: 1px solid var(--border-color);
     flex-wrap: wrap;
 }
 
 .custom-count label {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-secondary);
-    font-size: 0.85rem;
+    font-size: 13px;
     white-space: nowrap;
 }
 
 .custom-count input {
-    padding: 8px 12px;
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
     width: 120px;
-    font-size: 0.9rem;
+    font-size: 14px;
     line-height: 1.4;
     font-weight: 500;
     color: var(--text-primary);
@@ -214,35 +220,60 @@
 
 .setup-summary {
     background: var(--bg-tertiary);
-    border-radius: 10px;
-    padding: 12px 16px;
-    margin-bottom: 15px;
-    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    border: none;
 }
 
 .summary-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 6px;
-}
-
-.summary-item:last-child {
-    margin-bottom: 0;
+    text-align: center;
+    flex: 1;
+    min-width: 100px;
 }
 
 .summary-label {
+    font-size: 12px;
     color: var(--text-secondary);
-    font-size: 0.85rem;
 }
 
 .summary-value {
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 700;
     color: var(--accent-blue);
-    font-size: 0.85rem;
 }
 
 .setup-actions {
     text-align: center;
+}
+
+.btn-primary {
+    width: 100%;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* ==================== QUIZ GAME ==================== */
@@ -251,26 +282,32 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--bg-secondary);
-    padding: 10px 15px;
-    border-radius: 12px;
-    box-shadow: 0 1px 4px var(--shadow-color);
-    margin-bottom: 15px;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 32px;
     flex-wrap: wrap;
     gap: 8px;
 }
 
 .quiz-progress {
-    font-size: 1rem;
-    font-weight: 600;
+    background: var(--accent-blue-soft);
     color: var(--accent-blue);
+    padding: 6px 14px;
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .quiz-timer {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-family: monospace;
+    font-size: 20px;
+    font-weight: 700;
     color: var(--accent-blue);
-    font-family: 'Courier New', monospace;
+    background: var(--bg-tertiary);
+    padding: 6px 14px;
+    border-radius: 40px;
 }
 
 .quiz-score {
@@ -280,9 +317,9 @@
 
 .quiz-question-container {
     background: var(--bg-secondary);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 1px 3px var(--shadow-color);
+    border-radius: 28px;
+    padding: 32px;
+    box-shadow: 0 4px 20px var(--shadow-color);
 }
 
 .question-category {
@@ -291,18 +328,19 @@
     color: var(--accent-blue);
     padding: 4px 12px;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 12px;
     font-weight: 500;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .question-text {
-    font-size: 1.2rem;
-    line-height: 1.6;
+    font-size: 20px;
+    line-height: 1.4;
     color: var(--text-primary);
-    margin-bottom: 25px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 28px;
+    font-weight: 600;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 /* ==================== ANSWERS ==================== */
@@ -311,23 +349,24 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 25px;
+    margin-bottom: 32px;
 }
 
 .answer-option {
     display: flex;
-    align-items: flex-start;
-    padding: 15px;
-    border: 2px solid var(--border-color);
-    border-radius: 10px;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
     cursor: pointer;
     transition: all 0.2s;
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
 }
 
 .answer-option:hover {
     border-color: var(--accent-blue);
-    background: var(--bg-tertiary);
+    background: var(--accent-blue-soft);
 }
 
 .answer-option.selected {
@@ -345,28 +384,25 @@
     background: var(--accent-red-soft);
 }
 
-.answer-checkbox {
-    margin-right: 12px;
-    margin-top: 2px;
-}
-
-.answer-checkbox input {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
+.answer-letter {
+    font-weight: 700;
+    color: var(--accent-blue);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
 }
 
 .answer-content {
     flex: 1;
 }
 
-.answer-letter {
-    font-weight: 600;
-    color: var(--accent-blue);
-    margin-right: 8px;
-}
-
 .answer-text {
+    font-size: 14px;
     color: var(--text-primary);
     line-height: 1.5;
 }
@@ -384,7 +420,7 @@
 
 .feedback-container {
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 16px;
     margin-top: 20px;
 }
 
@@ -430,7 +466,7 @@
 
 .results-card {
     background: var(--bg-secondary);
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 40px;
     box-shadow: 0 1px 3px var(--shadow-color);
     text-align: center;
@@ -442,31 +478,49 @@
     font-size: 2rem;
 }
 
+.score-circle {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 16px;
+    background: var(--accent-blue-soft);
+    border-radius: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.score-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent-blue);
+}
+
 .results-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-top: 16px;
     margin-bottom: 30px;
 }
 
 .result-item {
-    background: var(--bg-tertiary);
-    padding: 20px;
-    border-radius: 10px;
     text-align: center;
+    min-width: 80px;
 }
 
 .result-label {
     display: block;
     color: var(--text-secondary);
-    font-size: 0.9rem;
+    font-size: 12px;
     margin-bottom: 8px;
 }
 
 .result-value {
     display: block;
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 700;
     color: var(--accent-blue);
 }
 
@@ -492,15 +546,15 @@
 }
 
 .review-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .review-question {
     background: var(--bg-secondary);
-    border-radius: 12px;
+    border-radius: 20px;
     padding: 20px;
+    margin-bottom: 16px;
     box-shadow: 0 1px 3px var(--shadow-color);
     border-left: 4px solid var(--border-color);
 }
@@ -517,104 +571,33 @@
     border-left-color: var(--accent-red);
 }
 
-.review-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.review-number {
+.review-question-title {
     font-weight: 600;
-    color: var(--accent-blue);
-}
-
-.review-status {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-
-.review-status.correct {
-    background: var(--accent-green-soft);
-    color: var(--accent-green);
-}
-
-.review-status.partial {
-    background: var(--accent-yellow-soft);
-    color: var(--accent-yellow);
-}
-
-.review-status.wrong {
-    background: var(--accent-red-soft);
-    color: var(--accent-red);
-}
-
-.review-question-text {
-    font-size: 1.1rem;
-    line-height: 1.6;
+    margin-bottom: 12px;
     color: var(--text-primary);
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-light);
 }
 
-.review-answers {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 15px;
+.answers-review {
+    margin-top: 12px;
 }
 
-.review-answer {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    border-radius: 6px;
+.answer-review {
+    padding: 8px 12px;
     background: var(--bg-tertiary);
+    border-radius: 10px;
+    margin-bottom: 6px;
 }
 
-.review-answer.correct {
+.answer-review.correct {
     background: var(--accent-green-soft);
-}
-
-.review-answer.wrong {
-    background: var(--accent-red-soft);
-}
-
-.review-answer.selected {
-    font-weight: 500;
-}
-
-.review-answer-letter {
-    font-weight: 600;
-    color: var(--accent-blue);
-    margin-right: 8px;
-    min-width: 20px;
-}
-
-.review-answer-text {
-    flex: 1;
-    color: var(--text-primary);
-}
-
-.correct-marker {
     color: var(--accent-green);
-    font-weight: bold;
-    margin-left: 8px;
 }
 
-.user-marker {
-    color: var(--text-secondary);
-    margin-left: 8px;
-}
-
-.review-feedback {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    padding-top: 10px;
-    border-top: 1px solid var(--border-light);
+.correct-badge {
+    color: var(--accent-green);
+    font-weight: 500;
+    margin-top: 8px;
+    display: block;
 }
 
 /* ==================== LOGS ==================== */
@@ -637,23 +620,31 @@
 }
 
 .logs-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .log-item {
     background: var(--bg-secondary);
-    border-radius: 12px;
+    border-radius: 20px;
     padding: 20px;
+    margin-bottom: 16px;
     box-shadow: 0 1px 3px var(--shadow-color);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s;
+}
+
+.log-item:hover {
+    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .log-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .log-date {
@@ -661,68 +652,70 @@
     color: var(--accent-blue);
 }
 
-.log-score {
-    font-size: 1.2rem;
+.score-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--accent-blue);
+}
+
+.score-badge.low {
+    background: var(--accent-red-soft);
+    color: var(--accent-red);
+}
+
+.score-badge.medium {
+    background: var(--accent-yellow-soft);
+    color: var(--accent-yellow);
+}
+
+.score-badge.high {
+    background: var(--accent-green-soft);
+    color: var(--accent-green);
 }
 
 .log-details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.log-detail {
     display: flex;
-    flex-direction: column;
-}
-
-.log-detail-label {
-    font-size: 0.8rem;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 13px;
     color: var(--text-secondary);
-    margin-bottom: 2px;
-}
-
-.log-detail-value {
-    font-weight: 500;
-    color: var(--text-primary);
 }
 
 .log-actions {
     display: flex;
     gap: 10px;
-    justify-content: flex-end;
 }
 
 .log-btn {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 12px;
     transition: all 0.2s;
+    background: transparent;
 }
 
 .log-btn.view {
-    background: var(--accent-blue-soft);
-    color: var(--accent-blue);
+    background: transparent;
+    color: var(--text-primary);
 }
 
 .log-btn.view:hover {
-    background: var(--accent-blue);
-    color: white;
+    background: var(--bg-tertiary);
+    border-color: var(--accent-blue);
 }
 
 .log-btn.delete {
-    background: var(--accent-red-soft);
+    background: transparent;
+    border-color: var(--accent-red);
     color: var(--accent-red);
 }
 
 .log-btn.delete:hover {
-    background: var(--accent-red);
-    color: white;
+    background: var(--accent-red-soft);
 }
 
 .no-logs {
@@ -734,8 +727,6 @@
 
 /* ==================== BUTTONS ==================== */
 
-/* Base button styles - shared by all buttons */
-button.primary,
 button.secondary,
 button.info,
 button.danger {
@@ -750,20 +741,6 @@ button.danger {
 }
 
 /* Color variants - ONLY colors, no other properties */
-button.primary {
-    background: var(--accent-blue);
-}
-
-button.primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-button.primary:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
 button.secondary {
     background: var(--text-secondary);
 }

@@ -601,13 +601,8 @@ class QuizManagerFrontend {
             answerDiv.dataset.letter = letter;
             
             answerDiv.innerHTML = `
-                <div class="answer-checkbox">
-                    <input type="checkbox" id="answer_${letter}" name="answer" value="${letter}">
-                </div>
-                <div class="answer-content">
-                    <span class="answer-letter">${letter}.</span>
-                    <span class="answer-text">${answers[letter]}</span>
-                </div>
+                <span class="answer-letter">${letter}</span>
+                <span class="answer-text">${answers[letter]}</span>
             `;
             
             // Add click handler
@@ -883,7 +878,6 @@ class QuizManagerFrontend {
         if (interrupted) {
             const resultsCard = document.querySelector('.results-card h2');
             resultsCard.textContent = '⚠️ Quiz Interrotto!';
-            resultsCard.style.color = '#e67e22';
         }
         
         this.quizInProgress = false;
@@ -1011,27 +1005,21 @@ class QuizManagerFrontend {
                 minute: '2-digit'
             });
             
+            let scoreClass = '';
+            if (log.score_percentage < 40) scoreClass = 'low';
+            else if (log.score_percentage < 70) scoreClass = 'medium';
+            else scoreClass = 'high';
+            
             logDiv.innerHTML = `
                 <div class="log-header">
-                    <span class="log-date">${formattedDate}</span>
-                    <span class="log-score">${log.score_percentage}%</span>
+                    <span class="log-date">📅 ${formattedDate}</span>
+                    <span class="score-badge ${scoreClass}">${log.score_percentage}%</span>
                 </div>
                 <div class="log-details">
-                    <div class="log-detail">
-                        <span class="log-detail-label">Categorie:</span>
-                        <span class="log-detail-value">${log.categories.join(', ')}</span>
-                    </div>
-                    <div class="log-detail">
-                        <span class="log-detail-label">Domande:</span>
-                        <span class="log-detail-value">${log.total_questions}</span>
-                    </div>
-                    <div class="log-detail">
-                        <span class="log-detail-label">Corrette:</span>
-                        <span class="log-detail-value">${log.correct_answers}</span>
-                    </div>
-                    <div class="log-detail">
-                        <span class="log-detail-label">Tempo:</span>
-                        <span class="log-detail-value">${this.formatTime(log.total_time_seconds * 1000)}</span>
+                    <span>📂 Categorie: ${log.categories.join(', ')}</span>
+                    <span>📊 Domande: ${log.total_questions}</span>
+                    <span>✓ Corrette: ${log.correct_answers}</span>
+                    <span>⏱️ Tempo: ${this.formatTime(log.total_time_seconds * 1000)}</span>
                     </div>
                 </div>
                 <div class="log-actions">

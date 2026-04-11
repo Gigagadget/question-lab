@@ -65,7 +65,7 @@
             <!-- Top bar -->
             <div class="top-bar">
                 <div class="top-bar-left">
-                    <h1 class="page-title">🎯 Modalità Quiz</h1>
+                    <h1 class="page-title">Quiz</h1>
                     <span id="activeDbName" class="title-db-name"></span>
                     <span id="statusMsg"></span>
                 </div>
@@ -80,7 +80,8 @@
                 <div id="quizSetup" class="quiz-container" style="max-width: 800px; margin: 0 auto; width: 100%;">
                     <div class="detail-card setup-card">
                         <h2>⚙️ Configura il tuo Quiz</h2>
-                        
+                        <p class="subtitle">Scegli categorie e numero di domande</p>
+
                         <div class="setup-section">
                             <h3>📚 Seleziona Categorie</h3>
                             <div id="categoriesContainer" class="categories-grid">
@@ -171,31 +172,30 @@
                 <div id="quizResults" class="quiz-container" style="display: none; max-width: 600px; margin: 0 auto; width: 100%;">
                     <div class="detail-card results-card">
                         <h2>🎉 Quiz Completato!</h2>
-                        
+                        <div class="score-circle">
+                            <div class="score-value" id="finalScore">0%</div>
+                            <div style="font-size: 12px;">Punteggio</div>
+                        </div>
                         <div class="results-summary">
                             <div class="result-item">
-                                <span class="result-label">Punteggio:</span>
-                                <span id="finalScore" class="result-value">0%</span>
-                            </div>
-                            <div class="result-item">
                                 <span class="result-label">Risposte Corrette:</span>
-                                <span id="finalCorrect" class="result-value">0</span>
+                                <span class="result-value" id="finalCorrect">0</span>
                             </div>
                             <div class="result-item">
                                 <span class="result-label">Risposte Parziali:</span>
-                                <span id="finalPartial" class="result-value">0</span>
+                                <span class="result-value" id="finalPartial">0</span>
                             </div>
                             <div class="result-item">
                                 <span class="result-label">Risposte Sbagliate:</span>
-                                <span id="finalWrong" class="result-value">0</span>
+                                <span class="result-value" id="finalWrong">0</span>
                             </div>
                             <div class="result-item">
                                 <span class="result-label">Tempo Totale:</span>
-                                <span id="finalTime" class="result-value">00:00</span>
+                                <span class="result-value" id="finalTime">00:00</span>
                             </div>
                             <div class="result-item">
                                 <span class="result-label">Media per Domanda:</span>
-                                <span id="avgTime" class="result-value">00:00</span>
+                                <span class="result-value" id="avgTime">00:00</span>
                             </div>
                         </div>
 
