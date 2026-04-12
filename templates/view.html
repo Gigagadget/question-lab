@@ -8,12 +8,11 @@
     <title>QuestionLab - View</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/modern.css">
-    <link rel="stylesheet" href="/static/css/responsive.css">
     <link rel="stylesheet" href="/static/css/theme.css">
     <link rel="stylesheet" href="/static/css/no-db-blocker.css">
     <link rel="stylesheet" href="/static/css/view.css">
 </head>
-<body>
+<body class="page-view">
     <!-- Overlay di blocco quando nessun database è selezionato -->
     <div id="noDbBlocker" class="no-db-blocker" style="display: none;">
         <div class="block-message">
@@ -26,10 +25,7 @@
 
     <div class="app">
         <!-- Sidebar minimal a icone -->
-        <div class="sidebar">
-            <div class="logo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            </div>
+        <aside class="sidebar">
             <div class="nav-items">
                 <a href="/" class="nav-item">
                     <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -52,38 +48,53 @@
                     <span>Database</span>
                 </a>
             </div>
-            <div class="nav-item" onclick="toggleTheme()">
-                <svg class="theme-icon-moon nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                <svg class="theme-icon-sun nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <div class="nav-item" id="btnHelpSidebar">
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Aiuto</span>
+            </div>
+            <div class="nav-item" id="themeToggleNav" onclick="toggleTheme()">
+                <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                 <span>Tema</span>
             </div>
-        </div>
+        </aside>
 
         <!-- Main content -->
-        <div class="main-content">
+        <main class="main-content">
             <!-- Top bar -->
-            <div class="top-bar">
-                <h1 class="page-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Modalità Visualizzazione</h1>
-                <div class="header-actions">
-                    <button id="btnHome" class="btn-icon-modern"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home</button>
-                    <button id="btnExportDoc" class="btn-icon-modern"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Esporta DOC</button>
-                    <button id="btnExportPdf" class="btn-icon-modern"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Esporta PDF</button>
-                    <select id="sortSelect" class="filter-select-modern" style="width: auto;">
-                        <option value="id"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> Per Numero</option>
-                        <option value="category"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Per Categoria</option>
-                    </select>
-                    <div class="view-counter" id="viewCounter">Domanda 0 di 0</div>
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="page-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Visualizzazione</h1>
+                    <span id="activeDbName" class="title-db-name"></span>
                     <span id="statusMsg" style="display: none;"></span>
-                    <button id="btnHelp" class="btn-icon-modern"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Aiuto</button>
                 </div>
-            </div>
+                <div class="header-actions">
+                    <button id="btnExportDoc" class="btn-icon-modern"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> DOC</button>
+                    <button id="btnExportPdf" class="btn-icon-modern"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF</button>
+                    <select id="sortSelect" class="filter-select-modern" style="width: auto;">
+                        <option value="id"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> Numero</option>
+                        <option value="category"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Categoria</option>
+                    </select>
+                    <span class="view-counter" id="viewCounter">0 / 0</span>
+                </div>
+            </header>
 
             <!-- Workspace 3 colonne -->
             <div class="workspace">
+                <!-- Mobile panel tabs -->
+                <div class="mobile-panel-tabs" style="display: none;">
+                    <button class="mobile-panel-tab active" data-panel="filters">Filtri</button>
+                    <button class="mobile-panel-tab" data-panel="questions">Domande</button>
+                    <button class="mobile-panel-tab" data-panel="detail">Visualizza</button>
+                </div>
+
                 <!-- Panel 1: Filtri -->
-                <div class="filters-panel">
+                <div class="filters-panel" id="filtersPanel">
+                    <div class="panel-collapse-toggle" id="toggleFilters" title="Nascondi filtri">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4L8 8L12 12"/></svg>
+                    </div>
                     <div class="filters-header">
-                        <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Filtri</h3>
+                        <h3>Filtri</h3>
                         <div class="search-box">
                             <input type="text" id="searchInput" placeholder="Cerca domande...">
                         </div>
@@ -109,6 +120,9 @@
 
                 <!-- Panel 2: Lista domande -->
                 <div class="questions-panel">
+                    <div class="panel-collapse-toggle" id="toggleQuestions" title="Nascondi lista">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4L8 8L12 12"/></svg>
+                    </div>
                     <div class="questions-toolbar">
                         <span class="questions-count"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Lista domande</span>
                     </div>
@@ -120,29 +134,41 @@
 
                 <!-- Panel 3: Dettaglio domanda -->
                 <div class="detail-panel" id="detailPanel">
+                    <div class="panel-collapse-toggle" id="toggleDetail" title="Nascondi dettaglio">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4L8 8L12 12"/></svg>
+                    </div>
                     <div class="view-placeholder">
-                        <div class="placeholder-icon">📖</div>
+                        <div class="placeholder-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
                         <h3>Seleziona una domanda</h3>
                         <p>Scegli una domanda dalla lista per visualizzarla</p>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
-    <!-- Navigation Arrows -->
-    <div class="view-nav-arrows" style="position: fixed; bottom: 20px; right: 32px; display: flex; gap: 8px; z-index: 50;">
-        <button id="navPrevBtn" class="btn-outline" disabled>◀ Precedente</button>
-        <button id="navNextBtn" class="btn-outline" disabled>Successiva ▶</button>
+    <!-- Desktop Navigation Arrows (fixed bottom-right) -->
+    <div class="view-nav-arrows" id="viewNavArrows" style="position: fixed; bottom: 20px; right: 32px; display: flex; gap: 8px; z-index: 50;">
+        <button id="navPrevBtn" class="btn-outline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg> Precedente</button>
+        <button id="navNextBtn" class="btn-outline">Successiva <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+
+    <!-- Mobile Navigation Bar (visible only on mobile) -->
+    <div class="view-mobile-nav" id="viewMobileNav">
+        <button id="navPrevBtnMobile" class="btn-outline"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <span class="view-mobile-counter" id="viewMobileCounter">0 / 0</span>
+        <button id="navNextBtnMobile" class="btn-outline"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
 
     <!-- Help Modal -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h3>ℹ️ Guida alla Modalità Visualizzazione</h3>
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Guida alla Modalità Visualizzazione</h3>
             <div class="help-content">
-                <h4> panoramica delle funzionalità</h4>
+                <h4>Panoramica delle funzionalità</h4>
                 <ul>
                     <li><strong>Navigazione tra le domande</strong>: Usa i pulsanti "Precedente" e "Successiva" oppure i tasti freccia della tastiera</li>
                     <li><strong>Filtri</strong>: Filtra le domande per dominio e sottodominio usando le caselle di controllo</li>
@@ -152,12 +178,12 @@
                     <li><strong>Esportazione</strong>: Esporta le domande visualizzate in formato DOC o PDF</li>
                     <li><strong>Modifica rapida</strong>: Clicca su "Modifica" per aprire la domanda nell'editor</li>
                 </ul>
-                
+
                 <h4>Scorciatoie da tastiera</h4>
                 <ul>
                     <li><strong>Frecce sinistra/destra</strong>: Naviga tra le domande</li>
                 </ul>
-                
+
                 <h4>Suggerimenti utili</h4>
                 <ul>
                     <li>Puoi selezionare più domini e sottodomini contemporaneamente</li>

@@ -437,6 +437,14 @@ function scrollToSelectedQuestion() {
     }
 }
 
+// Sync mobile counter with desktop counter
+function updateMobileCounter() {
+    var viewMobileCounter = document.getElementById('viewMobileCounter');
+    if (viewMobileCounter && viewCounter) {
+        viewMobileCounter.textContent = viewCounter.textContent;
+    }
+}
+
 // Update counter
 function updateCounter() {
     var currentIndex = filteredQuestions.findIndex(function(q) { return q.id === selectedId; });
@@ -445,6 +453,7 @@ function updateCounter() {
     } else {
         viewCounter.textContent = 'Domanda ' + (currentIndex + 1) + ' di ' + filteredQuestions.length;
     }
+    updateMobileCounter();
 }
 
 // Update navigation buttons
@@ -546,22 +555,29 @@ function navigateToNext() {
 }
 
 // Event listeners
-btnHome.addEventListener('click', function() {
-    window.location.href = '/';
-});
+// btnHome may not exist in view topbar anymore - Home is accessible via sidebar
+if (btnHome) {
+    btnHome.addEventListener('click', function() {
+        window.location.href = '/';
+    });
+}
 
-// Help button functionality
-const btnHelp = document.getElementById('btnHelp');
+// Help button - in sidebar (btnHelpSidebar)
+const btnHelp = document.getElementById('btnHelpSidebar');
 const helpModal = document.getElementById('helpModal');
-const helpClose = helpModal.querySelector('.close');
+const helpClose = helpModal ? helpModal.querySelector('.close') : null;
 
-btnHelp.addEventListener('click', function() {
-    helpModal.style.display = 'block';
-});
+if (btnHelp) {
+    btnHelp.addEventListener('click', function() {
+        if (helpModal) helpModal.style.display = 'block';
+    });
+}
 
-helpClose.addEventListener('click', function() {
-    helpModal.style.display = 'none';
-});
+if (helpClose) {
+    helpClose.addEventListener('click', function() {
+        helpModal.style.display = 'none';
+    });
+}
 
 // Close modal when clicking outside of it
 window.addEventListener('click', function(event) {
@@ -760,3 +776,68 @@ window.selectNoneSub = selectNoneSub;
 
 // Initial load
 loadQuestions();
+
+// === Mobile navigation ===
+// Wire up mobile nav buttons to same functions as desktop
+const navPrevBtnMobile = document.getElementById('navPrevBtnMobile');
+const navNextBtnMobile = document.getElementById('navNextBtnMobile');
+
+if (navPrevBtnMobile) {
+    navPrevBtnMobile.addEventListener('click', navigateToPrevious);
+}
+if (navNextBtnMobile) {
+    navNextBtnMobile.addEventListener('click', navigateToNext);
+}
+
+// === Panel collapse toggles ===
+const toggleFilters = document.getElementById('toggleFilters');
+const toggleQuestions = document.getElementById('toggleQuestions');
+const toggleDetail = document.getElementById('toggleDetail');
+const filtersPanel = document.getElementById('filtersPanel');
+const questionsPanelEl = document.querySelector('.questions-panel');
+const detailPanelEl = document.getElementById('detailPanel');
+
+if (toggleFilters && filtersPanel) {
+    toggleFilters.addEventListener('click', function() {
+        filtersPanel.classList.toggle('collapsed');
+    });
+}
+
+if (toggleQuestions && questionsPanelEl) {
+    toggleQuestions.addEventListener('click', function() {
+        questionsPanelEl.classList.toggle('collapsed');
+    });
+}
+
+if (toggleDetail && detailPanelEl) {
+    toggleDetail.addEventListener('click', function() {
+        detailPanelEl.classList.toggle('collapsed');
+    });
+}
+
+// === Mobile panel tabs ===
+const mobileTabs = document.querySelectorAll('.mobile-panel-tab');
+if (mobileTabs.length > 0) {
+    mobileTabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            const panelName = this.getAttribute('data-panel');
+            
+            // Update active tab
+            mobileTabs.forEach(function(t) { t.classList.remove('active'); });
+            this.classList.add('active');
+            
+            // Show/hide panels
+            if (filtersPanel) filtersPanel.classList.remove('mobile-active');
+            if (questionsPanelEl) questionsPanelEl.classList.remove('mobile-active');
+            if (detailPanelEl) detailPanelEl.classList.remove('mobile-active');
+            
+            if (panelName === 'filters' && filtersPanel) {
+                filtersPanel.classList.add('mobile-active');
+            } else if (panelName === 'questions' && questionsPanelEl) {
+                questionsPanelEl.classList.add('mobile-active');
+            } else if (panelName === 'detail' && detailPanelEl) {
+                detailPanelEl.classList.add('mobile-active');
+            }
+        });
+    });
+}
