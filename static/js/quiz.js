@@ -607,9 +607,9 @@ class QuizManagerFrontend {
 
         // Render answers
         this.renderAnswers(question);
-        
+
         // Reset UI
-        document.getElementById('btnSubmitAnswer').disabled = true;
+        document.getElementById('btnSubmitAnswer').disabled = false;
         document.getElementById('btnNextQuestion').style.display = 'none';
         document.getElementById('feedbackContainer').style.display = 'none';
         
@@ -663,9 +663,8 @@ class QuizManagerFrontend {
     }
 
     updateSubmitButton() {
-        const selectedAnswers = this.getSelectedAnswers();
         const submitBtn = document.getElementById('btnSubmitAnswer');
-        submitBtn.disabled = selectedAnswers.length === 0;
+        submitBtn.disabled = false;
     }
 
     getSelectedAnswers() {
@@ -676,11 +675,9 @@ class QuizManagerFrontend {
     async submitAnswer() {
         const selectedAnswers = this.getSelectedAnswers();
         const question = this.questions[this.currentQuestionIndex];
-        
-        if (selectedAnswers.length === 0) {
-            this.showStatus('Seleziona almeno una risposta', 'warning');
-            return;
-        }
+
+        // Allow proceeding without answers (marks as wrong)
+        const isEmpty = selectedAnswers.length === 0;
 
         try {
             const response = await fetch('/api/quiz/validate', {
@@ -699,6 +696,14 @@ class QuizManagerFrontend {
             }
 
             const result = await response.json();
+
+            // If no answers were selected, force wrong result
+            if (isEmpty) {
+                result.is_correct = false;
+                result.is_partial = false;
+                result.feedback = 'Nessuna risposta selezionata';
+                result.correct_answers = result.correct_answers || [];
+            }
             
             // Store user answer and result
             this.userAnswers[this.currentQuestionIndex] = selectedAnswers;
