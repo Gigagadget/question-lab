@@ -179,7 +179,7 @@ function refreshFilterSubdomainOptions(preferredValue = '') {
     if (!subdomainFilter) return;
     const selectedPrimary = primaryDomainFilter?.value || '';
     const keepValue = preferredValue || subdomainFilter.value || '';
-    populateSubdomainSelect(subdomainFilter, selectedPrimary, keepValue, true, 'Tutti i Sottodomini');
+    populateSubdomainSelect(subdomainFilter, selectedPrimary, keepValue, true, 'Tutte le sottocategorie');
 }
 
 function refreshQuestionSubdomainOptions(preferredValue = '') {
@@ -284,11 +284,11 @@ function notifyCategoryNormalizationWarning(warnings) {
     lastNormalizationWarningSignature = signature;
     lastNormalizationWarningAt = now;
 
-    const details = examples.length ? ` (es: ${examples.join(', ')})` : '';
-    const message = `⚠️ ${info.count} domande riallineate a categorie valide${details}`;
+    const details = examples.length ? ` (es: ${examples.map(e => escapeHtml(e)).join(', ')})` : '';
+    const message = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> ${info.count} domande riallineate a categorie valide${details}`;
 
     if (normalizationAlertEl && normalizationAlertTextEl) {
-        normalizationAlertTextEl.textContent = message;
+        normalizationAlertTextEl.innerHTML = message;
         normalizationAlertEl.style.display = 'block';
     }
 
@@ -399,12 +399,12 @@ function createFilterUI() {
     const savedSubdomain = subdomainFilter?.value || '';
 
     domainsContainer.innerHTML = `
-        <div class="filter-label">Dominio</div>
+        <div class="filter-label">Categoria</div>
         <select id="primaryDomainFilter" class="filter-select-modern" style="margin-bottom: 12px;">
-            <option value="">Tutti i Domini</option>
+            <option value="">Tutte le Categorie</option>
             ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('')}
         </select>
-        <div class="filter-label">Sottodominio</div>
+        <div class="filter-label">Sottocategoria</div>
         <select id="subdomainFilter" class="filter-select-modern"></select>
     `;
 
@@ -583,11 +583,11 @@ function renderQuestionList() {
                 <div class="question-meta-modern">
                     <span>
                         <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-                        ${escapeHtml(q.primary_domain || 'nessun dominio')}
+                        ${escapeHtml(q.primary_domain || 'nessuna categoria')}
                     </span>
                     <span>
                         <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
-                        ${escapeHtml(q.subdomain || 'nessun sottodominio')}
+                        ${escapeHtml(q.subdomain || 'nessuna sottocategoria')}
                     </span>
                 </div>
             </div>
@@ -738,20 +738,20 @@ async function batchChangeCategory() {
     modal.innerHTML = `
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h3 style="padding: 0px 20px;">🏷️ Cambia Categoria</h3>
+            <h3 style="padding: 0px 20px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Cambia Categoria</h3>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px; padding: 0px 20px;">Seleziona la nuova categoria per ${count} domande</p>
             <div>
                 <div class="form-group">
-                    <label class="form-label">Nuovo Dominio Principale</label>
+                    <label class="form-label">Nuova Categoria Principale</label>
                     <select id="batchPrimaryDomain" class="form-input">
                         <option value="">-- Seleziona --</option>
                         ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('')}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Nuovo Sottodominio</label>
+                    <label class="form-label">Nuova Sottocategoria</label>
                     <select id="batchSubdomain" class="form-input" disabled>
-                        <option value="">-- Seleziona prima un dominio --</option>
+                        <option value="">-- Seleziona prima una categoria --</option>
                     </select>
                 </div>
             </div>
@@ -777,7 +777,7 @@ async function batchChangeCategory() {
         if (!selectedPrimary) {
             if (batchSubdomainSelect) {
                 batchSubdomainSelect.disabled = true;
-                batchSubdomainSelect.innerHTML = '<option value="">-- Seleziona prima un dominio --</option>';
+                batchSubdomainSelect.innerHTML = '<option value="">-- Seleziona prima una categoria --</option>';
             }
             return;
         }
@@ -804,7 +804,7 @@ async function batchChangeCategory() {
         }
 
         if (newSubdomain && !newPrimaryDomain) {
-            alert('Per cambiare sottodominio devi selezionare anche il dominio principale.');
+            alert('Per cambiare sottocategorie devi selezionare anche la categoria principale.');
             return;
         }
 
@@ -904,8 +904,8 @@ function renderFormForId(id) {
             </div>
         </div>
         <div class="detail-secondary-actions">
-            <button id="btnDuplicate" class="btn-secondary-action">📑 Duplica</button>
-            <button id="btnDeleteQuestion" class="btn-secondary-action btn-delete-action">🗑️ Elimina</button>
+            <button id="btnDuplicate" class="btn-secondary-action"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Duplica</button>
+            <button id="btnDeleteQuestion" class="btn-secondary-action btn-delete-action"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Elimina</button>
         </div>
     `;
 
@@ -969,13 +969,13 @@ function renderFormForId(id) {
     const fieldsHtml = `
         <div class="form-row">
             <div class="form-group">
-                <label class="form-label">Dominio</label>
+                <label class="form-label">Categoria</label>
                 <select class="form-input" id="field_primary_domain">
                     ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}" ${question.primary_domain === d ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Sottodominio</label>
+                <label class="form-label">Sottocategoria</label>
                 <select class="form-input" id="field_subdomain"></select>
             </div>
         </div>
@@ -1512,34 +1512,34 @@ async function showStats() {
             <!-- Card Panoramica -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-icon">📋</div>
+                    <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
                     <div class="stat-value">${stats.total_questions}</div>
                     <div class="stat-label">Totale Domande</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🚩</div>
+                    <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
                     <div class="stat-value">${stats.questions_flagged}</div>
                     <div class="stat-label">
                         Domande Flaggate
-                        ${percentageFlagged > 0 ? `<span class="warning-badge">⚠️ ${percentageFlagged}%</span>` : ''}
+                        ${percentageFlagged > 0 ? `<span class="warning-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>${percentageFlagged}%</span>` : ''}
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon">🔄</div>
+                    <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></div>
                     <div class="stat-value">${stats.total_duplicates}</div>
                     <div class="stat-label">
                         Domande con Duplicati
-                        ${percentageDuplicates > 0 ? `<span class="warning-badge">⚠️ ${percentageDuplicates}%</span>` : ''}
+                        ${percentageDuplicates > 0 ? `<span class="warning-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>${percentageDuplicates}%</span>` : ''}
                     </div>
                 </div>
             </div>
 
             <!-- Statistiche Risposte -->
             <div class="stats-section">
-                <h3 class="section-title">📝 Statistiche Risposte</h3>
+                <h3 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Statistiche Risposte</h3>
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon">✏️</div>
+                        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
                         <div class="stat-value">${stats.questions_with_one_answer}</div>
                         <div class="stat-label">Una sola risposta</div>
                         <div class="progress-bar-container">
@@ -1547,7 +1547,7 @@ async function showStats() {
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon">❌</div>
+                        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
                         <div class="stat-value">${stats.questions_with_no_answers}</div>
                         <div class="stat-label">Senza risposte</div>
                         <div class="progress-bar-container">
@@ -1555,7 +1555,7 @@ async function showStats() {
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
                         <div class="stat-value">${stats.questions_with_no_correct}</div>
                         <div class="stat-label">Senza risposta corretta</div>
                         <div class="progress-bar-container">
@@ -1565,9 +1565,9 @@ async function showStats() {
                 </div>
             </div>
 
-            <!-- Distribuzione per Dominio -->
+            <!-- Distribuzione per Categoria -->
             <div class="stats-section">
-                <h3 class="section-title">🏷️ Distribuzione per Dominio Principale</h3>
+                <h3 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Distribuzione per Categoria Principale</h3>
                 <div class="distribution-list">
                     ${primaryDomainsSorted.map(([domain, count], index) => `
                         <div class="distribution-item">
@@ -1582,9 +1582,9 @@ async function showStats() {
                 ${primaryDomainsSorted.length === 0 ? '<p style="color:#94a3b8; text-align:center; padding: 20px;">Nessun dato disponibile</p>' : ''}
             </div>
 
-            <!-- Distribuzione per Sottodominio -->
+            <!-- Distribuzione per Sottocategorie -->
             <div class="stats-section">
-                <h3 class="section-title">📂 Distribuzione per Sottodominio</h3>
+                <h3 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Distribuzione per Sottocategoria</h3>
                 <div class="distribution-list">
                     ${subdomainsSorted.map(([sub, count], index) => `
                         <div class="distribution-item">
@@ -2053,7 +2053,7 @@ async function removeCategory(type, value, primaryDomain = '') {
 }
 
 async function renameCategory(type, oldValue, primaryDomain = '') {
-    const typeName = type === 'primary_domain' ? 'dominio principale' : 'sottodominio';
+    const typeName = type === 'primary_domain' ? 'categoria principale' : 'sottocategoria';
     const newValue = prompt(`Inserisci il nuovo nome per "${oldValue}":`, oldValue);
     
     if (!newValue || newValue.trim() === '') return;

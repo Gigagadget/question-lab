@@ -1532,6 +1532,20 @@ select:focus {
     opacity: 0.6;
 }
 
+/* Search box icon - dark mode */
+[data-theme="dark"] .search-box::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+}
+
+/* Categories manager icon buttons - dark mode */
+[data-theme="dark"] .cm-icon-btn svg {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .cm-icon-btn:hover svg {
+    color: var(--text-primary);
+}
+
 /* Quiz mobile adjustments */
 @media (max-width: 768px) {
     [data-theme="dark"] .log-review-stats {

@@ -1424,11 +1424,6 @@ button.danger:hover {
         font-size: 14px;
     }
 
-    /* Topbar: ensure db name is visible */
-    .top-bar-left .title-db-name {
-        font-size: 14px;
-    }
-
     /* Header actions: scrollable on mobile */
     .header-actions {
         width: 100%;

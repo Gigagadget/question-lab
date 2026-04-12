@@ -94,7 +94,7 @@ const CategoriesManager = (() => {
 
         let html = `
             <div class="cm-preview-card">
-                <h4>📊 Anteprima Impatto</h4>
+                <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Anteprima Impatto</h4>
                 <div class="cm-preview-metrics">
                     <div class="cm-metric">
                         <span class="cm-metric-value">${affected_questions_count}</span>
@@ -110,7 +110,7 @@ const CategoriesManager = (() => {
         if (warnings && warnings.length > 0) {
             html += `
                 <div class="cm-warnings">
-                    <h5>⚠️ Avvertenze</h5>
+                    <h5><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Avvertenze</h5>
                     <ul>
                         ${warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}
                     </ul>
@@ -146,7 +146,7 @@ const CategoriesManager = (() => {
 
         let html = `
             <div class="cm-health-dashboard">
-                <h4>📊 Riepilogo Categorie</h4>
+                <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Riepilogo Categorie</h4>
 
                 <div class="cm-health-summary">
                     <div class="cm-health-card">
@@ -195,7 +195,7 @@ const CategoriesManager = (() => {
                     html += `
                         <div class="cm-suggestion cm-suggestion-${s.priority}">
                             <div class="cm-suggestion-header">
-                                <span class="cm-suggestion-icon">🔀</span>
+                                <span class="cm-suggestion-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></span>
                                 <strong>Categorie molto simili tra loro</strong>
                             </div>
                             <p>${s.message}</p>
@@ -226,7 +226,7 @@ const CategoriesManager = (() => {
         } else {
             html += `
                 <div class="cm-suggestions cm-suggestions-ok">
-                    <h5>✅ Tutto in ordine!</h5>
+                    <h5><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg> Tutto in ordine!</h5>
                     <p>Non ci sono problemi rilevati nella tua tassonomia categorie.</p>
                 </div>
             `;
@@ -324,22 +324,22 @@ const CategoriesManager = (() => {
 
         let html = `
             <div class="cm-merge-wizard">
-                <h4>🔀 Unisci Categorie</h4>
+                <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg> Unisci Categorie</h4>
                 
                 <div class="cm-merge-type-toggle">
                     <label class="cm-radio-label">
                         <input type="radio" name="cmMergeType" value="primary_domain" checked>
-                        📂 Domini principali
+                        📂 Categorie
                     </label>
                     <label class="cm-radio-label">
                         <input type="radio" name="cmMergeType" value="subdomain">
-                        📁 Sottodomini
+                        📁 Sottocategorie
                     </label>
                 </div>
 
                 <!-- Subdomain context (hidden by default) -->
                 <div class="cm-form-group" id="cmPrimaryDomainGroup" style="display:none;">
-                    <label>📂 Dominio principale di riferimento</label>
+                    <label>📂 Categoria principale di riferimento</label>
                     <select id="cmMergePrimaryDomain">
                         ${primary_domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('')}
                     </select>
@@ -361,7 +361,7 @@ const CategoriesManager = (() => {
 
                     <!-- Freccia -->
                     <div class="cm-merge-arrow">
-                        <span class="cm-arrow-icon">⬇️</span>
+                        <span class="cm-arrow-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></span>
                     </div>
 
                     <!-- IN -->
@@ -381,8 +381,8 @@ const CategoriesManager = (() => {
                 <div id="cmMergePreview"></div>
 
                 <div class="cm-form-actions">
-                    <button type="button" id="cmPreviewMergeBtn" class="info small-btn">👁️ Vedi anteprima</button>
-                    <button type="submit" id="cmConfirmMergeBtn" class="success small-btn">✅ Conferma unione</button>
+                    <button type="button" id="cmPreviewMergeBtn" class="info small-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Vedi anteprima</button>
+                    <button type="submit" id="cmConfirmMergeBtn" class="success small-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg> Conferma unione</button>
                 </div>
             </div>
         `;
@@ -419,11 +419,11 @@ const CategoriesManager = (() => {
                 const primary = primaryDomainSelect?.value || '';
                 const subs = cats.subdomains_by_primary?.[primary] || [];
                 if (sourceSelect) {
-                    sourceSelect.innerHTML = `<option value="">-- Scegli sottodominio da rimuovere --</option>` +
+                    sourceSelect.innerHTML = `<option value="">-- Scegli sottocategoria da rimuovere --</option>` +
                         subs.filter(s => s !== 'indefinito').map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
                 }
                 if (targetSelect) {
-                    targetSelect.innerHTML = `<option value="">-- Scegli sottodominio destinazione --</option>` +
+                    targetSelect.innerHTML = `<option value="">-- Scegli sottocategoria destinazione --</option>` +
                         subs.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
                 }
             } else {
@@ -473,7 +473,7 @@ const CategoriesManager = (() => {
                 previewContainer.innerHTML = renderPreviewCard(preview);
                 confirmBtn.disabled = false;
             } catch (err) {
-                previewContainer.innerHTML = `<div class="cm-error-card">❌ ${escapeHtml(err.message)}</div>`;
+                previewContainer.innerHTML = `<div class="cm-error-card"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> ${escapeHtml(err.message)}</div>`;
                 confirmBtn.disabled = true;
             }
         });
@@ -523,7 +523,7 @@ const CategoriesManager = (() => {
             } catch (err) {
                 alert(`❌ Errore unione: ${err.message}`);
                 confirmBtn.disabled = false;
-                confirmBtn.textContent = '✅ Conferma unione';
+                confirmBtn.textContent = 'Conferma unione';
             }
         }
     }
@@ -769,11 +769,11 @@ const CategoriesManager = (() => {
 
             <div class="cm-detail-actions">
                 ${!isLocked ? `
-                    <button class="cm-action-btn" data-action="rename-primary" data-value="${escapeHtml(primaryName)}">✏️ Rinomina</button>
-                    <button class="cm-action-btn" data-action="merge-primary" data-value="${escapeHtml(primaryName)}">🔀 Unisci</button>
-                    <button class="cm-action-btn cm-action-danger" data-action="remove-primary" data-value="${escapeHtml(primaryName)}">🗑️ Rimuovi</button>
+                    <button class="cm-action-btn" data-action="rename-primary" data-value="${escapeHtml(primaryName)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Rinomina</button>
+                    <button class="cm-action-btn" data-action="merge-primary" data-value="${escapeHtml(primaryName)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg> Unisci</button>
+                    <button class="cm-action-btn cm-action-danger" data-action="remove-primary" data-value="${escapeHtml(primaryName)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Rimuovi</button>
                 ` : `
-                    <span class="cm-locked-msg">🔒 Categoria predefinita - non modificabile</span>
+                    <span class="cm-locked-msg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Categoria predefinita - non modificabile</span>
                 `}
             </div>
         `;
@@ -805,9 +805,9 @@ const CategoriesManager = (() => {
                         </div>
                         <div class="cm-sub-actions">
                             ${!isSubLocked ? `
-                                <button class="cm-icon-btn" data-action="rename-sub" data-primary="${escapeHtml(primaryName)}" data-value="${escapeHtml(sub)}" title="Rinomina">✏️</button>
-                                <button class="cm-icon-btn" data-action="remove-sub" data-primary="${escapeHtml(primaryName)}" data-value="${escapeHtml(sub)}" title="Rimuovi">🗑️</button>
-                            ` : `<span class="cm-sub-locked-msg">🔒</span>`}
+                                <button class="cm-icon-btn" data-action="rename-sub" data-primary="${escapeHtml(primaryName)}" data-value="${escapeHtml(sub)}" title="Rinomina"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                                <button class="cm-icon-btn" data-action="remove-sub" data-primary="${escapeHtml(primaryName)}" data-value="${escapeHtml(sub)}" title="Rimuovi"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                            ` : `<span class="cm-sub-locked-msg"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>`}
                         </div>
                     </div>
                 `;
@@ -869,11 +869,11 @@ const CategoriesManager = (() => {
 
             <div class="cm-detail-actions">
                 ${!isLocked ? `
-                    <button class="cm-action-btn" data-action="rename-sub" data-primary="${escapeHtml(primaryName)}" data-value="${escapeHtml(subName)}">✏️ Rinomina</button>
-                    <button class="cm-action-btn" data-action="merge-sub" data-primary="${escapeHtml(primaryName)}" data-value="${escapeHtml(subName)}">🔀 Unisci</button>
-                    <button class="cm-action-btn cm-action-danger" data-action="remove-sub" data-primary="${escapeHtml(primaryName)}" data-value="${escapeHtml(subName)}">🗑️ Rimuovi</button>
+                    <button class="cm-action-btn" data-action="rename-sub" data-primary="${escapeHtml(primaryName)}" data-value="${escapeHtml(subName)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Rinomina</button>
+                    <button class="cm-action-btn" data-action="merge-sub" data-primary="${escapeHtml(primaryName)}" data-value="${escapeHtml(subName)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg> Unisci</button>
+                    <button class="cm-action-btn cm-action-danger" data-action="remove-sub" data-primary="${escapeHtml(primaryName)}" data-value="${escapeHtml(subName)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Rimuovi</button>
                 ` : `
-                    <span class="cm-locked-msg">🔒 Sottocategoria predefinita - non modificabile</span>
+                    <span class="cm-locked-msg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Sottocategoria predefinita - non modificabile</span>
                 `}
             </div>
 
