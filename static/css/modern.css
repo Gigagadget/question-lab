@@ -1922,3 +1922,53 @@ textarea.form-input {
     font-size: 10px;
     margin-top: 2px;
 }
+
+/* ==================== REVIEW FILTER PILLS - MOBILE ==================== */
+@media (max-width: 768px) {
+    .review-filter-bar {
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    .filter-pill {
+        padding: 7px 12px;
+        font-size: 12px;
+    }
+
+    .filter-pill svg {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .review-filter-bar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+        gap: 6px;
+        margin-bottom: 14px;
+        scrollbar-width: none;
+    }
+
+    .review-filter-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-pill {
+        padding: 6px 12px;
+        font-size: 11px;
+        flex-shrink: 0;
+    }
+
+    .filter-pill svg {
+        width: 11px;
+        height: 11px;
+    }
+
+    .review-no-results {
+        padding: 24px 16px;
+        font-size: 13px;
+    }
+}

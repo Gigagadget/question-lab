@@ -17,6 +17,10 @@ class QuizManagerFrontend {
         this.usedCount = 0;
         this.quizInProgress = false;
 
+        // Review filter state
+        this.currentReviewFilters = { all: true, correct: false, partial: false, wrong: false };
+        this.logReviewFilters = { all: true, correct: false, partial: false, wrong: false };
+
         // Check for active database before initializing
         this.checkDatabaseAndInit();
     }
@@ -194,6 +198,102 @@ class QuizManagerFrontend {
         document.getElementById('btnDeleteAllLogs').addEventListener('click', () => {
             this.deleteAllLogs();
         });
+
+        // Review filter pills
+        this.initializeReviewFilterPills();
+    }
+
+    // ==================== REVIEW FILTERS ====================
+
+    initializeReviewFilterPills() {
+        // Current review filter pills
+        document.querySelectorAll('#reviewFilterBar .filter-pill').forEach(pill => {
+            pill.addEventListener('click', (e) => {
+                this.toggleReviewFilter(e.currentTarget, 'current');
+            });
+        });
+
+        // Log review filter pills
+        document.querySelectorAll('#logReviewFilterBar .filter-pill').forEach(pill => {
+            pill.addEventListener('click', (e) => {
+                this.toggleReviewFilter(e.currentTarget, 'log');
+            });
+        });
+    }
+
+    toggleReviewFilter(pill, reviewType) {
+        const filterType = pill.dataset.filter;
+        const filters = reviewType === 'current' ? this.currentReviewFilters : this.logReviewFilters;
+        const barId = reviewType === 'current' ? '#reviewFilterBar' : '#logReviewFilterBar';
+
+        if (filterType === 'all') {
+            // Toggle "all": if not active, activate it and deactivate others
+            if (!filters.all) {
+                filters.all = true;
+                filters.correct = false;
+                filters.partial = false;
+                filters.wrong = false;
+            }
+            // If already active, do nothing (keep at least one filter active)
+        } else {
+            // Toggle specific filter
+            filters[filterType] = !filters[filterType];
+
+            // If all non-"all" filters are off, turn "all" on
+            if (!filters.correct && !filters.partial && !filters.wrong) {
+                filters.all = true;
+            } else {
+                filters.all = false;
+            }
+        }
+
+        // Update pill UI
+        document.querySelectorAll(`${barId} .filter-pill`).forEach(p => {
+            p.classList.toggle('active', filters[p.dataset.filter]);
+        });
+
+        // Apply filters
+        this.applyReviewFilters(reviewType);
+    }
+
+    applyReviewFilters(reviewType) {
+        const filters = reviewType === 'current' ? this.currentReviewFilters : this.logReviewFilters;
+        const containerId = reviewType === 'current' ? 'reviewContainer' : 'logReviewContainer';
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const questionElements = container.querySelectorAll('.review-question');
+        let visibleCount = 0;
+
+        questionElements.forEach(el => {
+            if (filters.all) {
+                el.style.display = '';
+                visibleCount++;
+                return;
+            }
+
+            const isCorrect = el.classList.contains('correct');
+            const isPartial = el.classList.contains('partial');
+            const isWrong = el.classList.contains('wrong') || el.classList.contains('unanswered');
+
+            const show = (filters.correct && isCorrect) || (filters.partial && isPartial) || (filters.wrong && isWrong);
+            el.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+        });
+
+        // Show "no results" message if nothing visible
+        let noResultsMsg = container.querySelector('.review-no-results');
+        if (visibleCount === 0) {
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('div');
+                noResultsMsg.className = 'review-no-results';
+                noResultsMsg.textContent = 'Nessuna domanda corrisponde ai filtri selezionati.';
+                container.appendChild(noResultsMsg);
+            }
+            noResultsMsg.style.display = 'block';
+        } else if (noResultsMsg) {
+            noResultsMsg.style.display = 'none';
+        }
     }
 
     // ==================== CATEGORIES ====================
@@ -582,7 +682,13 @@ class QuizManagerFrontend {
             this.startTime = Date.now();
             this.elapsedTime = 0;
             this.startTimer();
-            
+
+            // Show end quiz button, hide logs button during quiz
+            const btnEndQuiz = document.getElementById('btnEndQuiz');
+            if (btnEndQuiz) btnEndQuiz.style.display = '';
+            const btnLogs = document.getElementById('btnLogs');
+            if (btnLogs) btnLogs.style.display = 'none';
+
             // Show quiz screen
             this.showQuiz();
             this.displayQuestion();
@@ -977,6 +1083,12 @@ class QuizManagerFrontend {
     // ==================== REVIEW ====================
 
     showReview() {
+        // Reset filters to "all"
+        this.currentReviewFilters = { all: true, correct: false, partial: false, wrong: false };
+        document.querySelectorAll('#reviewFilterBar .filter-pill').forEach(p => {
+            p.classList.toggle('active', p.dataset.filter === 'all');
+        });
+
         const container = document.getElementById('reviewContainer');
         container.innerHTML = '';
         
@@ -1139,6 +1251,12 @@ class QuizManagerFrontend {
     }
 
     showLogReview(logData) {
+        // Reset filters to "all"
+        this.logReviewFilters = { all: true, correct: false, partial: false, wrong: false };
+        document.querySelectorAll('#logReviewFilterBar .filter-pill').forEach(p => {
+            p.classList.toggle('active', p.dataset.filter === 'all');
+        });
+
         const container = document.getElementById('logReviewContainer');
         container.innerHTML = '';
         

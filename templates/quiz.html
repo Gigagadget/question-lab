@@ -234,7 +234,27 @@
                         <h2>Review delle Risposte</h2>
                         <button id="btnBackToResults" class="btn-outline">← Torna ai Risultati</button>
                     </div>
-                    
+
+                    <!-- Filtri review -->
+                    <div class="review-filter-bar" id="reviewFilterBar">
+                        <button class="filter-pill active" data-filter="all" data-review="current">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            Tutte
+                        </button>
+                        <button class="filter-pill" data-filter="correct" data-review="current">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Corrette
+                        </button>
+                        <button class="filter-pill" data-filter="partial" data-review="current">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Parziali
+                        </button>
+                        <button class="filter-pill" data-filter="wrong" data-review="current">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            Sbagliate
+                        </button>
+                    </div>
+
                     <div class="review-container" id="reviewContainer">
                         <!-- Le domande riviste verranno caricate dinamicamente -->
                     </div>
@@ -261,7 +281,27 @@
                         <h2>Review Quiz Completato</h2>
                         <button id="btnBackToLogs" class="btn-outline">← Torna ai Log</button>
                     </div>
-                    
+
+                    <!-- Filtri review log -->
+                    <div class="review-filter-bar" id="logReviewFilterBar">
+                        <button class="filter-pill active" data-filter="all" data-review="log">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            Tutte
+                        </button>
+                        <button class="filter-pill" data-filter="correct" data-review="log">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            Corrette
+                        </button>
+                        <button class="filter-pill" data-filter="partial" data-review="log">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Parziali
+                        </button>
+                        <button class="filter-pill" data-filter="wrong" data-review="log">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            Sbagliate
+                        </button>
+                    </div>
+
                     <div class="review-container" id="logReviewContainer">
                         <!-- Le domande riviste verranno caricate dinamicamente -->
                     </div>

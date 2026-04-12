@@ -732,6 +732,74 @@
 
 /* ==================== REVIEW ==================== */
 
+/* Review filter pills */
+.review-filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 24px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    user-select: none;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.filter-pill svg {
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.filter-pill:hover {
+    border-color: var(--accent-blue);
+    color: var(--text-primary);
+}
+
+.filter-pill.active {
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.filter-pill[data-filter="all"].active {
+    background: var(--accent-blue);
+}
+
+.filter-pill[data-filter="correct"].active {
+    background: #16a34a;
+}
+
+.filter-pill[data-filter="partial"].active {
+    background: #d97706;
+}
+
+.filter-pill[data-filter="wrong"].active {
+    background: #dc2626;
+}
+
+/* No results message */
+.review-no-results {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-style: italic;
+}
+
 .review-header {
     display: flex;
     justify-content: space-between;
@@ -746,6 +814,7 @@
 
 .review-container {
     max-width: 800px;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -756,6 +825,8 @@
     margin-bottom: 16px;
     box-shadow: 0 1px 3px var(--shadow-color);
     border-left: 4px solid var(--border-color);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .review-question.correct {
@@ -1283,6 +1354,7 @@ button.danger:hover {
     /* Review questions: compact */
     .review-question {
         padding: 16px;
+        width: 100%;
     }
 
     /* Log items: compact */
