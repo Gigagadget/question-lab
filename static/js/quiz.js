@@ -338,13 +338,23 @@ class QuizManagerFrontend {
 
     updateSubdomainCount() {
         let count = 0;
-        this.selectedCategories.filter(c => c !== 'all').forEach(primary => {
-            const list = this.selectedSubdomainsByPrimary[primary] || [];
-            count += list.length;
-        });
+        if (this.selectedCategories.includes('all')) {
+            // Count all subdomains across all categories
+            for (const primary of Object.keys(this.categoriesData || {})) {
+                const list = this.selectedSubdomainsByPrimary[primary] || this.getSubdomainsForPrimary(primary);
+                count += list.length;
+            }
+        } else {
+            this.selectedCategories.forEach(primary => {
+                const list = this.selectedSubdomainsByPrimary[primary] || [];
+                count += list.length;
+            });
+        }
         const countEl = document.getElementById('selectedSubdomainsCount');
         const badgeEl = document.querySelector('.info-badge.info-subdomains');
+        const labelEl = document.getElementById('selectedSubdomainsLabel');
         if (countEl) countEl.textContent = count;
+        if (labelEl) labelEl.textContent = count === 1 ? 'sottocategoria' : 'sottocategorie';
         if (badgeEl) {
             badgeEl.style.display = count > 0 ? 'inline-flex' : 'none';
         }
@@ -413,9 +423,15 @@ class QuizManagerFrontend {
     }
 
     updateCategoryCount() {
-        const count = this.selectedCategories.length;
-        document.getElementById('selectedCategoriesCount').textContent = count;
-        
+        let count = this.selectedCategories.length;
+        if (this.selectedCategories.includes('all')) {
+            count = Object.keys(this.categoriesData || {}).length;
+        }
+        const el = document.getElementById('selectedCategoriesCount');
+        if (el) el.textContent = count;
+        const labelEl = document.getElementById('selectedCategoriesLabel');
+        if (labelEl) labelEl.textContent = count === 1 ? 'categoria' : 'categorie';
+
         // Enable/disable start button
         const startBtn = document.getElementById('btnStartQuiz');
         startBtn.disabled = count === 0;
@@ -438,7 +454,7 @@ class QuizManagerFrontend {
         } else {
             this.selectedCount = parseInt(count);
         }
-        
+
         this.updateCountDisplay();
         this.updateAvailableQuestions();
     }
@@ -469,8 +485,15 @@ class QuizManagerFrontend {
     }
 
     updateCountDisplay() {
-        const display = this.selectedCount === -1 ? 'Tutte' : this.selectedCount;
-        document.getElementById('selectedCount').textContent = display;
+        const countEl = document.getElementById('selectedCount');
+        const labelEl = document.getElementById('selectedCountLabel');
+        if (this.selectedCount === -1) {
+            if (countEl) countEl.textContent = '';
+            if (labelEl) labelEl.textContent = 'Tutte le domande';
+        } else {
+            if (countEl) countEl.textContent = this.selectedCount;
+            if (labelEl) labelEl.textContent = this.selectedCount === 1 ? 'domanda' : 'domande';
+        }
     }
 
     async updateAvailableQuestions() {
