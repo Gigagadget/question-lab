@@ -609,9 +609,20 @@ class QuizManagerFrontend {
         this.renderAnswers(question);
 
         // Reset UI
-        document.getElementById('btnSubmitAnswer').disabled = false;
-        document.getElementById('btnNextQuestion').style.display = 'none';
-        document.getElementById('feedbackContainer').style.display = 'none';
+        const submitBtn = document.getElementById('btnSubmitAnswer');
+        const nextBtn = document.getElementById('btnNextQuestion');
+        const feedbackContainer = document.getElementById('feedbackContainer');
+        
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.display = 'block';
+        }
+        if (nextBtn) {
+            nextBtn.style.display = 'none';
+        }
+        if (feedbackContainer) {
+            feedbackContainer.style.display = 'none';
+        }
         
         // Update score display
         this.updateScoreDisplay();
@@ -703,6 +714,7 @@ class QuizManagerFrontend {
                 result.is_partial = false;
                 result.feedback = 'Nessuna risposta selezionata';
                 result.correct_answers = result.correct_answers || [];
+                result.score = 0.0;
             }
             
             // Store user answer and result
@@ -805,6 +817,11 @@ class QuizManagerFrontend {
         const partial = this.quizResults.filter(r => r && r.is_partial).length;
         const wrong = this.quizResults.filter(r => r && !r.is_correct && !r.is_partial).length;
         
+        // Calcola punteggio totale con pesi proporzionali
+        const totalScore = this.quizResults.reduce((sum, r) => {
+            return sum + (r && r.score !== undefined ? r.score : 0);
+        }, 0);
+        
         document.getElementById('correctCount').textContent = correct;
         document.getElementById('partialCount').textContent = partial;
         document.getElementById('wrongCount').textContent = wrong;
@@ -833,7 +850,12 @@ class QuizManagerFrontend {
         const wrongAnswers = this.quizResults.filter(r => r && !r.is_correct && !r.is_partial).length;
         const unansweredQuestions = totalQuestions - answeredQuestions;
         
-        const scorePercentage = answeredQuestions > 0 ? Math.round((correctAnswers / answeredQuestions) * 100) : 0;
+        // Calcola punteggio totale con pesi proporzionali
+        const totalScore = this.quizResults.reduce((sum, r) => {
+            return sum + (r && r.score !== undefined ? r.score : 0);
+        }, 0);
+        
+        const scorePercentage = answeredQuestions > 0 ? Math.round((totalScore / answeredQuestions) * 100) : 0;
 
         // Expand "all" to actual categories for the log
         let actualCategories = [...this.selectedCategories];
@@ -856,7 +878,7 @@ class QuizManagerFrontend {
             total_time_seconds: Math.floor(this.elapsedTime / 1000),
             average_time_per_question: answeredQuestions > 0 ? Math.round((this.elapsedTime / 1000) / answeredQuestions) : 0,
             interrupted: interrupted,
-            questions: this.questions.map((q, index) => ({
+             questions: this.questions.map((q, index) => ({
                 id: q.id,
                 text: q.raw_text,
                 all_answers: q.answers,
@@ -865,6 +887,7 @@ class QuizManagerFrontend {
                 is_correct: this.quizResults[index]?.is_correct || false,
                 is_partial: this.quizResults[index]?.is_partial || false,
                 is_unanswered: this.quizResults[index] === null,
+                score: this.quizResults[index]?.score || 0,
                 time_spent_seconds: this.quizResults[index] ? Math.round((this.elapsedTime / 1000) / answeredQuestions) : 0,
                 feedback: this.quizResults[index]?.feedback || 'no_answer'
             }))
@@ -905,6 +928,11 @@ class QuizManagerFrontend {
         const totalTime = this.elapsedTime;
         const answeredQuestions = correct + partial + wrong;
         const avgTime = answeredQuestions > 0 ? totalTime / answeredQuestions : 0;
+        
+        // Calcola punteggio dettagliato
+        const totalScore = this.quizResults.reduce((sum, r) => {
+            return sum + (r && r.score !== undefined ? r.score : 0);
+        }, 0);
         
         document.getElementById('finalScore').textContent = `${score}%`;
         document.getElementById('finalCorrect').textContent = correct;
@@ -978,10 +1006,13 @@ class QuizManagerFrontend {
                 ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
                 : '';
 
+            // Calcola punteggio per questa domanda
+            const questionScore = result?.score !== undefined ? Math.round(result.score * 100) : 0;
+            
             reviewDiv.innerHTML = `
                 <div class="review-header">
                     <span class="review-number">Domanda ${index + 1}</span>
-                    <span class="review-status ${statusClass}">${statusSvg} ${statusLabel}</span>
+                    <span class="review-status ${statusClass}">${statusSvg} ${statusLabel} (${questionScore}%)</span>
                 </div>
                 <div class="review-question-text">${question.raw_text}</div>
                 <div class="review-answers">
@@ -1162,11 +1193,14 @@ class QuizManagerFrontend {
             
             reviewDiv.classList.add(statusClass);
             
+            // Calcola punteggio per questa domanda
+            const questionScore = question.score !== undefined ? Math.round(question.score * 100) : 0;
+            
             reviewDiv.innerHTML = `
                 <div class="review-header">
                     <span class="review-number">Domanda ${index + 1}</span>
                     <span class="review-status ${statusClass}">
-                        ${question.is_correct ? '✅ Corretta' : question.is_partial ? '⚠️ Parziale' : '❌ Sbagliata'}
+                        ${question.is_correct ? '✅ Corretta' : question.is_partial ? '⚠️ Parziale' : '❌ Sbagliata'} (${questionScore}%)
                     </span>
                 </div>
                 <div class="review-question-text">${question.text}</div>
@@ -1261,12 +1295,16 @@ class QuizManagerFrontend {
 
     showQuiz() {
         this.hideAllScreens();
-        document.getElementById('quizGame').style.display = 'block';
-        // Hide log button during quiz, show end quiz button
-        const btnLogs = document.getElementById('btnLogs');
-        if (btnLogs) btnLogs.style.display = 'none';
-        const btnEndQuiz = document.getElementById('btnEndQuiz');
-        if (btnEndQuiz) btnEndQuiz.style.display = 'flex';
+        const quizScreen = document.getElementById('quizGame');
+        if (quizScreen) {
+            quizScreen.style.display = 'block';
+        }
+        // Ensure submit button is visible (with null check)
+        const submitBtn = document.getElementById('btnSubmitAnswer');
+        if (submitBtn) {
+            submitBtn.style.display = 'block';
+            submitBtn.disabled = false;
+        }
     }
 
     showResults() {

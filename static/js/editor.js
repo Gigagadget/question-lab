@@ -1161,21 +1161,6 @@ function addNewAnswer() {
             markDirty();
         });
     }
-    
-    const correctOptions = document.getElementById('correctOptions');
-    const correctCheckboxHtml = `
-        <label class="correct-check">
-            <input type="checkbox" class="correct-checkbox" value="${newLetter}"> ${newLetter}
-        </label>
-    `;
-    correctOptions.insertAdjacentHTML('beforeend', correctCheckboxHtml);
-    
-    const newCb = correctOptions.querySelector(`.correct-checkbox[value="${newLetter}"]`);
-    if (newCb) {
-        newCb.addEventListener('change', () => markDirty());
-    }
-    
-    markDirty();
 }
 
 function removeAnswer(letter) {
