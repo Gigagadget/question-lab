@@ -113,7 +113,7 @@
     align-items: center;
     padding: 10px 14px;
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 10px;
     background: var(--bg-tertiary);
     cursor: pointer;
     transition: all 0.2s;
@@ -243,7 +243,7 @@
 .count-btn {
     padding: 8px 18px;
     border: 1px solid var(--border-color);
-    border-radius: 40px;
+    border-radius: 10px;
     background: var(--bg-tertiary);
     cursor: pointer;
     transition: all 0.2s;
@@ -281,7 +281,7 @@
 .custom-count input {
     padding: 10px 14px;
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 10px;
     width: 120px;
     font-size: 14px;
     line-height: 1.4;
@@ -307,7 +307,7 @@
     padding: 8px 16px;
     font-size: 0.85rem;
     font-weight: 500;
-    border-radius: 8px;
+    border-radius: 10px;
     transition: all 0.2s;
 }
 
@@ -315,7 +315,7 @@
 
 .setup-summary {
     background: var(--bg-tertiary);
-    border-radius: 16px;
+    border-radius: 10px;
     padding: 20px;
     margin: 24px 0;
     display: flex;
@@ -353,7 +353,7 @@
     color: white;
     border: none;
     padding: 14px;
-    border-radius: 14px;
+    border-radius: 10px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -883,7 +883,7 @@
     margin-top: 12px;
     padding: 10px 14px;
     background: var(--bg-tertiary);
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 13px;
     color: var(--text-secondary);
 }
@@ -899,7 +899,7 @@
     margin-bottom: 12px;
     padding: 12px 16px;
     background: var(--bg-tertiary);
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
 .stat-item {
@@ -1022,7 +1022,7 @@
 .log-btn {
     padding: 6px 14px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 12px;
     transition: all 0.2s;
@@ -1064,7 +1064,7 @@ button.danger {
     color: white;
     border: none;
     padding: 12px 24px;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
@@ -1156,10 +1156,10 @@ button.danger:hover {
 
 /* ==================== MOBILE QUIZ ADJUSTMENTS ==================== */
 @media (max-width: 768px) {
-    /* Workspace: full width on mobile */
+    /* Workspace: full width on mobile, no flex to allow proper scrolling */
     .quiz-workspace {
+        display: block;
         padding: 16px 12px;
-        align-items: center;
     }
 
     .quiz-container {
@@ -1373,6 +1373,7 @@ button.danger:hover {
         font-size: 11px;
         white-space: nowrap;
         flex-shrink: 0;
+        margin-top: 1px;
     }
 
     .header-actions .btn-end-quiz {
