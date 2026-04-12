@@ -255,16 +255,6 @@ class QuizManagerFrontend {
             container.insertAdjacentElement('afterend', subdomainsContainer);
         }
 
-        let subdomainsInfo = document.getElementById('selectedSubdomainsInfo');
-        if (!subdomainsInfo) {
-            subdomainsInfo = document.createElement('div');
-            subdomainsInfo.id = 'selectedSubdomainsInfo';
-            subdomainsInfo.className = 'category-info';
-            subdomainsInfo.style.display = 'none';
-            subdomainsInfo.innerHTML = '<span id="selectedSubdomainsCount">0</span> sottodomini selezionati';
-            subdomainsContainer.insertAdjacentElement('afterend', subdomainsInfo);
-        }
-
         this.renderSubdomains();
     }
 
@@ -342,18 +332,22 @@ class QuizManagerFrontend {
         this.selectedSubdomainsByPrimary[primary] = list;
 
         this.renderSubdomains();
+        this.updateSubdomainCount();
         this.updateAvailableQuestions();
     }
 
     updateSubdomainCount() {
-        const el = document.getElementById('selectedSubdomainsCount');
-        if (!el) return;
         let count = 0;
         this.selectedCategories.filter(c => c !== 'all').forEach(primary => {
             const list = this.selectedSubdomainsByPrimary[primary] || [];
             count += list.length;
         });
-        el.textContent = count;
+        const countEl = document.getElementById('selectedSubdomainsCount');
+        const badgeEl = document.querySelector('.info-badge.info-subdomains');
+        if (countEl) countEl.textContent = count;
+        if (badgeEl) {
+            badgeEl.style.display = count > 0 ? 'inline-flex' : 'none';
+        }
     }
 
     toggleCategory(category) {

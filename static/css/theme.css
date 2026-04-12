@@ -1482,10 +1482,6 @@ select:focus {
     color: #f87171;
 }
 
-[data-theme="dark"] .category-info {
-    color: var(--text-muted);
-}
-
 /* Quiz mobile adjustments */
 @media (max-width: 768px) {
     [data-theme="dark"] .log-review-stats {
@@ -1583,6 +1579,10 @@ select:focus {
 
 [data-theme="dark"] .info-categories svg {
     color: #60a5fa;
+}
+
+[data-theme="dark"] .info-subdomains svg {
+    color: #a78bfa;
 }
 
 [data-theme="dark"] .info-count svg {
