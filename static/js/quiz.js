@@ -176,6 +176,12 @@ class QuizManagerFrontend {
             window.location.href = '/';
         });
 
+        document.getElementById('btnEndQuiz').addEventListener('click', () => {
+            if (confirm('Sei sicuro di voler terminare il quiz? Il progresso attuale verrà salvato.')) {
+                this.finishQuiz();
+            }
+        });
+
         document.getElementById('btnBackToResults').addEventListener('click', () => {
             this.showResults();
         });
@@ -296,7 +302,7 @@ class QuizManagerFrontend {
             const selectedSubs = this.selectedSubdomainsByPrimary[primary] || [];
 
             html += `
-                <div style="grid-column: 1 / -1; margin-top: 6px; font-size: 0.85rem; color: #334155;"><strong>${primary}</strong></div>
+                <div class="category-group-label" data-primary="${primary}"><strong>${primary}</strong></div>
             `;
             allSubs.forEach(sub => {
                 const checked = selectedSubs.includes(sub) ? 'selected' : '';
@@ -936,11 +942,18 @@ class QuizManagerFrontend {
             reviewDiv.classList.add(statusClass);
 
             const statusLabel = result?.is_correct ? 'Corretta' : result?.is_partial ? 'Parziale' : result ? 'Sbagliata' : 'Non risposta';
+            const statusSvg = result?.is_correct
+                ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+                : result?.is_partial
+                ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+                : result
+                ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+                : '';
 
             reviewDiv.innerHTML = `
                 <div class="review-header">
                     <span class="review-number">Domanda ${index + 1}</span>
-                    <span class="review-status ${statusClass}">${statusLabel}</span>
+                    <span class="review-status ${statusClass}">${statusSvg} ${statusLabel}</span>
                 </div>
                 <div class="review-question-text">${question.raw_text}</div>
                 <div class="review-answers">
@@ -1083,11 +1096,26 @@ class QuizManagerFrontend {
                     minute: '2-digit'
                 })}</h3>
                 <div class="log-review-stats">
-                    <span class="stat-item stat-score">Punteggio: <strong>${logData.score_percentage}%</strong></span>
-                    <span class="stat-item stat-correct">Corrette: <strong>${logData.correct_answers}</strong></span>
-                    <span class="stat-item stat-partial">Parziali: <strong>${logData.partial_answers}</strong></span>
-                    <span class="stat-item stat-wrong">Sbagliate: <strong>${logData.wrong_answers}</strong></span>
-                    <span class="stat-item stat-time">Tempo: <strong>${this.formatTime(logData.total_time_seconds * 1000)}</strong></span>
+                    <span class="stat-item stat-score">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+                        Punteggio: <strong>${logData.score_percentage}%</strong>
+                    </span>
+                    <span class="stat-item stat-correct">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Corrette: <strong>${logData.correct_answers}</strong>
+                    </span>
+                    <span class="stat-item stat-partial">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Parziali: <strong>${logData.partial_answers}</strong>
+                    </span>
+                    <span class="stat-item stat-wrong">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        Sbagliate: <strong>${logData.wrong_answers}</strong>
+                    </span>
+                    <span class="stat-item stat-time">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Tempo: <strong>${this.formatTime(logData.total_time_seconds * 1000)}</strong>
+                    </span>
                 </div>
             </div>
         `;
@@ -1206,18 +1234,22 @@ class QuizManagerFrontend {
     showQuiz() {
         this.hideAllScreens();
         document.getElementById('quizGame').style.display = 'block';
-        // Hide log button during quiz
+        // Hide log button during quiz, show end quiz button
         const btnLogs = document.getElementById('btnLogs');
         if (btnLogs) btnLogs.style.display = 'none';
+        const btnEndQuiz = document.getElementById('btnEndQuiz');
+        if (btnEndQuiz) btnEndQuiz.style.display = 'flex';
     }
 
     showResults() {
         this.hideAllScreens();
         document.getElementById('quizResults').style.display = 'block';
         this.stopTimer();
-        // Show log button after quiz
+        // Show log button after quiz, hide end quiz button
         const btnLogs = document.getElementById('btnLogs');
         if (btnLogs) btnLogs.style.display = '';
+        const btnEndQuiz = document.getElementById('btnEndQuiz');
+        if (btnEndQuiz) btnEndQuiz.style.display = 'none';
     }
 
     showReviewScreen() {
