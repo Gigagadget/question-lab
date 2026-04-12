@@ -806,10 +806,16 @@ class QuizManagerFrontend {
         const unansweredQuestions = totalQuestions - answeredQuestions;
         
         const scorePercentage = answeredQuestions > 0 ? Math.round((correctAnswers / answeredQuestions) * 100) : 0;
-        
+
+        // Expand "all" to actual categories for the log
+        let actualCategories = [...this.selectedCategories];
+        if (actualCategories.includes('all')) {
+            actualCategories = Object.keys(this.categoriesData || {});
+        }
+
         // Prepare quiz log data
         return {
-            categories_selected: this.selectedCategories,
+            categories_selected: actualCategories,
             subdomains_by_primary_selected: this.selectedSubdomainsByPrimary,
             total_questions_requested: this.selectedCount,
             total_questions_available: this.availableCount,
