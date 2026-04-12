@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>QuestionLab - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            line-height: 1.5;
+        }
+
+        /* Layout principale */
+        .app {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar minimal (stessa dell'editor) */
+        .sidebar {
+            width: 72px;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 0;
+            gap: 32px;
+            flex-shrink: 0;
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 0;
+            border-radius: 12px;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            width: 100%;
+            text-decoration: none;
+            background: transparent;
+            border: none;
+        }
+
+        .nav-item:hover {
+            color: #3b82f6;
+            background: #f1f5f9;
+        }
+
+        .nav-item.active {
+            color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top bar */
+        .top-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-icon-modern {
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #475569;
+        }
+
+        .btn-icon-modern:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        /* Workspace - scrollabile */
+        .workspace {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        /* Hero / Welcome section */
+        .welcome-section {
+            margin-bottom: 40px;
+        }
+
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        /* Cards grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 28px;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.1);
+            border-color: #3b82f6;
+        }
+
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-new {
+            background: #3b82f6;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .card-description {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 13px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 16px;
+            margin-top: 8px;
+        }
+
+        .card-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Database info bar */
+        .database-bar {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 16px 24px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .db-info {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .db-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .db-item strong {
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .db-badge {
+            background: #eff6ff;
+            color: #3b82f6;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .version {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Quick stats */
+        .quick-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat-pill {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #0f1113;
+            }
+            .sidebar {
+                background: #1a1a1d;
+                border-right-color: #2d2d31;
+            }
+            .top-bar {
+                background: #1a1a1d;
+                border-bottom-color: #2d2d31;
+            }
+            .page-title {
+                color: #e8edf2;
+            }
+            .welcome-title {
+                color: #e8edf2;
+            }
+            .welcome-subtitle {
+                color: #8a94a6;
+            }
+            .feature-card {
+                background: #1a1a1d;
+                border-color: #2d2d31;
+            }
+            .feature-card:hover {
+                border-color: #3b82f6;
+            }
+            .card-title {
+                color: #e8edf2;
+            }
+            .card-description {
+                color: #8a94a6;
+            }
+            .card-meta {
+                border-top-color: #2d2d31;
+                color: #6b7280;
+            }
+            .database-bar {
+                background: #1a1a1d;
+                border-color: #2d2d31;
+            }
+            .db-item {
+                color: #8a94a6;
+            }
+            .db-item strong {
+                color: #e8edf2;
+            }
+            .stat-pill {
+                background: #242427;
+                color: #8a94a6;
+            }
+            .btn-icon-modern {
+                border-color: #2d2d31;
+                color: #8a94a6;
+            }
+            .btn-icon-modern:hover {
+                background: #242427;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .workspace {
+                padding: 20px;
+            }
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .welcome-title {
+                font-size: 24px;
+            }
+            .database-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .db-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar identica all'editor -->
+        <div class="sidebar">
+            <div class="nav-items">
+                <a href="/" class="nav-item active">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="/editor" class="nav-item">
+                    <span class="nav-icon">✏️</span>
+                    <span>Editor</span>
+                </a>
+                <a href="/quiz" class="nav-item">
+                    <span class="nav-icon">🎯</span>
+                    <span>Quiz</span>
+                </a>
+                <a href="/view" class="nav-item">
+                    <span class="nav-icon">👁️</span>
+                    <span>View</span>
+                </a>
+                <a href="/databases" class="nav-item">
+                    <span class="nav-icon">🗃️</span>
+                    <span>Database</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <span class="nav-icon">❓</span>
+                <span>Aiuto</span>
+            </div>
+            <div class="nav-item" onclick="toggleTheme()">
+                <span class="nav-icon">🌙</span>
+                <span>Tema</span>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <h1 class="page-title">QuestionLab</h1>
+                <div class="header-actions">
+                    <button class="btn-icon-modern" onclick="alert('Impostazioni')">
+                        ⚙️ Impostazioni
+                    </button>
+                </div>
+            </div>
+
+            <div class="workspace">
+                <!-- Welcome section -->
+                <div class="welcome-section">
+                    <h1 class="welcome-title">Benvenuto su QuestionLab</h1>
+                    <p class="welcome-subtitle">Gestisci, studia e mettiti alla prova con le tue domande</p>
+                </div>
+
+                <!-- Feature cards grid -->
+                <div class="cards-grid">
+                    <!-- Editor Card -->
+                    <a href="/editor" class="feature-card">
+                        <div class="card-icon">✏️</div>
+                        <div class="card-title">
+                            Editor Domande
+                            <span class="badge-new">Principale</span>
+                        </div>
+                        <div class="card-description">
+                            Modifica, aggiungi e gestisci le domande del database. 
+                            Visualizza statistiche, gestisci backup e mantieni ordinato il tuo archivio.
+                        </div>
+                        <div class="card-meta">
+                            <span>📊 873 domande</span>
+                            <span>🏷️ 6 categorie</span>
+                        </div>
+                    </a>
+
+                    <!-- Quiz Card -->
+                    <a href="/quiz" class="feature-card">
+                        <div class="card-icon">🎯</div>
+                        <div class="card-title">
+                            Modalità Quiz
+                        </div>
+                        <div class="card-description">
+                            Metti alla prova le tue conoscenze. Rispondi alle domande, 
+                            verifica le tue risposte e monitora i tuoi progressi nel tempo.
+                        </div>
+                        <div class="card-meta">
+                            <span>📋 12 tentativi</span>
+                            <span>⏱️ Media: 67%</span>
+                        </div>
+                    </a>
+
+                    <!-- View Card -->
+                    <a href="/view" class="feature-card">
+                        <div class="card-icon">👁️</div>
+                        <div class="card-title">
+                            Modalità Visualizzazione
+                        </div>
+                        <div class="card-description">
+                            Visualizza e naviga tra le domande in una modalità ottimizzata 
+                            per la lettura e lo studio passivo.
+                        </div>
+                        <div class="card-meta">
+                            <span>📖 Lettura fluida</span>
+                            <span>🔍 Ricerca rapida</span>
+                        </div>
+                    </a>
+
+                    <!-- Database Card -->
+                    <a href="/databases" class="feature-card">
+                        <div class="card-icon">🗃️</div>
+                        <div class="card-title">
+                            Gestione Database
+                        </div>
+                        <div class="card-description">
+                            Seleziona, crea, importa ed esporta i tuoi database di domande. 
+                            Gestisci backup e mantieni i tuoi dati al sicuro.
+                        </div>
+                        <div class="card-meta">
+                            <span>💾 3 database</span>
+                            <span>🔄 Backup automatici</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Database info bar -->
+                <div class="database-bar">
+                    <div class="db-info">
+                        <div class="db-item">
+                            <span>🗄️</span>
+                            <span>Database attivo:</span>
+                            <strong>anatomia_patologica</strong>
+                            <span class="db-badge">📊 873 domande totali</span>
+                        </div>
+                        <div class="db-item">
+                            <span>📅</span>
+                            <span>Ultimo backup:</span>
+                            <strong>12/04/2026</strong>
+                        </div>
+                    </div>
+                    <div class="quick-stats">
+                        <span class="stat-pill">✅ 542 con risposta</span>
+                        <span class="stat-pill">⚠️ 331 senza risposta</span>
+                        <span class="stat-pill">🔄 220 duplicati</span>
+                    </div>
+                    <div class="version">
+                        versione 1.8.0-dev
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            // Toggle tema scuro/chiaro
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                html.removeAttribute('data-theme');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+            }
+        }
+    </script>
+</body>
+</html>

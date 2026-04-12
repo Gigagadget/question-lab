@@ -2,252 +2,222 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=1">
     <link rel="apple-touch-icon" href="/static/favicon.svg?v=1">
     <title>QuestionLab - Home</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
     <link rel="stylesheet" href="/static/css/theme.css">
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        
-        .header-small {
-            background: linear-gradient(135deg, var(--header-gradient-start, #1e3c72) 0%, var(--header-gradient-end, #2a5298) 100%);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-        }
-        
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .header-small h1 {
-            margin: 0;
-            font-size: 1.4rem;
-        }
-        
-        .active-db-badge {
-            background: rgba(255,255,255,0.2);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        
-        .server-info {
-            background: linear-gradient(135deg, var(--server-info-bg-start, #2c7da0) 0%, var(--server-info-bg-end, #1e3c72) 100%);
-            color: white;
-            padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        
-        .server-info p {
-            margin: 0;
-        }
-        
-        .server-info p:first-child {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .server-info p:nth-child(2) {
-            margin: 0.3rem 0 0;
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-        
-        .server-info p:last-child {
-            margin: 0.5rem 0 0;
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
-        
-        .home-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex: 1;
-            padding: 20px 0;
-        }
-        
-        .cards-container {
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .card {
-            background: var(--bg-secondary);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px var(--shadow-color);
-            padding: 30px;
-            width: 280px;
-            text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px var(--shadow-hover);
-        }
-        
-        .card-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-        
-        .card h2 {
-            margin: 0 0 10px 0;
-            color: var(--accent-primary);
-            font-size: 1.5rem;
-        }
-
-        .card p {
-            color: var(--text-muted);
-            margin: 0;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .card.editor {
-            border-top: 4px solid var(--card-editor-border, #2c7da0);
-        }
-
-        .card.quiz {
-            border-top: 4px solid var(--card-quiz-border, #e67e22);
-        }
-
-        .card.view {
-            border-top: 4px solid var(--card-view-border, #2c6e2f);
-        }
-
-        .card.databases {
-            border-top: 4px solid var(--card-databases-border, #8b5cf6);
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: auto;
-            color: var(--footer-text, #94a3b8);
-            font-size: 0.8rem;
-            padding-top: 1rem;
-            flex-shrink: 0;
-        }
-    </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="header-small">
-            <div class="header-left">
-                <h1><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Lista domande</h1>
-                <span class="active-db-badge" id="activeDbBadge">--</span>
-            </div>
-            <button class="theme-toggle" onclick="toggleTheme()">
-                <svg class="theme-icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                <svg class="theme-icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-            </button>
-        </div>
-
-        <div class="server-info">
-            <p><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Accesso da mobile/tablet:</p>
-            <p>http://{{ server_ip }}:5015</p>
-            <p>(stessa rete Wi-Fi del PC)</p>
-        </div>
-
-        <div class="home-container">
-            <div class="cards-container">
-                <a href="/editor" class="card editor" id="cardEditor">
-                    <div class="card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-                    <h2>Editor</h2>
-                    <p>Modifica, aggiungi e gestisci le domande del database. Visualizza statistiche e gestisci backup.</p>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-items">
+                <a href="/" class="nav-item active">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>Home</span>
                 </a>
-
-                <a href="/quiz" class="card quiz" id="cardQuiz">
-                    <div class="card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
-                    <h2>Modalità Quiz</h2>
-                    <p>Metti alla prova le tue conoscenze. Rispondi alle domande e verifica le tue risposte.</p>
+                <a href="/editor" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Editor</span>
                 </a>
-
-                <a href="/view" class="card view" id="cardView">
-                    <div class="card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
-                    <h2>Modalità Visualizzazione</h2>
-                    <p>Visualizza e naviga tra le domande in una modalità ottimizzata per la lettura.</p>
+                <a href="/quiz" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    <span>Quiz</span>
                 </a>
-
-                <a href="/databases" class="card databases">
-                    <div class="card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
-                    <h2>Gestione Database</h2>
-                    <p>Seleziona, crea e gestisci i tuoi database di domande.</p>
+                <a href="/view" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>View</span>
+                </a>
+                <a href="/databases" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    <span>Database</span>
                 </a>
             </div>
-        </div>
+            <div class="nav-item" id="btnHelpSidebar">
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Aiuto</span>
+            </div>
+            <div class="nav-item" id="themeToggleNav" onclick="toggleTheme()">
+                <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <span>Tema</span>
+            </div>
+        </aside>
 
-        <div class="footer">
-            <p>Database: <strong id="activeDbName">--</strong> | Domande totali: <span id="totalQuestions">--</span> | versione: <strong>{{ app_version }}</strong></p>
-        </div>
+        <!-- Main content -->
+        <main class="main-content">
+            <!-- Top bar -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="page-title">QuestionLab</h1>
+                    <span id="activeDbBadge" class="title-db-name">--</span>
+                </div>
+                <div class="header-actions">
+                    <span class="nav-counter">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        http://{{ server_ip }}:5015
+                    </span>
+                </div>
+            </header>
+
+            <!-- Workspace -->
+            <div class="workspace home-workspace">
+                <!-- Welcome section -->
+                <section class="welcome-section">
+                    <h1 class="welcome-title">Benvenuto su QuestionLab</h1>
+                    <p class="welcome-subtitle">Gestisci, studia e mettiti alla prova con le tue domande</p>
+                </section>
+
+                <!-- Feature cards grid -->
+                <div class="cards-grid">
+                    <!-- Editor Card -->
+                    <a href="/editor" class="feature-card card-editor" id="cardEditor">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </div>
+                        <div class="card-title">
+                            Editor Domande
+                        </div>
+                        <p class="card-description">
+                            Modifica, aggiungi e gestisci le domande del database.
+                            Visualizza statistiche, gestisci backup e mantieni ordinato il tuo archivio.
+                        </p>
+                        <div class="card-meta">
+                            <span id="editorMetaQuestions">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                -- domande
+                            </span>
+                            <span id="editorMetaCategories">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                                -- categorie
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- Quiz Card -->
+                    <a href="/quiz" class="feature-card card-quiz" id="cardQuiz">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                        </div>
+                        <div class="card-title">Modalità Quiz</div>
+                        <p class="card-description">
+                            Metti alla prova le tue conoscenze. Rispondi alle domande,
+                            verifica le tue risposte e monitora i tuoi progressi nel tempo.
+                        </p>
+                        <div class="card-meta">
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                Statistiche
+                            </span>
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                Progressi
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- View Card -->
+                    <a href="/view" class="feature-card card-view" id="cardView">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
+                        <div class="card-title">Modalità Visualizzazione</div>
+                        <p class="card-description">
+                            Visualizza e naviga tra le domande in una modalità ottimizzata
+                            per la lettura e lo studio passivo.
+                        </p>
+                        <div class="card-meta">
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                Lettura fluida
+                            </span>
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                Ricerca rapida
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- Database Card (always active, no ID for disable) -->
+                    <a href="/databases" class="feature-card card-database">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                        </div>
+                        <div class="card-title">Gestione Database</div>
+                        <p class="card-description">
+                            Seleziona, crea, importa ed esporta i tuoi database di domande.
+                            Gestisci backup e mantieni i tuoi dati al sicuro.
+                        </p>
+                        <div class="card-meta">
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                Import/Esporta
+                            </span>
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                Backup
+                            </span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Database info bar - structured like mockup -->
+                <div class="database-bar">
+                    <div class="db-info">
+                        <div class="db-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                            <span>Database attivo:</span>
+                            <strong id="activeDbName">--</strong>
+                            <span class="db-badge" id="dbTotalBadge">-- domande totali</span>
+                        </div>
+                        <div class="db-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <span>Domande totali:</span>
+                            <strong id="totalQuestions">--</strong>
+                        </div>
+                        <div class="db-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <span>Ultimo backup:</span>
+                            <strong id="lastBackup">--</strong>
+                        </div>
+                    </div>
+                    <div class="quick-stats" id="quickStats">
+                        <span class="stat-pill" id="statAnswered">-- con risposta</span>
+                        <span class="stat-pill" id="statUnanswered">-- senza risposta</span>
+                        <span class="stat-pill" id="statDuplicates">-- duplicati</span>
+                    </div>
+                    <div class="version">versione {{ app_version }}</div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <style>
-        .card.disabled {
-            opacity: 0.5;
-            pointer-events: none;
-            cursor: not-allowed;
-            filter: grayscale(50%);
-        }
-        .card.disabled::after {
-            content: '🔒 Nessun database selezionato';
-            display: block;
-            margin-top: 10px;
-            font-size: 0.8rem;
-            color: #e74c3c;
-            font-weight: bold;
-        }
-    </style>
-
     <script>
-        // Fetch total questions count for footer
+        // Fetch total questions count for editor card meta + db badge + totalQuestions
         fetch('/api/questions')
             .then(res => res.json())
             .then(data => {
                 if (data.questions !== undefined) {
-                    document.getElementById('totalQuestions').textContent = data.questions.length;
-                } else {
-                    document.getElementById('totalQuestions').textContent = '--';
+                    const count = data.questions.length;
+                    document.getElementById('totalQuestions').textContent = count;
+                    document.getElementById('editorMetaQuestions').innerHTML =
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ' + count + ' domande';
+                    document.getElementById('dbTotalBadge').textContent = count + ' domande totali';
+
+                    // Count categories
+                    const cats = new Set();
+                    data.questions.forEach(function(q) {
+                        if (q.primary_domain) cats.add(q.primary_domain);
+                    });
+                    document.getElementById('editorMetaCategories').innerHTML =
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> ' + cats.size + ' categorie';
                 }
             })
             .catch(err => {
-                console.error('Error loading stats:', err);
-                document.getElementById('totalQuestions').textContent = '--';
+                console.error('Error loading questions:', err);
             });
 
         // Fetch active database name for footer and badge
@@ -266,10 +236,29 @@
             })
             .catch(err => {
                 console.error('Error loading active database:', err);
-                // Disable cards on error
                 document.getElementById('cardEditor').classList.add('disabled');
                 document.getElementById('cardQuiz').classList.add('disabled');
                 document.getElementById('cardView').classList.add('disabled');
+            });
+
+        // Fetch stats for quick-stats pills
+        fetch('/api/stats')
+            .then(res => res.json())
+            .then(data => {
+                const totalQuestions = data.total_questions || 0;
+                const noAnswers = data.questions_with_no_answers || 0;
+                const noCorrect = data.questions_with_no_correct || 0;
+                const duplicates = data.total_duplicates || 0;
+
+                const answered = totalQuestions - noAnswers - noCorrect;
+                const unanswered = noAnswers + noCorrect;
+
+                document.getElementById('statAnswered').textContent = answered + ' con risposta';
+                document.getElementById('statUnanswered').textContent = unanswered + ' senza risposta';
+                document.getElementById('statDuplicates').textContent = duplicates + ' duplicati';
+            })
+            .catch(err => {
+                console.error('Error loading stats:', err);
             });
     </script>
     <script src="/static/js/theme.js"></script>
