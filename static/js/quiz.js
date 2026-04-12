@@ -1050,7 +1050,7 @@ class QuizManagerFrontend {
         // Add interrupted message if quiz was interrupted
         if (interrupted) {
             const resultsCard = document.querySelector('.results-card h2');
-            resultsCard.textContent = '⚠️ Quiz Interrotto!';
+            resultsCard.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Quiz Interrotto!';
         }
         
         this.quizInProgress = false;
@@ -1318,7 +1318,11 @@ class QuizManagerFrontend {
                 <div class="review-header">
                     <span class="review-number">Domanda ${index + 1}</span>
                     <span class="review-status ${statusClass}">
-                        ${question.is_correct ? '✅ Corretta' : question.is_partial ? '⚠️ Parziale' : '❌ Sbagliata'} (${questionScore}%)
+                        ${question.is_correct
+                            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Corretta'
+                            : question.is_partial
+                            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg> Parziale'
+                            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Sbagliata'} (${questionScore}%)
                     </span>
                 </div>
                 <div class="review-question-text">${question.text}</div>
@@ -1330,13 +1334,13 @@ class QuizManagerFrontend {
                         if (isCorrect) className += ' correct';
                         if (isUserSelected && !isCorrect) className += ' wrong';
                         if (isUserSelected) className += ' selected';
-                        
+
                         return `
                             <div class="${className}">
                                 <span class="review-answer-letter">${letter}.</span>
                                 <span class="review-answer-text">${text}</span>
-                                ${isCorrect ? '<span class="correct-marker">✓</span>' : ''}
-                                ${isUserSelected ? '<span class="user-marker">👤</span>' : ''}
+                                ${isCorrect ? '<span class="correct-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
+                                ${isUserSelected ? '<span class="user-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span>' : ''}
                             </div>
                         `;
                     }).join('')}

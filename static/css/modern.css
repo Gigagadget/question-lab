@@ -307,6 +307,30 @@
     line-height: 1;
 }
 
+/* SVG icons in sidebar */
+.nav-item .nav-icon svg {
+    display: block;
+    color: inherit;
+}
+
+/* Logo SVG in sidebar */
+.sidebar .logo svg {
+    color: var(--accent-blue);
+}
+
+/* Stat icons in help modal - SVG sizing */
+.stat-icon svg {
+    width: 20px;
+    height: 20px;
+    color: var(--accent-blue);
+}
+
+/* Card icons on home page - SVG sizing */
+.card-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
 /* Main content */
 .main-content {
     flex: 1;
@@ -495,6 +519,12 @@
     /* Ensure nav icons are visible */
     .sidebar .nav-icon {
         font-size: 18px;
+    }
+
+    /* SVG nav icons in mobile sidebar */
+    .sidebar .nav-item .nav-icon svg {
+        width: 18px;
+        height: 18px;
     }
 
     /* Theme toggle icons */

@@ -169,42 +169,43 @@
     <div class="app-container">
         <div class="header-small">
             <div class="header-left">
-                <h1>📋 Lista domande</h1>
+                <h1><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Lista domande</h1>
                 <span class="active-db-badge" id="activeDbBadge">--</span>
             </div>
             <button class="theme-toggle" onclick="toggleTheme()">
-                <span class="theme-toggle-icon" id="themeIcon">🌙</span>
+                <svg class="theme-icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg class="theme-icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             </button>
         </div>
 
         <div class="server-info">
-            <p>🌐 Accesso da mobile/tablet:</p>
+            <p><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Accesso da mobile/tablet:</p>
             <p>http://{{ server_ip }}:5015</p>
             <p>(stessa rete Wi-Fi del PC)</p>
         </div>
-        
+
         <div class="home-container">
             <div class="cards-container">
                 <a href="/editor" class="card editor" id="cardEditor">
-                    <div class="card-icon">✏️</div>
+                    <div class="card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
                     <h2>Editor</h2>
                     <p>Modifica, aggiungi e gestisci le domande del database. Visualizza statistiche e gestisci backup.</p>
                 </a>
 
                 <a href="/quiz" class="card quiz" id="cardQuiz">
-                    <div class="card-icon">🎯</div>
+                    <div class="card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
                     <h2>Modalità Quiz</h2>
                     <p>Metti alla prova le tue conoscenze. Rispondi alle domande e verifica le tue risposte.</p>
                 </a>
 
                 <a href="/view" class="card view" id="cardView">
-                    <div class="card-icon">👁️</div>
+                    <div class="card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
                     <h2>Modalità Visualizzazione</h2>
                     <p>Visualizza e naviga tra le domande in una modalità ottimizzata per la lettura.</p>
                 </a>
 
                 <a href="/databases" class="card databases">
-                    <div class="card-icon">🗃️</div>
+                    <div class="card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
                     <h2>Gestione Database</h2>
                     <p>Seleziona, crea e gestisci i tuoi database di domande.</p>
                 </a>

@@ -1521,6 +1521,17 @@ select:focus {
     color: #f87171;
 }
 
+/* Stat icons in help modal - dark mode */
+[data-theme="dark"] .stat-icon svg {
+    color: #60a5fa;
+}
+
+/* Block message icons in no-db-blocker */
+.block-message .icon svg {
+    color: var(--accent-blue);
+    opacity: 0.6;
+}
+
 /* Quiz mobile adjustments */
 @media (max-width: 768px) {
     [data-theme="dark"] .log-review-stats {

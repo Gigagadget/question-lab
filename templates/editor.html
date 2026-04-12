@@ -17,10 +17,10 @@
     <!-- Overlay di blocco quando nessun database è selezionato -->
     <div id="noDbBlocker" class="no-db-blocker" style="display: none;">
         <div class="block-message">
-            <div class="icon">🗃️</div>
+            <div class="icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
             <h2>Nessun Database Selezionato</h2>
             <p>Per utilizzare l'editor, devi prima selezionare o creare un database.</p>
-            <a href="/databases" class="btn-go-to-databases">📂 Vai alla Gestione Database</a>
+            <a href="/databases" class="btn-go-to-databases"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Vai alla Gestione Database</a>
         </div>
     </div>
 
@@ -29,32 +29,32 @@
         <div class="sidebar">
             <div class="nav-items">
                 <a href="/" class="nav-item">
-                    <span class="nav-icon">🏠</span>
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     <span>Home</span>
                 </a>
                 <a href="/editor" class="nav-item active">
-                    <span class="nav-icon">✏️</span>
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     <span>Editor</span>
                 </a>
                 <a href="/quiz" class="nav-item">
-                    <span class="nav-icon">🎯</span>
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
                     <span>Quiz</span>
                 </a>
                 <a href="/view" class="nav-item">
-                    <span class="nav-icon">👁️</span>
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     <span>View</span>
                 </a>
                 <a href="/databases" class="nav-item">
-                    <span class="nav-icon">🗃️</span>
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
                     <span>Database</span>
                 </a>
             </div>
             <div class="nav-item" id="btnBackupSidebar">
-                <span class="nav-icon">💿</span>
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Backup</span>
             </div>
             <div class="nav-item" id="btnHelpSidebar">
-                <span class="nav-icon">❓</span>
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 <span>Aiuto</span>
             </div>
             <div class="nav-item" id="themeToggleNav" onclick="toggleTheme()">
@@ -86,7 +86,7 @@
             <!-- Normalization Alert -->
             <div id="normalizationAlert" class="normalization-alert" style="display: none;">
                 <div class="normalization-alert-main">
-                    <span class="normalization-alert-icon">⚠️</span>
+                    <span class="normalization-alert-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
                     <div class="normalization-alert-text" id="normalizationAlertText"></div>
                     <div class="normalization-alert-actions">
                         <button id="normalizationAlertDetailsBtn" class="small-btn" type="button">Dettagli</button>
@@ -197,7 +197,7 @@
     <div id="statsModal" class="modal">
         <div class="modal-content modal-stats-layout">
             <span class="close-modal">&times;</span>
-            <h3>📊 Statistiche</h3>
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Statistiche</h3>
             <div id="statsContent" class="modal-scroll-content"></div>
         </div>
     </div>
@@ -206,7 +206,7 @@
     <div id="backupModal" class="modal">
         <div class="modal-content modal-content-wide modal-backup-layout">
             <span class="close-modal">&times;</span>
-            <h3 style="padding: 0 0 16px; border-bottom: 1px solid var(--border-light, #e2e8f0);">💾 Backup</h3>
+            <h3 style="padding: 0 0 16px; border-bottom: 1px solid var(--border-light, #e2e8f0);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Backup</h3>
             <div id="backupContent" class="modal-scroll-content"></div>
             <div id="backupActions" class="modal-footer-actions">
                 <button id="btnSelectAllBackups" style="padding: 8px 14px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 10px; background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.2s; white-space: nowrap;">Seleziona tutti</button>
@@ -220,13 +220,13 @@
     <div id="categoriesModal" class="modal">
         <div class="modal-content modal-content-wide modal-backup-layout">
             <span class="close-modal">&times;</span>
-            <h3>🏷️ Gestione Categorie</h3>
-            
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Gestione Categorie</h3>
+
             <!-- Tabs navigation -->
             <div class="cm-tabs" style="padding: 0 24px;">
-                <button class="cm-tab-btn active" data-tab="manage">📝 Gestisci</button>
-                <button class="cm-tab-btn" data-tab="merge">🔀 Unisci</button>
-                <button class="cm-tab-btn" data-tab="health">🏥 Integrità</button>
+                <button class="cm-tab-btn active" data-tab="manage"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Gestisci</button>
+                <button class="cm-tab-btn" data-tab="merge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg> Unisci</button>
+                <button class="cm-tab-btn" data-tab="health"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg> Integrità</button>
             </div>
 
             <!-- Tab contents -->
@@ -242,32 +242,32 @@
     <div id="helpModal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h3>ℹ️ Guida all'Editor</h3>
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Guida all'Editor</h3>
             <div class="modal-body help-content">
                 <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 20px;">
                     <div class="stat-card" style="padding: 12px;">
-                        <div class="stat-icon">✏️</div>
+                        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
                         <div class="stat-value" style="font-size: 14px;">Editor</div>
                         <div class="stat-label" style="font-size: 11px;">Crea e modifica domande</div>
                     </div>
                     <div class="stat-card" style="padding: 12px;">
-                        <div class="stat-icon">💾</div>
+                        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></div>
                         <div class="stat-value" style="font-size: 14px;">Auto-save</div>
                         <div class="stat-label" style="font-size: 11px;">Salvataggio automatico</div>
                     </div>
                     <div class="stat-card" style="padding: 12px;">
-                        <div class="stat-icon">🔍</div>
+                        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
                         <div class="stat-value" style="font-size: 14px;">Filtri</div>
                         <div class="stat-label" style="font-size: 11px;">Ricerca avanzata</div>
                     </div>
                     <div class="stat-card" style="padding: 12px;">
-                        <div class="stat-icon">🏷️</div>
+                        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
                         <div class="stat-value" style="font-size: 14px;">Categorie</div>
                         <div class="stat-label" style="font-size: 11px;">Gestione domini</div>
                     </div>
                 </div>
 
-                <h4>🚀 Base</h4>
+                <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Base</h4>
                 <ul>
                     <li><strong>Nuova domanda</strong>: Clicca <code>+ Nuova domanda</code> in alto a destra</li>
                     <li><strong>Modifica</strong>: Seleziona una domanda dalla lista centrale</li>
@@ -275,7 +275,7 @@
                     <li><strong>Stato</strong>: <span style="color:#27ae60">● Auto</span> = salvato, <span style="color:#e67e22">● Modifiche</span> = in corso</li>
                 </ul>
 
-                <h4>📐 Layout e Pannelli</h4>
+                <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Layout e Pannelli</h4>
                 <ul>
                     <li><strong>Collassa pannelli</strong>: Usa il bottone <code>◀</code> in alto a destra di ogni pannello</li>
                     <li><strong>Filtri (sinistra)</strong>: Ricerca, filtri per stato, domini e duplicati</li>
@@ -283,7 +283,7 @@
                     <li><strong>Dettaglio (destra)</strong>: Modifica completa della domanda selezionata</li>
                 </ul>
 
-                <h4>🔍 Filtri e Ricerca</h4>
+                <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Filtri e Ricerca</h4>
                 <ul>
                     <li><strong>Barra di ricerca</strong>: Cerca per ID o testo della domanda</li>
                     <li><strong>Stato risposte</strong>: Filtra per senza risposta, con risposte o senza corretta</li>
@@ -293,7 +293,7 @@
                     <li><strong>Azzera filtri</strong>: Ripristina tutti i filtri allo stato iniziale</li>
                 </ul>
 
-                <h4>🏷️ Gestione Categorie</h4>
+                <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Gestione Categorie</h4>
                 <ul>
                     <li><strong>Modal Categorie</strong>: Aperto dal bottone <code>🏷️ Categorie</code> in alto</li>
                     <li><strong>Tab Gestisci</strong>: Visualizza, aggiungi, rinomina o elimina domini</li>
@@ -302,7 +302,7 @@
                     <li><strong>Normalizzazione</strong>: Il sistema, sistema automaticamente categorie non valide</li>
                 </ul>
 
-                <h4>⚡ Funzionalità Avanzate</h4>
+                <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Funzionalità Avanzate</h4>
                 <ul>
                     <li><strong>🚩 Flag</strong>: Contrassegna domande da rivedere (pulsante bandiera nel dettaglio)</li>
                     <li><strong>📑 Duplica</strong>: Crea una copia esatta della domanda con nuovo ID</li>
@@ -311,13 +311,13 @@
                     <li><strong>Navigazione</strong>: Usa <code>Prec</code>/<code>Succ</code> o frecce tastiera per navigare</li>
                 </ul>
 
-                <h4>📊 Statistiche e Backup</h4>
+                <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Statistiche e Backup</h4>
                 <ul>
                     <li><strong>Statistiche</strong>: Totale domande, distribuzione per categoria, stato risposte</li>
                     <li><strong>Backup</strong>: Ogni salvataggio crea un backup automatico, ripristinabile</li>
                 </ul>
 
-                <h4>⌨️ Scorciatoie</h4>
+                <h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> Scorciatoie</h4>
                 <ul>
                     <li><strong>← Freccia sinistra</strong>: Domanda precedente (solo quando non sei in un campo)</li>
                     <li><strong>→ Freccia destra</strong>: Domanda successiva (solo quando non sei in un campo)</li>
