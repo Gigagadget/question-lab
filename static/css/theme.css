@@ -733,12 +733,6 @@ select:focus {
     background: var(--accent-primary);
 }
 
-/* View counter */
-.view-counter {
-    background: var(--status-info-bg);
-    color: var(--status-info-text);
-}
-
 /* Export buttons */
 .export-btn {
     background: #8b5cf6;

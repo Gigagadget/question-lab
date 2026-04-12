@@ -72,10 +72,9 @@
                     <button id="btnExportDoc" class="btn-icon-modern"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> DOC</button>
                     <button id="btnExportPdf" class="btn-icon-modern"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF</button>
                     <select id="sortSelect" class="filter-select-modern" style="width: auto;">
-                        <option value="id"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> Numero</option>
-                        <option value="category"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Categoria</option>
+                        <option value="id"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> Ordina per numero</option>
+                        <option value="category"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Ordina per categoria</option>
                     </select>
-                    <span class="view-counter" id="viewCounter">0 / 0</span>
                 </div>
             </header>
 
@@ -83,9 +82,9 @@
             <div class="workspace">
                 <!-- Mobile panel tabs -->
                 <div class="mobile-panel-tabs" style="display: none;">
-                    <button class="mobile-panel-tab active" data-panel="filters">Filtri</button>
+                    <button class="mobile-panel-tab" data-panel="filters">Filtri</button>
                     <button class="mobile-panel-tab" data-panel="questions">Domande</button>
-                    <button class="mobile-panel-tab" data-panel="detail">Visualizza</button>
+                    <button class="mobile-panel-tab active" data-panel="detail">Visualizza</button>
                 </div>
 
                 <!-- Panel 1: Filtri -->
@@ -133,24 +132,30 @@
                 </div>
 
                 <!-- Panel 3: Dettaglio domanda -->
-                <div class="detail-panel" id="detailPanel">
-                    <div class="panel-collapse-toggle" id="toggleDetail" title="Nascondi dettaglio">
-                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4L8 8L12 12"/></svg>
+                <div class="detail-panel mobile-active" id="detailPanel">
+                    <!-- Detail nav bar (stays above content, not replaced by JS) -->
+                    <div class="view-detail-nav" id="viewDetailNav">
+                        <button id="detailPrevBtn" class="btn-outline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg></button>
+                        <span class="view-counter" id="viewCounter">0 / 0</span>
+                        <button id="detailNextBtn" class="btn-outline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg></button>
                     </div>
-                    <div class="view-placeholder">
-                        <div class="placeholder-icon">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <!-- Content container (this is what JS replaces) -->
+                    <div id="detailContent">
+                        <div class="view-placeholder">
+                            <div class="placeholder-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </div>
+                            <h3>Seleziona una domanda</h3>
+                            <p>Scegli una domanda dalla lista per visualizzarla</p>
                         </div>
-                        <h3>Seleziona una domanda</h3>
-                        <p>Scegli una domanda dalla lista per visualizzarla</p>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Desktop Navigation Arrows (fixed bottom-right) -->
-    <div class="view-nav-arrows" id="viewNavArrows" style="position: fixed; bottom: 20px; right: 32px; display: flex; gap: 8px; z-index: 50;">
+    <!-- Desktop Navigation Arrows (hidden - nav is now in detail panel) -->
+    <div class="view-nav-arrows" id="viewNavArrows" style="display: none;">
         <button id="navPrevBtn" class="btn-outline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg> Precedente</button>
         <button id="navNextBtn" class="btn-outline">Successiva <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
@@ -165,7 +170,7 @@
     <!-- Help Modal -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close-modal">&times;</span>
             <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Guida alla Modalità Visualizzazione</h3>
             <div class="help-content">
                 <h4>Panoramica delle funzionalità</h4>

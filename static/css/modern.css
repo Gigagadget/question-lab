@@ -2391,6 +2391,20 @@ body.page-home .sidebar #btnHelpSidebar {
         padding: 8px 14px;
         font-size: 13px;
         flex-shrink: 0;
+        background: var(--bg-tertiary);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .view-mobile-nav .btn-outline:hover:not(:disabled) {
+        background: var(--bg-hover);
+        border-color: var(--accent-blue);
+        color: var(--accent-blue);
+    }
+
+    .view-mobile-nav .btn-outline:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
     }
 
     .view-mobile-counter {
@@ -2519,4 +2533,47 @@ body.page-home .sidebar #btnHelpSidebar {
     font-size: 13px;
     color: var(--text-light);
     margin: 0;
+}
+
+/* View detail navigation bar (desktop) */
+.view-detail-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 12px 16px;
+}
+
+.view-detail-nav .view-counter {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 80px;
+    text-align: center;
+}
+
+.view-detail-nav .btn-outline {
+    padding: 6px 14px;
+    font-size: 13px;
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.view-detail-nav .btn-outline:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.view-detail-nav .btn-outline:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Hide detail nav on mobile (uses mobile nav bar instead) */
+@media (max-width: 768px) {
+    .view-detail-nav {
+        display: none;
+    }
 }

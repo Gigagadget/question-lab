@@ -16,6 +16,7 @@ const DEFAULT_SUBDOMAIN = 'indefinito';
 // DOM elements
 const questionsListDiv = document.getElementById('questionsList');
 const detailPanel = document.getElementById('detailPanel');
+const detailContent = document.getElementById('detailContent');
 const statusSpan = document.getElementById('statusMsg');
 const questionCountSpan = document.getElementById('questionCount');
 const viewCounter = document.getElementById('viewCounter');
@@ -400,8 +401,14 @@ function renderQuestionList() {
             </div>
             <div class="question-text-modern">${escapeHtml(preview)}${moreText}</div>
             <div class="question-meta-modern">
-                <span>🧠 ${escapeHtml(q.primary_domain || 'N/D')}</span>
-                <span>📁 ${escapeHtml(q.subdomain || 'N/D')}</span>
+                <span>
+                    <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                    ${escapeHtml(q.primary_domain || 'N/D')}
+                </span>
+                <span>
+                    <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                    ${escapeHtml(q.subdomain || 'N/D')}
+                </span>
             </div>
         </div>`;
     });
@@ -459,63 +466,78 @@ function updateCounter() {
 // Update navigation buttons
 function updateNavButtons() {
     var currentIndex = filteredQuestions.findIndex(function(q) { return q.id === selectedId; });
-    navPrevBtn.disabled = currentIndex <= 0;
-    navNextBtn.disabled = currentIndex === -1 || currentIndex >= filteredQuestions.length - 1;
+    var isFirst = currentIndex <= 0;
+    var isLast = currentIndex === -1 || currentIndex >= filteredQuestions.length - 1;
+
+    // Desktop hidden arrows (for compatibility)
+    if (navPrevBtn) navPrevBtn.disabled = isFirst;
+    if (navNextBtn) navNextBtn.disabled = isLast;
+
+    // Detail panel nav buttons
+    var detailPrev = document.getElementById('detailPrevBtn');
+    var detailNext = document.getElementById('detailNextBtn');
+    if (detailPrev) detailPrev.disabled = isFirst;
+    if (detailNext) detailNext.disabled = isLast;
+
+    // Mobile nav buttons
+    var mobilePrev = document.getElementById('navPrevBtnMobile');
+    var mobileNext = document.getElementById('navNextBtnMobile');
+    if (mobilePrev) mobilePrev.disabled = isFirst;
+    if (mobileNext) mobileNext.disabled = isLast;
 }
 
 // Render detail view (read-only)
 function renderDetailView(id) {
     var question = questions.find(function(q) { return q.id === id; });
     if (!question) {
-        detailPanel.innerHTML = '<div class="view-placeholder">' +
-            '<div class="placeholder-icon">⚠️</div>' +
+        detailContent.innerHTML = '<div class="view-placeholder">' +
+            '<div class="placeholder-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>' +
             '<h3>Domanda non trovata</h3>' +
             '</div>';
         return;
     }
-    
+
     // Build answers HTML
     var answerLetters = Object.keys(question.answers || {}).sort();
     var correctAnswers = Array.isArray(question.correct) ? question.correct : [];
-    
+
     var answersHtml = '';
     answerLetters.forEach(function(letter) {
         var answerText = question.answers[letter] || '';
         var isCorrect = correctAnswers.includes(letter);
         var showCorrect = showCorrectAnswers && isCorrect;
-        
+
         answersHtml += '<div class="view-answer ' + (showCorrect ? 'correct' : '') + '">' +
             '<span class="view-answer-letter">' + letter + '</span>' +
             '<span class="view-answer-text">' + escapeHtml(answerText) + '</span>' +
-            (showCorrect ? '<span class="view-correct-badge">✓ Corretta</span>' : '') +
+            (showCorrect ? '<span class="view-correct-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Corretta</span>' : '') +
             '</div>';
     });
-    
+
     // Notes section
     var notesHtml = '';
     if (question.notes && question.notes.trim()) {
         notesHtml = '<div class="view-notes">' +
-            '<div class="view-notes-label">📝 Note</div>' +
+            '<div class="view-notes-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Note</div>' +
             '<div class="view-notes-text">' + escapeHtml(question.notes) + '</div>' +
             '</div>';
     }
-    
+
     // Edit button
-    var editButtonHtml = '<button class="view-edit-btn" onclick="window.openInEditor(\'' + escapeHtml(question.id) + '\')">✏️ Modifica</button>';
-    
-    detailPanel.innerHTML = '<div class="detail-card">' +
+    var editButtonHtml = '<button class="view-edit-btn" onclick="window.openInEditor(\'' + escapeHtml(question.id) + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Modifica</button>';
+
+    detailContent.innerHTML = '<div class="detail-card">' +
         '<div class="view-detail-content">' +
             '<div class="view-detail-header">' +
                 '<span class="view-detail-id">' + escapeHtml(question.id) + '</span>' +
-                '<span class="view-detail-domain">' + escapeHtml(question.primary_domain || 'N/D') + '</span>' +
-                '<span class="view-detail-subdomain">' + escapeHtml(question.subdomain || 'N/D') + '</span>' +
+                '<span class="view-detail-domain"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>' + escapeHtml(question.primary_domain || 'N/D') + '</span>' +
+                '<span class="view-detail-subdomain"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>' + escapeHtml(question.subdomain || 'N/D') + '</span>' +
                 editButtonHtml +
             '</div>' +
             '<div class="view-question-text">' +
                 escapeHtml(question.raw_text || 'Nessun testo disponibile') +
             '</div>' +
             '<div class="view-answers-section">' +
-                '<div class="view-answers-title">Risposte</div>' +
                 (answersHtml || '<div class="view-no-answers">Nessuna risposta disponibile</div>') +
             '</div>' +
             notesHtml +
@@ -527,10 +549,10 @@ function renderDetailView(id) {
 function toggleCorrectAnswers() {
     showCorrectAnswers = !showCorrectAnswers;
     if (showCorrectAnswers) {
-        toggleCorrectBtn.textContent = '🙈 Nascondi Risposte';
+        toggleCorrectBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Nascondi Risposte';
         toggleCorrectBtn.classList.add('active');
     } else {
-        toggleCorrectBtn.textContent = '👁️ Mostra Risposte';
+        toggleCorrectBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Mostra Risposte';
         toggleCorrectBtn.classList.remove('active');
     }
     // Re-render detail if a question is selected
@@ -565,7 +587,7 @@ if (btnHome) {
 // Help button - in sidebar (btnHelpSidebar)
 const btnHelp = document.getElementById('btnHelpSidebar');
 const helpModal = document.getElementById('helpModal');
-const helpClose = helpModal ? helpModal.querySelector('.close') : null;
+const helpClose = helpModal ? helpModal.querySelector('.close-modal') : null;
 
 if (btnHelp) {
     btnHelp.addEventListener('click', function() {
@@ -749,11 +771,14 @@ function checkActiveDatabase() {
         .then(res => res.json())
         .then(data => {
             const blocker = document.getElementById('noDbBlocker');
+            const activeDbNameEl = document.getElementById('activeDbName');
             if (blocker) {
                 if (!data.active_database) {
                     blocker.style.display = 'flex';
+                    if (activeDbNameEl) activeDbNameEl.textContent = '';
                 } else {
                     blocker.style.display = 'none';
+                    if (activeDbNameEl) activeDbNameEl.textContent = data.active_database;
                 }
             }
         })
@@ -792,7 +817,6 @@ if (navNextBtnMobile) {
 // === Panel collapse toggles ===
 const toggleFilters = document.getElementById('toggleFilters');
 const toggleQuestions = document.getElementById('toggleQuestions');
-const toggleDetail = document.getElementById('toggleDetail');
 const filtersPanel = document.getElementById('filtersPanel');
 const questionsPanelEl = document.querySelector('.questions-panel');
 const detailPanelEl = document.getElementById('detailPanel');
@@ -809,10 +833,15 @@ if (toggleQuestions && questionsPanelEl) {
     });
 }
 
-if (toggleDetail && detailPanelEl) {
-    toggleDetail.addEventListener('click', function() {
-        detailPanelEl.classList.toggle('collapsed');
-    });
+// === Detail panel nav (Previous/Counter/Next) ===
+const detailPrevBtn = document.getElementById('detailPrevBtn');
+const detailNextBtn = document.getElementById('detailNextBtn');
+
+if (detailPrevBtn) {
+    detailPrevBtn.addEventListener('click', navigateToPrevious);
+}
+if (detailNextBtn) {
+    detailNextBtn.addEventListener('click', navigateToNext);
 }
 
 // === Mobile panel tabs ===
