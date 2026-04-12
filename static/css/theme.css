@@ -1482,6 +1482,10 @@ select:focus {
     color: #f87171;
 }
 
+[data-theme="dark"] .category-info {
+    color: var(--text-muted);
+}
+
 /* Quiz mobile adjustments */
 @media (max-width: 768px) {
     [data-theme="dark"] .log-review-stats {
@@ -1569,6 +1573,29 @@ select:focus {
 
 [data-theme="dark"] .category-group-label {
     color: var(--text-secondary);
+}
+
+[data-theme="dark"] .info-badge {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .info-categories svg {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .info-count svg {
+    color: #fbbf24;
+}
+
+[data-theme="dark"] .info-count {
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.25);
+}
+
+[data-theme="dark"] .info-count span:first-child {
+    color: #fbbf24;
 }
 
 [data-theme="dark"] .category-btn {

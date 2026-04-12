@@ -1364,6 +1364,11 @@ textarea.form-input {
     border-top: 1px solid var(--border-light);
 }
 
+.filter-actions-modern .btn-outline {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
 /* Buttons */
 .btn-primary {
     background: var(--accent-blue);

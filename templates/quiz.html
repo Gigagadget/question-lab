@@ -84,15 +84,11 @@
                 <div id="quizSetup" class="quiz-container">
                     <div class="detail-card setup-card">
                         <h2>Configura il tuo Quiz</h2>
-                        <p class="subtitle">Scegli categorie e numero di domande</p>
 
                         <div class="setup-section">
                             <h3>Seleziona Categorie</h3>
                             <div id="categoriesContainer" class="categories-grid">
                                 <!-- Le categorie verranno caricate dinamicamente -->
-                            </div>
-                            <div class="category-info">
-                                <span id="selectedCategoriesCount">0</span> categorie selezionate
                             </div>
                         </div>
 
@@ -114,8 +110,16 @@
                                 <input type="text" id="customCount" inputmode="numeric" pattern="[0-9]*" min="1" max="1000" placeholder="N. domande">
                                 <button id="applyCustomCount" class="btn-outline">Applica</button>
                             </div>
-                            <div class="count-info">
-                                <span id="selectedCount">10</span> domande selezionate
+                        </div>
+
+                        <div class="setup-info-bar">
+                            <div class="info-badge info-categories">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                                <span><span id="selectedCategoriesCount">0</span> categorie</span>
+                            </div>
+                            <div class="info-badge info-count">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                <span><span id="selectedCount">10</span> domande</span>
                             </div>
                         </div>
 
