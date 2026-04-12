@@ -462,3 +462,33 @@ class QuizManager:
                 print(f"Errore nel cancellare il log {file}: {e}")
         
         return deleted_count
+    
+    def get_quiz_statistics(self) -> Dict:
+        """
+        Ottiene le statistiche generali del quiz:
+        - Numero totale di tentativi
+        - Media punteggio
+        - Ultimo quiz effettuato
+        
+        Returns:
+            Dict con le statistiche
+        """
+        logs = self.get_quiz_logs()
+        
+        if not logs:
+            return {
+                'total_attempts': 0,
+                'average_score': 0.0,
+                'last_quiz_date': None
+            }
+        
+        total_attempts = len(logs)
+        total_score = sum(log.get('score_percentage', 0) for log in logs)
+        average_score = total_score / total_attempts if total_attempts > 0 else 0.0
+        last_quiz_date = logs[0].get('date') if logs else None
+        
+        return {
+            'total_attempts': total_attempts,
+            'average_score': round(average_score, 1),
+            'last_quiz_date': last_quiz_date
+        }

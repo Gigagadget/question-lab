@@ -260,6 +260,65 @@
             .catch(err => {
                 console.error('Error loading stats:', err);
             });
+            
+        // Fetch last backup info
+        fetch('/api/backups')
+            .then(res => res.json())
+            .then(data => {
+                if (data.backups && data.backups.length > 0) {
+                    const lastBackup = data.backups[0];
+                    const date = new Date(lastBackup.modified);
+                    const formattedDate = date.toLocaleString('it-IT', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    document.getElementById('lastBackup').textContent = formattedDate;
+                } else {
+                    document.getElementById('lastBackup').textContent = 'Nessuno';
+                }
+            })
+            .catch(err => {
+                console.error('Error loading backups:', err);
+                document.getElementById('lastBackup').textContent = 'Errore';
+            });
+            
+        // Fetch total databases count for database card
+        fetch('/api/databases')
+            .then(res => res.json())
+            .then(data => {
+                if (data.databases) {
+                    const count = data.databases.length;
+                    // Aggiorna la card database
+                    const dbCard = document.querySelector('.card-database .card-meta');
+                    const firstSpan = dbCard.querySelector('span:first-child');
+                    firstSpan.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> ${count} database`;
+                }
+            })
+            .catch(err => {
+                console.error('Error loading databases:', err);
+            });
+            
+        // Fetch quiz statistics for quiz card
+        fetch('/api/quiz/statistics')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.error) {
+                    const quizCard = document.querySelector('.card-quiz .card-meta');
+                    const spans = quizCard.querySelectorAll('span');
+                    
+                    // Aggiorna numero di tentativi
+                    spans[0].innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> ${data.total_attempts} tentativi`;
+                    
+                    // Aggiorna media punteggio
+                    spans[1].innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${data.average_score}% media`;
+                }
+            })
+            .catch(err => {
+                console.error('Error loading quiz stats:', err);
+            });
     </script>
     <script src="/static/js/theme.js"></script>
 </body>
