@@ -626,11 +626,42 @@ def scan_for_databases():
     """Scansiona la cartella databases/ per nuovi database."""
     try:
         config = update_config_from_scan()
-        
+
         return jsonify({
             "message": "Scansione completata",
             "databases": config.get("databases", []),
             "active_database": config.get("active_database")
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@databases_bp.route('/api/databases/<db_name>/stats', methods=['GET'])
+def get_database_stats(db_name):
+    """Ottiene le statistiche di un database specifico (domande, categorie, duplicati)."""
+    try:
+        db_path = DATABASES_DIR / db_name / "data.json"
+
+        if not db_path.exists():
+            return jsonify({"error": f"Database '{db_name}' non trovato"}), 404
+
+        questions = load_json(db_path)
+        if not isinstance(questions, list):
+            return jsonify({"error": "Formato database non valido"}), 500
+
+        # Conta categorie uniche (primary_domain)
+        categories = set()
+        for q in questions:
+            if q.get('primary_domain'):
+                categories.add(q['primary_domain'])
+
+        # Conta duplicati
+        duplicates = sum(1 for q in questions if q.get('duplicate_count', 0) > 0)
+
+        return jsonify({
+            "question_count": len(questions),
+            "category_count": len(categories),
+            "duplicate_count": duplicates
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
