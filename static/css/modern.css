@@ -468,6 +468,10 @@
     display: none;
 }
 
+.questions-panel.collapsed .view-search-bar {
+    display: none;
+}
+
 .questions-panel.collapsed .questions-list {
     display: none;
 }
@@ -620,12 +624,14 @@
     }
 
     /* Panels: hidden by default on mobile */
+    .filters-panel,
     .questions-panel,
     .detail-panel {
         display: none !important;
     }
 
     /* Only the mobile-active panel is visible */
+    .filters-panel.mobile-active,
     .questions-panel.mobile-active,
     .detail-panel.mobile-active {
         display: flex !important;
@@ -640,6 +646,15 @@
         padding: 0 !important;
         overflow-y: auto;
         overscroll-behavior: contain;
+    }
+
+    /* Filters panel: full width on mobile */
+    .filters-panel.mobile-active {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        border-right: none !important;
+        border-left: none !important;
     }
 
     /* Questions list: full width, no extra spacing */
@@ -728,9 +743,6 @@
         font-size: 14px;
         padding: 3px 6px;
         max-width: 150px;
-    }
-
-    .detail-panel.mobile-active .btn-flag {
     }
 
     .detail-panel.mobile-active .btn-flag svg {
@@ -2348,7 +2360,8 @@ body.page-home .sidebar #btnHelpSidebar {
 
 /* View panel collapse toggle */
 .filters-panel .panel-collapse-toggle,
-.detail-panel .panel-collapse-toggle {
+.detail-panel .panel-collapse-toggle,
+.questions-panel > .panel-collapse-toggle {
     position: absolute;
     top: 8px;
     right: 8px;
@@ -2357,7 +2370,7 @@ body.page-home .sidebar #btnHelpSidebar {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     cursor: pointer;
@@ -2367,14 +2380,15 @@ body.page-home .sidebar #btnHelpSidebar {
 }
 
 .filters-panel .panel-collapse-toggle:hover,
-.detail-panel .panel-collapse-toggle:hover {
+.detail-panel .panel-collapse-toggle:hover,
+.questions-panel > .panel-collapse-toggle:hover {
     background: var(--bg-tertiary);
     color: var(--text-primary);
     border-color: var(--accent-blue);
 }
 
-/* Questions panel toggle - inline in toolbar */
-.questions-panel .panel-collapse-toggle {
+/* Questions panel toggle - inline in toolbar (legacy, not currently used) */
+.questions-toolbar .panel-collapse-toggle {
     position: static;
     width: 28px;
     height: 28px;
@@ -2390,14 +2404,14 @@ body.page-home .sidebar #btnHelpSidebar {
     flex-shrink: 0;
 }
 
-.questions-panel .panel-collapse-toggle:hover {
+.questions-toolbar .panel-collapse-toggle:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
     border-color: var(--accent-blue);
 }
 
 .filters-panel .panel-collapse-toggle svg,
-.questions-panel .panel-collapse-toggle svg,
+.questions-panel > .panel-collapse-toggle svg,
 .detail-panel .panel-collapse-toggle svg {
     transition: transform 0.25s ease;
 }
@@ -2424,6 +2438,10 @@ body.page-home .sidebar #btnHelpSidebar {
 }
 
 .questions-panel.collapsed .questions-toolbar {
+    display: none;
+}
+
+.questions-panel.collapsed .view-search-bar {
     display: none;
 }
 

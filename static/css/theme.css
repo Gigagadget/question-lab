@@ -998,28 +998,13 @@ select:focus {
     border-color: var(--border-light);
 }
 
-[data-theme="dark"] .view-answer.correct {
-    background: var(--status-correct-bg);
-    border-color: var(--status-correct-border);
-}
-
 [data-theme="dark"] .view-answer-letter {
     background: var(--bg-secondary);
     color: var(--accent-primary);
 }
 
-[data-theme="dark"] .view-answer.correct .view-answer-letter {
-    background: var(--status-correct-text);
-    color: white;
-}
-
 [data-theme="dark"] .view-answer-text {
     color: var(--text-secondary);
-}
-
-[data-theme="dark"] .view-correct-badge {
-    background: var(--status-correct-bg);
-    color: var(--status-correct-text);
 }
 
 [data-theme="dark"] .view-notes,
