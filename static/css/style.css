@@ -52,8 +52,6 @@ body {
 }
 
 button {
-    background: #2c3e66;
-    color: white;
     border: none;
     padding: 5px 12px;
     border-radius: 20px;
@@ -61,10 +59,6 @@ button {
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.8rem;
-}
-
-button:hover {
-    transform: translateY(-1px);
 }
 
 /* Button color variants - ONLY COLORS, no other properties */

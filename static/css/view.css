@@ -503,11 +503,9 @@
     padding: 3px 8px;
     font-size: 0.65rem;
     border-radius: 6px;
-    background: var(--accent-gray);
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
-    color: var(--text-secondary);
 }
 
 .popover-filter-hierarchy .subdomain-actions button:hover {
@@ -723,7 +721,6 @@
     padding: 3px 8px;
     font-size: 0.65rem;
     border-radius: 6px;
-    background: var(--accent-gray);
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;

@@ -112,10 +112,6 @@ body {
 }
 
 /* Bottoni */
-button {
-    background: var(--accent-gray);
-}
-
 button.primary {
     background: var(--accent-blue);
 }
@@ -720,15 +716,6 @@ select:focus {
 
 .export-btn:hover {
     background: #7c3aed;
-}
-
-/* Toggle button */
-.toggle-btn {
-    background: var(--text-muted);
-}
-
-.toggle-btn:hover {
-    background: var(--text-primary);
 }
 
 .toggle-btn.active {
