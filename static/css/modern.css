@@ -424,7 +424,7 @@
     background: var(--bg-primary);
 }
 
-/* Panel 1: Filtri & Search */
+/* Panel 1: Filtri & Search - DEPRECATED (now in popover) */
 .filters-panel {
     width: 280px;
     background: var(--bg-secondary);
@@ -435,50 +435,6 @@
     flex-shrink: 0;
     position: relative;
     transition: width 0.25s ease, min-width 0.25s ease;
-}
-
-/* Panel collapse toggle */
-.panel-collapse-toggle {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    cursor: pointer;
-    z-index: 10;
-    transition: all 0.2s;
-    color: var(--text-muted);
-}
-
-.panel-collapse-toggle:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    border-color: var(--accent-blue);
-}
-
-.filters-panel .panel-collapse-toggle svg {
-    transition: transform 0.25s ease;
-}
-
-/* Collapsed states */
-.filters-panel.collapsed {
-    width: 28px;
-    min-width: 28px;
-    overflow: hidden;
-}
-
-.filters-panel.collapsed .filters-header {
-    display: none;
-}
-
-.filters-panel.collapsed .panel-collapse-toggle svg {
-    transform: rotate(180deg);
 }
 
 /* Panel 2: Lista domande */
@@ -663,15 +619,13 @@
         overscroll-behavior: none;
     }
 
-    /* Panels: ALL hidden by default on mobile */
-    .filters-panel,
+    /* Panels: hidden by default on mobile */
     .questions-panel,
     .detail-panel {
         display: none !important;
     }
 
     /* Only the mobile-active panel is visible */
-    .filters-panel.mobile-active,
     .questions-panel.mobile-active,
     .detail-panel.mobile-active {
         display: flex !important;
@@ -685,11 +639,6 @@
         margin: 0 !important;
         padding: 0 !important;
         overflow-y: auto;
-        overscroll-behavior: contain;
-    }
-
-    /* Filters panel content: prevent scroll bubbling */
-    .filters-panel.mobile-active .filters-header {
         overscroll-behavior: contain;
     }
 
@@ -733,31 +682,6 @@
     }
 
     /* === COMPACT FONT SIZES FOR MOBILE === */
-
-    /* Filters panel */
-    .filters-panel.mobile-active .filter-label {
-        font-size: 10px;
-    }
-
-    .filters-panel.mobile-active .filter-option {
-        font-size: 12px;
-    }
-
-    .filters-panel.mobile-active .filter-select-modern,
-    .filters-panel.mobile-active select.filter-select-modern {
-        font-size: 12px;
-        padding: 6px 10px;
-    }
-
-    .filters-panel.mobile-active .search-box input {
-        font-size: 12px;
-        padding: 8px 10px 8px 30px;
-    }
-
-    .filters-panel.mobile-active .btn-filter-toggle {
-        font-size: 12px;
-        padding: 6px 10px;
-    }
 
     /* Questions list */
     .questions-panel.mobile-active .questions-toolbar {
@@ -2424,7 +2348,6 @@ body.page-home .sidebar #btnHelpSidebar {
 
 /* View panel collapse toggle */
 .filters-panel .panel-collapse-toggle,
-.questions-panel .panel-collapse-toggle,
 .detail-panel .panel-collapse-toggle {
     position: absolute;
     top: 8px;
@@ -2444,9 +2367,31 @@ body.page-home .sidebar #btnHelpSidebar {
 }
 
 .filters-panel .panel-collapse-toggle:hover,
-.questions-panel .panel-collapse-toggle:hover,
 .detail-panel .panel-collapse-toggle:hover {
     background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--accent-blue);
+}
+
+/* Questions panel toggle - inline in toolbar */
+.questions-panel .panel-collapse-toggle {
+    position: static;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.questions-panel .panel-collapse-toggle:hover {
+    background: var(--bg-hover);
     color: var(--text-primary);
     border-color: var(--accent-blue);
 }

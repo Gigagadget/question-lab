@@ -607,7 +607,7 @@ select:focus {
     color: var(--text-muted);
 }
 
-/* View mode */
+/* View mode - Popover e search bar */
 .view-filters {
     background: var(--bg-tertiary);
     border-bottom: 1px solid var(--border-light);
@@ -620,26 +620,6 @@ select:focus {
 .view-count {
     background: var(--status-info-bg);
     color: var(--status-info-text);
-}
-
-.checkbox-group {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-light);
-}
-
-.checkbox-label {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-light);
-    color: var(--text-secondary);
-}
-
-.checkbox-label:hover {
-    background: var(--status-info-bg);
-    border-color: var(--accent-blue);
-}
-
-.checkbox-label input[type="checkbox"] {
-    accent-color: var(--accent-blue);
 }
 
 .view-question-text {
@@ -965,7 +945,7 @@ select:focus {
     color: var(--status-wrong-text);
 }
 
-/* View.css - Filters e checkbox */
+/* View.css - Filters popover e search bar */
 [data-theme="dark"] .view-filters {
     background: var(--bg-tertiary);
     border-bottom-color: var(--border-light);
@@ -981,26 +961,6 @@ select:focus {
 [data-theme="dark"] .view-count {
     background: var(--status-info-bg);
     color: var(--status-info-text);
-}
-
-[data-theme="dark"] .checkbox-group {
-    background: var(--bg-tertiary);
-    border-color: var(--border-light);
-}
-
-[data-theme="dark"] .checkbox-label {
-    background: var(--bg-secondary);
-    border-color: var(--border-light);
-    color: var(--text-secondary);
-}
-
-[data-theme="dark"] .checkbox-label:hover {
-    background: var(--status-info-bg);
-    border-color: var(--accent-blue);
-}
-
-[data-theme="dark"] .checkbox-label input[type="checkbox"] {
-    accent-color: var(--accent-blue);
 }
 
 [data-theme="dark"] .view-question-item {
