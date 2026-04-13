@@ -383,11 +383,12 @@ function renderQuestionList() {
         
         // Determine status badge
         let statusBadge = '';
-        const hasAnswers = q.answers && q.answers.length > 0;
-        const hasCorrectAnswer = q.correct_options && q.correct_options.length > 0;
-        
+        const hasAnswers = q.answers && typeof q.answers === 'object' && Object.keys(q.answers).length > 0;
+        const correctArr = Array.isArray(q.correct) ? q.correct : [];
+        const hasCorrectAnswer = correctArr.length > 0;
+
         if (!hasAnswers) {
-            statusBadge = '<span class="status-badge status-unanswered">Senza risposta</span>';
+            statusBadge = '<span class="status-badge status-unanswered">Nessuna opzione</span>';
         } else if (!hasCorrectAnswer) {
             statusBadge = '<span class="status-badge status-unanswered">Senza corretta</span>';
         } else {
@@ -502,10 +503,13 @@ function renderDetailView(id) {
     var correctAnswers = Array.isArray(question.correct) ? question.correct : [];
 
     var answersHtml = '';
+    var hasAnyAnswers = false;
     answerLetters.forEach(function(letter) {
         var answerText = question.answers[letter] || '';
         var isCorrect = correctAnswers.includes(letter);
         var showCorrect = showCorrectAnswers && isCorrect;
+
+        if (answerText) hasAnyAnswers = true;
 
         answersHtml += '<div class="view-answer ' + (showCorrect ? 'correct' : '') + '">' +
             '<span class="view-answer-letter">' + letter + '</span>' +
@@ -513,6 +517,16 @@ function renderDetailView(id) {
             (showCorrect ? '<span class="view-correct-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Corretta</span>' : '') +
             '</div>';
     });
+
+    // Empty state message
+    var noAnswersMsg = '';
+    if (answerLetters.length === 0) {
+        noAnswersMsg = '<div class="view-no-answers">Nessuna opzione disponibile</div>';
+    } else if (!hasAnyAnswers) {
+        noAnswersMsg = '<div class="view-no-answers">Opzioni vuote</div>';
+    } else if (correctAnswers.length === 0) {
+        noAnswersMsg = '<div class="view-no-answers">Nessuna risposta corretta impostata</div>';
+    }
 
     // Notes section
     var notesHtml = '';
@@ -538,7 +552,7 @@ function renderDetailView(id) {
                 escapeHtml(question.raw_text || 'Nessun testo disponibile') +
             '</div>' +
             '<div class="view-answers-section">' +
-                (answersHtml || '<div class="view-no-answers">Nessuna risposta disponibile</div>') +
+                (answersHtml || noAnswersMsg) +
             '</div>' +
             notesHtml +
         '</div>' +

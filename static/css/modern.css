@@ -946,6 +946,7 @@
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 12px;
+    margin-top: 0px;
 }
 
 .search-box {
