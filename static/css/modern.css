@@ -2499,7 +2499,7 @@ body.page-home .sidebar #btnHelpSidebar {
 }
 
 .view-detail-nav .btn-outline {
-    padding: 6px 14px;
+    padding: 10px 18px;
     font-size: 13px;
     background: var(--bg-tertiary);
     border-color: var(--border-color);

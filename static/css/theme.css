@@ -718,14 +718,6 @@ select:focus {
     background: #7c3aed;
 }
 
-.toggle-btn.active {
-    background: var(--status-correct-text);
-}
-
-.toggle-btn.active:hover {
-    background: var(--status-correct-border);
-}
-
 /* Home cards */
 .card {
     background: var(--bg-secondary);
@@ -1067,18 +1059,6 @@ select:focus {
 
 [data-theme="dark"] .export-btn:hover {
     background: #7c3aed;
-}
-
-[data-theme="dark"] .toggle-btn {
-    background: var(--text-muted);
-}
-
-[data-theme="dark"] .toggle-btn:hover {
-    background: var(--text-primary);
-}
-
-[data-theme="dark"] .toggle-btn.active {
-    background: var(--status-correct-text);
 }
 
 /* Editor.css */

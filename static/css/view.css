@@ -134,6 +134,26 @@
 
 .view-search-bar .toggle-btn {
     flex-shrink: 0;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.view-search-bar .toggle-btn:hover {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+    background: var(--bg-hover);
+}
+
+.view-search-bar .toggle-btn.active {
+    background: var(--status-correct-bg);
+    border-color: var(--status-correct-border);
+    color: var(--status-correct-text);
+}
+
+.view-search-bar .toggle-btn.active:hover {
+    background: var(--status-correct-bg);
+    border-color: var(--status-correct-text);
 }
 
 /* ==================== FILTERS POPOVER ==================== */
@@ -842,15 +862,26 @@
 
 /* Edit button in detail view */
 .view-edit-btn {
-    background: var(--accent-blue);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
     padding: 6px 14px;
     font-size: 0.75rem;
+    font-weight: 500;
     margin-left: auto;
     border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
 }
 
 .view-edit-btn:hover {
-    background: var(--accent-blue-hover);
+    background: var(--bg-hover);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
     transform: translateY(-1px);
 }
 
@@ -1116,6 +1147,10 @@
         min-width: 36px;
         justify-content: center;
         padding: 8px;
+    }
+
+    .view-search-bar .toggle-btn span {
+        display: none;
     }
 
     /* Workspace 2 columns mobile */
