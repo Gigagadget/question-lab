@@ -313,6 +313,46 @@
     color: inherit;
 }
 
+/* Nav icon colors per active page - matching home page card colors */
+/* Editor = Blue */
+body.page-editor .nav-item.active[href="/editor"] {
+    color: var(--accent-blue);
+}
+
+/* Quiz = Green */
+body.page-quiz .nav-item.active[href="/quiz"] {
+    color: #27ae60;
+}
+
+/* View = Orange */
+body.page-view .nav-item.active[href="/view"] {
+    color: #e67e22;
+}
+
+/* Database = Purple */
+body.page-database .nav-item.active[href="/databases"] {
+    color: #8e44ad;
+}
+
+/* Home = Blue (default) */
+body.page-home .nav-item.active[href="/"] {
+    color: var(--accent-blue);
+}
+
+/* Help button - always red */
+#btnHelpSidebar {
+    color: var(--accent-red) !important;
+}
+
+#btnHelpSidebar .nav-icon svg {
+    color: var(--accent-red) !important;
+}
+
+#btnHelpSidebar:hover {
+    color: var(--accent-red) !important;
+    opacity: 0.85;
+}
+
 /* Logo SVG in sidebar */
 .sidebar .logo svg {
     color: var(--accent-blue);
