@@ -44,6 +44,9 @@
         // Aggiorna tutti i toggle button nella pagina
         updateToggleButtons(theme);
         
+        // Salva in localStorage per fallback quando server non è raggiungibile
+        localStorage.setItem('theme', theme);
+        
         // Salva sul server
         try {
             const response = await fetch('/api/preferences', {

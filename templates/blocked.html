@@ -182,12 +182,39 @@
     </div>
 
     <script>
-        // Detect theme preference
-        (function() {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-                document.documentElement.setAttribute('data-theme', 'dark');
+        // Detect theme preference - matches main app logic
+        (async function() {
+            const DARK_THEME = 'dark';
+            const LIGHT_THEME = 'light';
+            
+            let theme = LIGHT_THEME;
+            
+            // First try to get from server preferences (same as main app)
+            try {
+                const response = await fetch('/api/preferences');
+                if (response.ok) {
+                    const data = await response.json();
+                    theme = data.theme || LIGHT_THEME;
+                } else {
+                    // If server returns error (like 403 when blocked), throw to trigger fallback
+                    throw new Error('Server response not ok');
+                }
+            } catch (err) {
+                // Fallback to localStorage if server is unreachable or blocked
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme) {
+                    theme = savedTheme;
+                } else {
+                    // Fallback to system preference
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    theme = prefersDark ? DARK_THEME : LIGHT_THEME;
+                }
+            }
+            
+            if (theme === DARK_THEME) {
+                document.documentElement.setAttribute('data-theme', DARK_THEME);
+            } else {
+                document.documentElement.removeAttribute('data-theme');
             }
         })();
     </script>
