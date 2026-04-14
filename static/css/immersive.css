@@ -23,6 +23,11 @@ body.immersive-active .main-content {
     margin-left: 0;
 }
 
+/* View mobile nav: full width in immersive mode (sidebar is hidden) */
+body.immersive-active .view-mobile-nav {
+    left: 0;
+}
+
 /* ============================================
    FLOATING ACTION BUTTON (FAB)
    ============================================ */

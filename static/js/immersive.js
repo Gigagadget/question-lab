@@ -401,11 +401,19 @@
 
     /**
      * Update sidebar button icon based on immersive state
+     * Only replaces the SVG element, preserving the span label and classes
      */
     function updateSidebarButtonIcon() {
         const btn = document.getElementById('btnImmersiveSidebar');
         if (!btn) return;
-        btn.innerHTML = isImmersive ? ICON_EXPAND : ICON_EXPAND;
+        const svgEl = btn.querySelector('svg');
+        if (!svgEl) return;
+
+        // Update SVG attributes instead of replacing innerHTML
+        svgEl.innerHTML = isImmersive
+            ? '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>'
+            : '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>';
+        // Note: both states use the same icon for now (maximize/expand)
     }
 
     /* ============================================
