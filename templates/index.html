@@ -167,6 +167,32 @@
                             </span>
                         </div>
                     </a>
+
+                    <!-- Settings/LAN Access Card -->
+                    <div class="feature-card card-settings" id="cardSettings">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <div class="card-title">Accesso LAN</div>
+                        <div class="card-content">
+                            <p class="card-description">
+                                Controlla l'accesso da dispositivi in rete locale.
+                            </p>
+                            <div class="lan-ip-info">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                <span>Server:</span>
+                                <code id="lanServerIP">{{ server_ip }}:5015</code>
+                            </div>
+                            <div class="lan-toggle-wrapper">
+                                <label class="lan-toggle-label" for="lanToggle">Accesso LAN:</label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="lanToggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="lan-toggle-status inactive" id="lanStatus">Solo locale</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Database info bar - structured like mockup -->
@@ -324,6 +350,61 @@
             .catch(err => {
                 console.error('Error loading quiz stats:', err);
             });
+
+        // ==================== LAN ACCESS TOGGLE ====================
+        const lanToggle = document.getElementById('lanToggle');
+        const lanStatusText = document.getElementById('lanStatus');
+
+        // Fetch LAN status on load
+        fetch('/api/lan-status')
+            .then(res => res.json())
+            .then(data => {
+                lanToggle.checked = data.lan_access || false;
+                updateLanStatusText(data.lan_access);
+            })
+            .catch(err => console.error('Error loading LAN status:', err));
+
+        function updateLanStatusText(enabled) {
+            if (enabled) {
+                lanStatusText.textContent = 'Accesso rete';
+                lanStatusText.className = 'lan-toggle-status active';
+            } else {
+                lanStatusText.textContent = 'Solo locale';
+                lanStatusText.className = 'lan-toggle-status inactive';
+            }
+        }
+
+        // Toggle click with confirmation modal
+        lanToggle.addEventListener('change', function() {
+            const newVal = this.checked;
+            this.checked = !newVal; // Revert immediately, will set back after confirm
+
+            const action = newVal ? 'abilitare' : 'disabilitare';
+            const warning = newVal
+                ? 'Attenzione: tutti i dispositivi in rete locale potranno accedere all\'applicazione.'
+                : 'Attenzione: perderai l\'accesso remoto all\'applicazione da altri dispositivi.';
+
+            if (confirm(`Sei sicuro di voler ${action} l'accesso LAN?\n\n${warning}`)) {
+                fetch('/api/lan-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lan_access: newVal })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    this.checked = data.lan_access;
+                    updateLanStatusText(data.lan_access);
+                })
+                .catch(err => {
+                    console.error('Error updating LAN status:', err);
+                    alert('Errore nell\'aggiornamento dello stato LAN.');
+                    this.checked = !newVal;
+                    updateLanStatusText(!newVal);
+                });
+            } else {
+                updateLanStatusText(!newVal);
+            }
+        });
     </script>
     <script src="/static/js/theme.js"></script>
     <script src="/static/js/immersive.js" defer></script>

@@ -2105,6 +2105,124 @@ body.page-home .sidebar #btnHelpSidebar {
     color: #8e44ad;
 }
 
+/* Settings card (LAN access) */
+.card-settings {
+    border-color: var(--border-light);
+}
+
+.card-settings .card-icon svg {
+    color: var(--accent-gray);
+}
+
+.card-settings .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* LAN toggle switch */
+.lan-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.lan-toggle-label {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.lan-toggle-status {
+    font-size: 13px;
+    color: var(--text-light);
+}
+
+.lan-toggle-status.active {
+    color: var(--accent-green);
+}
+
+.lan-toggle-status.inactive {
+    color: var(--accent-red);
+}
+
+/* Custom toggle switch */
+.toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--border-color);
+    border-radius: 26px;
+    transition: all 0.3s;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--accent-green);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(22px);
+}
+
+.toggle-switch input:focus + .toggle-slider {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* LAN IP info */
+.lan-ip-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-light);
+    background: var(--bg-tertiary, var(--bg-hover));
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.lan-ip-info svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.lan-ip-info code {
+    font-family: 'Courier New', monospace;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
 .feature-card .card-title {
     font-size: 20px;
     font-weight: 600;

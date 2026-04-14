@@ -128,6 +128,77 @@ app.register_blueprint(backups_bp)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+# ==================== MIDDLEWARE ====================
+
+@app.before_request
+def check_lan_access():
+    """Middleware per controllare l'accesso LAN in tempo reale"""
+    # Escludi static files e favicon dal controllo
+    if request.path.startswith('/static/') or request.path == '/favicon.ico':
+        return None
+
+    try:
+        prefs = load_user_prefs()
+        lan_access = prefs.get("lan_access", False)
+
+        # Se LAN access è abilitato, permetti tutto
+        if lan_access:
+            return None
+
+        # Ottieni IP del client
+        client_ip = request.remote_addr
+
+        # Permetti localhost
+        if client_ip in ('127.0.0.1', '::1', 'localhost'):
+            return None
+
+        # Blocca tutte le altre connessioni
+        logger.info(f"Accesso bloccato da IP: {client_ip}")
+        return render_template('blocked.html', client_ip=client_ip), 403
+    except Exception as e:
+        # In caso di errore, permetti l'accesso (fail-open)
+        logger.error(f"Errore nel middleware LAN access: {e}")
+        return None
+
+
+# ==================== API LAN ACCESS ====================
+
+@app.route('/api/lan-status', methods=['GET'])
+def get_lan_status():
+    """Ottiene lo stato dell'accesso LAN"""
+    try:
+        prefs = load_user_prefs()
+        return jsonify({"lan_access": prefs.get("lan_access", False)}), 200
+    except Exception as e:
+        logger.error(f"Errore in GET /api/lan-status: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/lan-status', methods=['POST'])
+def set_lan_status():
+    """Imposta lo stato dell'accesso LAN"""
+    try:
+        data = request.get_json()
+        if not isinstance(data, dict) or 'lan_access' not in data:
+            return jsonify({"error": "Campo 'lan_access' obbligatorio"}), 400
+
+        lan_access = bool(data['lan_access'])
+        prefs = load_user_prefs()
+        prefs['lan_access'] = lan_access
+
+        if save_user_prefs(prefs):
+            logger.info(f"LAN access impostato a: {lan_access}")
+            return jsonify({
+                "message": "Stato LAN access aggiornato",
+                "lan_access": lan_access
+            }), 200
+        else:
+            return jsonify({"error": "Salvataggio fallito"}), 500
+    except Exception as e:
+        logger.error(f"Errore in POST /api/lan-status: {e}")
+        return jsonify({"error": str(e)}), 500
+
 # ==================== PAGINE ====================
 
 def get_local_ip():
@@ -200,15 +271,19 @@ def save_preferences():
         data = request.get_json()
         if not isinstance(data, dict):
             return jsonify({"error": "Formato dati non valido"}), 400
-        
+
         # Assicura che abbia almeno la chiave 'theme'
         if 'theme' not in data:
             return jsonify({"error": "Campo 'theme' obbligatorio"}), 400
-        
-        if save_user_prefs(data):
+
+        # Merge con preferenze esistenti per non perdere lan_access e altri campi
+        existing_prefs = load_user_prefs()
+        existing_prefs.update(data)
+
+        if save_user_prefs(existing_prefs):
             return jsonify({
                 "message": "Preferenze salvate con successo",
-                "preferences": data
+                "preferences": existing_prefs
             }), 200
         else:
             return jsonify({"error": "Salvataggio delle preferenze fallito"}), 500

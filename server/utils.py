@@ -375,10 +375,10 @@ def get_unique_categories(questions):
 def load_user_prefs():
     """Carica le preferenze utente da file JSON"""
     from pathlib import Path
-    
+
     BASE_DIR = Path(__file__).resolve().parent.parent
     USER_PREFS_FILE = str(BASE_DIR / 'preferences.json')
-    default_prefs = {"theme": "light"}
+    default_prefs = {"theme": "light", "lan_access": False}
 
     if not os.path.exists(USER_PREFS_FILE):
         save_user_prefs(default_prefs)
@@ -386,7 +386,11 @@ def load_user_prefs():
 
     try:
         with open(USER_PREFS_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            prefs = json.load(f)
+        # Ensure lan_access default exists
+        if "lan_access" not in prefs:
+            prefs["lan_access"] = False
+        return prefs
     except Exception as e:
         logger.error(f"Errore nel caricamento delle preferenze: {e}")
         return default_prefs
