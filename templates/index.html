@@ -176,20 +176,29 @@
                             </p>
                             <div class="lan-ip-info">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                                <span>Server:</span>
-                                <code id="lanServerIP">http://{{ server_ip }}:5015</code>
+                                <!-- <span>Server:</span> -->
+                                <code id="lanServerIP">https://{{ server_ip }}:5015</code>
                             </div>
-                            <div class="lan-toggle-wrapper">
-                                <label class="lan-toggle-label" for="lanToggle">Accesso LAN:</label>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="lanToggle">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                                <span class="lan-toggle-status inactive" id="lanStatus">Solo locale</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                             <div class="lan-toggle-wrapper">
+                                 <label class="lan-toggle-label" for="lanToggle">Accesso LAN:</label>
+                                 <label class="toggle-switch">
+                                     <input type="checkbox" id="lanToggle">
+                                     <span class="toggle-slider"></span>
+                                 </label>
+                                 <span class="lan-toggle-status inactive" id="lanStatus">Solo locale</span>
+                             </div>
+                             
+                             <!-- Password LAN Section -->
+                             <div id="lanPasswordSection" class="lan-password-section">
+                              <div class="lan-password-controls">
+                                      <button id="btnSetPassword" class="btn btn-primary">Imposta pwd</button>
+                                      <button id="btnRemovePassword" class="btn btn-danger" style="display: none;">Rimuovi pwd</button>
+                                      <span id="passwordStatus" class="password-status">Caricamento...</span>
+                                  </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
 
                 <!-- Database info bar - structured like mockup -->
                 <div class="database-bar">
@@ -372,6 +381,12 @@
 
         // Toggle click with confirmation modal
         lanToggle.addEventListener('change', function() {
+            if (this.disabled) {
+                this.checked = false;
+                alert('Impossibile abilitare LAN: devi prima impostare una password.');
+                return;
+            }
+            
             const newVal = this.checked;
             this.checked = !newVal; // Revert immediately, will set back after confirm
 
@@ -400,6 +415,112 @@
             } else {
                 updateLanStatusText(!newVal);
             }
+        });
+
+        // ==================== LAN PASSWORD ====================
+        const passwordSection = document.getElementById('lanPasswordSection');
+        const btnSetPassword = document.getElementById('btnSetPassword');
+        const btnRemovePassword = document.getElementById('btnRemovePassword');
+        const passwordStatus = document.getElementById('passwordStatus');
+        
+        // Verifica se siamo su localhost
+        const isLocalhost = window.location.hostname === 'localhost' 
+                         || window.location.hostname === '127.0.0.1'
+                         || window.location.hostname === '::1';
+
+        // Se non siamo su localhost: nascondi completamente i controlli password
+        if (!isLocalhost) {
+            passwordSection.style.display = 'none';
+        }
+        
+        let passwordIsSet = false;
+        
+        // Fetch stato password
+        fetch('/api/lan-password-status')
+            .then(res => res.json())
+            .then(data => {
+                passwordIsSet = data.is_set;
+                updatePasswordUI();
+            })
+            .catch(err => console.error('Error loading password status:', err));
+            
+         function updatePasswordUI() {
+             if (passwordIsSet) {
+                 btnSetPassword.textContent = 'Cambia pwd';
+                 btnRemovePassword.style.display = 'inline-block';
+                 passwordStatus.textContent = '✓ Password impostata';
+                 passwordStatus.className = 'password-status ok';
+                 lanToggle.disabled = false;
+             } else {
+                 btnSetPassword.textContent = 'Imposta pwd';
+                 btnRemovePassword.style.display = 'none';
+                 passwordStatus.textContent = '⚠ Imposta password per abilitare LAN';
+                 passwordStatus.className = 'password-status warning';
+                 lanToggle.disabled = true;
+                 lanToggle.checked = false;
+                 updateLanStatusText(false);
+             }
+         }
+         
+         // Note for users: explains Basic Auth behavior
+         passwordStatus.title = '💡 Nota: Nel popup di autenticazione puoi lasciare il NOME UTENTE vuoto o inserire qualsiasi cosa, è richiesto solo la password.';
+        
+        // Imposta password
+        btnSetPassword.addEventListener('click', function() {
+            const password = prompt('Inserisci la nuova password LAN (minimo 4 caratteri):');
+            if (!password) return;
+            
+            const confirmPassword = prompt('Conferma la password:');
+            if (password !== confirmPassword) {
+                alert('Le password non corrispondono');
+                return;
+            }
+            
+            fetch('/api/lan-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Password impostata con successo! Ora puoi abilitare l\'accesso LAN.');
+                    passwordIsSet = true;
+                    updatePasswordUI();
+                } else {
+                    alert('Errore: ' + data.error);
+                }
+            })
+            .catch(err => {
+                console.error('Error setting password:', err);
+                alert('Errore nell\'impostazione della password');
+            });
+        });
+        
+        // Rimuovi password
+        btnRemovePassword.addEventListener('click', function() {
+            if (!confirm('Sei sicuro di voler rimuovere la password LAN? L\'accesso LAN verrà automaticamente disabilitato.')) {
+                return;
+            }
+            
+            fetch('/api/lan-password-remove', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Password rimossa con successo. Accesso LAN disabilitato.');
+                    passwordIsSet = false;
+                    updatePasswordUI();
+                } else {
+                    alert('Errore: ' + data.error);
+                }
+            })
+            .catch(err => {
+                console.error('Error removing password:', err);
+                alert('Errore nella rimozione della password');
+            });
         });
     </script>
     <script src="/static/js/theme.js"></script>

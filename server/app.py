@@ -14,7 +14,8 @@ def check_and_install_requirements():
         'cryptography==41.0.7',
         'python-docx==1.1.0',
         'reportlab==4.0.4',
-        'requests==2.31.0'
+        'requests==2.31.0',
+        'bcrypt==4.1.2'
     ]
     
     print("Verifica dei requisiti...", flush=True)
@@ -62,6 +63,8 @@ def check_and_install_requirements():
                         importlib.import_module('docx')
                     elif package_name == 'reportlab':
                         importlib.import_module('reportlab')
+                    elif package_name == 'bcrypt':
+                        importlib.import_module('bcrypt')
                     else:
                         raise ImportError
                 print(f"✓ {package_name} già installato", flush=True)
@@ -82,7 +85,7 @@ check_and_install_requirements()
 # Aggiungi la root del progetto al sys.path per importare i moduli
 sys.path.insert(0, str(BASE_DIR))
 
-from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
+from flask import Flask, render_template, request, jsonify, send_from_directory, send_file, make_response
 from flask_cors import CORS
 import json
 import os
@@ -141,23 +144,94 @@ def check_lan_access():
         return None
 
     try:
+        from server.utils import is_lan_password_set, verify_lan_password
+        
         prefs = load_user_prefs()
         lan_access = prefs.get("lan_access", False)
-
-        # Se LAN access è abilitato, permetti tutto
-        if lan_access:
-            return None
-
-        # Ottieni IP del client
         client_ip = request.remote_addr
 
-        # Permetti localhost
+        # Sempre permetti localhost: nessuna restrizione
         if client_ip in ('127.0.0.1', '::1', 'localhost'):
             return None
 
-        # Blocca tutte le altre connessioni
-        logger.info(f"Accesso bloccato da IP: {client_ip}")
-        return render_template('blocked.html', client_ip=client_ip), 403
+        # ✅ BLOCCA ASSOLUTAMENTE SE LAN E' DISABILITATO - PRIMO CONTROLLO CRITICO
+        if not lan_access:
+            logger.info(f"Accesso bloccato da IP: {client_ip} (LAN disabilitato)")
+            return render_template('blocked.html', client_ip=client_ip), 403
+
+        # ✅ DOPPIA SICUREZZA: Controlliamo di nuovo che password sia impostata
+        # Questo è un secondo strato di difesa contro qualsiasi stato inconsistente
+        if not is_lan_password_set():
+            logger.warning(f"Tentativo accesso remoto ma password LAN non impostata: {client_ip}")
+            
+            # ✅ Se arriviamo qui LAN era abilitato ma password non esiste più: disabilitiamo LAN automaticamente
+            prefs = load_user_prefs()
+            prefs["lan_access"] = False
+            save_user_prefs(prefs)
+            logger.info("LAN access è stato automaticamente disabilitato perché la password non esiste più")
+            
+            return "Accesso negato: password LAN non configurata", 403
+
+        # Verifica autenticazione Basic Auth
+        # Comportamento:
+        # - Il campo "Nome utente" può essere lasciato VUOTO o contenere qualsiasi valore
+        # - Solo il campo "Password" viene verificato
+        # - Questo è un limite del protocollo Basic Auth (i browser mostrano sempre entrambi i campi)
+        auth = request.authorization
+
+        # 🔍 DEBUG: Logga esattamente cosa riceviamo
+        pw_preview = '***'
+        if auth:
+            # pw_preview = auth.password[:3] + '***' if auth.password and len(auth.password) > 3 else '***'
+            pw_preview = auth.password if auth.password else 'None'
+            pw_len = len(auth.password) if auth.password else 0
+            logger.debug(f"AUTH RECEIVED: ip={client_ip} path={request.path} username='{auth.username}' password='{pw_preview}' len={pw_len}")
+        else:
+            logger.debug(f"AUTH NOT PRESENT: ip={client_ip} path={request.path}")
+        
+        # Verifichiamo se è una richiesta AJAX/Fetch API
+        is_xhr = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+                 request.accept_mimetypes.best == 'application/json'
+
+        # ✅ Caso 1: Nessun header auth inviato
+        if not auth or not auth.password:
+            if is_xhr:
+                logger.debug(f"SILENT 401 API: {request.path}")
+                return jsonify({"error": "Autenticazione richiesta"}), 401
+            else:
+                logger.debug(f"401 WITH WWW-Authenticate: {request.path}")
+                response = make_response('Accesso negato', 401)
+                from server.utils import load_config
+                config = load_config()
+                realm = config.get("lan_auth_realm", "QuestionLab")
+                response.headers['WWW-Authenticate'] = f'Basic realm="{realm}: inserisci password, nome utente facoltativo", charset="UTF-8"'
+                response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+                response.headers['Pragma'] = 'no-cache'
+                response.headers['Expires'] = '0'
+                return response
+        
+        # ✅ Caso 2: Header auth presente ma password SBAGLIATA
+        if not verify_lan_password(auth.password):
+            from server.utils import load_config
+            config = load_config()
+            if config.get("log_failed_auth", False):
+                logger.info(f"❌ PASSWORD SBAGLIATA: ip={client_ip} pw_received='{pw_preview}'")
+            
+            response = make_response('Accesso negato', 401)
+            realm = config.get("lan_auth_realm", "QuestionLab")
+            response.headers['WWW-Authenticate'] = f'Basic realm="{realm}: inserisci password, nome utente facoltativo", charset="UTF-8"'
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            return response
+            return response
+
+        # ✅ Caso 3: Autenticazione riuscita
+        logger.debug(f"✅ PASSWORD CORRETTA: ip={client_ip} path={request.path}")
+
+        # Tutti i controlli passati: permetti accesso
+        return None
+        
     except Exception as e:
         # In caso di errore, permetti l'accesso (fail-open)
         logger.error(f"Errore nel middleware LAN access: {e}")
@@ -181,11 +255,21 @@ def get_lan_status():
 def set_lan_status():
     """Imposta lo stato dell'accesso LAN"""
     try:
+        from server.utils import is_lan_password_set
+        
         data = request.get_json()
         if not isinstance(data, dict) or 'lan_access' not in data:
             return jsonify({"error": "Campo 'lan_access' obbligatorio"}), 400
 
         lan_access = bool(data['lan_access'])
+        
+        # CONTROLLO CRITICO: Non permettere abilitazione LAN senza password impostata
+        if lan_access and not is_lan_password_set():
+            return jsonify({
+                "error": "Impossibile abilitare LAN: devi prima impostare una password",
+                "password_required": True
+            }), 400
+
         prefs = load_user_prefs()
         prefs['lan_access'] = lan_access
 
@@ -200,6 +284,78 @@ def set_lan_status():
     except Exception as e:
         logger.error(f"Errore in POST /api/lan-status: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+# ==================== API LAN PASSWORD ====================
+
+@app.route('/api/lan-password-status', methods=['GET'])
+def get_lan_password_status():
+    """Ottiene stato password LAN"""
+    try:
+        from server.utils import is_lan_password_set, load_config
+        config = load_config()
+        return jsonify({
+            "is_set": is_lan_password_set(),
+            "enabled": config.get("lan_password_enabled", False)
+        }), 200
+    except Exception as e:
+        logger.error(f"Errore in GET /api/lan-password-status: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/lan-password', methods=['POST'])
+def set_lan_password_api():
+    """Imposta password LAN (solo localhost)"""
+    try:
+        if request.remote_addr not in ('127.0.0.1', '::1', 'localhost'):
+            return jsonify({"error": "Operazione permessa solo da localhost"}), 403
+        
+        data = request.get_json()
+        if not data or 'password' not in data:
+            return jsonify({"error": "Password obbligatoria"}), 400
+        
+        password = data['password'].strip()
+        if len(password) < 4:
+            return jsonify({"error": "La password deve essere di almeno 4 caratteri"}), 400
+        
+        from server.utils import set_lan_password
+        set_lan_password(password)
+        
+        # ✅ DISABILITA AUTOMATICAMENTE LAN ACCESS QUANDO VIENE IMPOSTATA UNA NUOVA PASSWORD
+        # Questo impedisce il bug dove LAN rimane abilitato dopo cambiamento password
+        prefs = load_user_prefs()
+        prefs["lan_access"] = False
+        save_user_prefs(prefs)
+        
+        return jsonify({"success": True, "message": "Password impostata con successo. Abilita manualmente l'accesso LAN.", "lan_access": False}), 200
+    except Exception as e:
+        logger.error(f"Errore in POST /api/lan-password: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/lan-password-remove', methods=['POST'])
+def remove_lan_password():
+    """Rimuovi password LAN (solo localhost)"""
+    try:
+        if request.remote_addr not in ('127.0.0.1', '::1', 'localhost'):
+            return jsonify({"error": "Operazione permessa solo da localhost"}), 403
+        
+        from server.utils import load_config, save_config
+        config = load_config()
+        config["lan_password_hash"] = None
+        config["lan_password_enabled"] = False
+        save_config(config)
+        
+        # Disabilita automaticamente LAN access quando password viene rimossa
+        prefs = load_user_prefs()
+        prefs["lan_access"] = False
+        save_user_prefs(prefs)
+        
+        return jsonify({"success": True, "lan_access": False}), 200
+    except Exception as e:
+        logger.error(f"Errore in POST /api/lan-password-remove: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 # ==================== PAGINE ====================
 

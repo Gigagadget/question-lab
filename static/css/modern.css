@@ -1418,6 +1418,26 @@ textarea.form-input {
     transform: translateY(-1px);
 }
 
+.btn-danger {
+    background: var(--accent-red);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-family: inherit;
+}
+
+.btn-danger:hover {
+    background: var(--status-wrong-bg);
+    color: var(--accent-red);
+    transform: translateY(-1px);
+}
+
 .btn-outline {
     background: transparent;
     border: 1px solid var(--border-color);
@@ -1475,6 +1495,22 @@ textarea.form-input {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-muted);
+}
+
+/* LAN Password Controls */
+.lan-password-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.lan-password-controls .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    flex: 0 1 auto;
+    white-space: nowrap;
 }
 
 /* Utility classes */
@@ -2130,6 +2166,35 @@ body.page-home .sidebar #btnHelpSidebar {
 
 .lan-toggle-status.inactive {
     color: var(--accent-red);
+}
+
+.lan-password-section {
+    padding-top: 5px;
+    border-top: 1px solid var(--border-light);
+}
+
+.lan-password-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.password-status {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.password-status.ok {
+    color: var(--accent-green);
+    background: var(--bg-success);
+}
+
+.password-status.warning {
+    color: var(--accent-orange);
+    background: var(--bg-warning);
 }
 
 /* Custom toggle switch */

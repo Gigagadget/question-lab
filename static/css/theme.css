@@ -1156,6 +1156,11 @@ select:focus {
     border-color: #ef4444;
 }
 
+[data-theme="dark"] .btn-danger:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
 [data-theme="dark"] .filter-flag-svg {
     opacity: 0.5;
 }
