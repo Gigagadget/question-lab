@@ -69,17 +69,6 @@
     cursor: not-allowed;
 }
 
-.nav-counter {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-secondary, #64748b);
-    background: var(--bg-tertiary, #f1f5f9);
-    padding: 4px 12px;
-    border-radius: 12px;
-    min-width: 60px;
-    text-align: center;
-}
-
 /* Form row for side-by-side fields */
 .form-row {
     display: grid;
@@ -864,11 +853,6 @@ body.page-home .nav-item.active[href="/"] {
     .nav-btn-modern {
         padding: 5px 8px;
         font-size: 11px;
-    }
-
-    .nav-counter {
-        font-size: 10px;
-        padding: 3px 8px;
     }
 
     /* Detail panel: full edge-to-edge on mobile, no padding */

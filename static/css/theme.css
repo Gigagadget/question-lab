@@ -1079,11 +1079,6 @@ select:focus {
     border-color: var(--accent-blue, #3b82f6);
 }
 
-[data-theme="dark"] .nav-counter {
-    background: var(--bg-tertiary, #1e293b);
-    color: var(--text-secondary, #94a3b8);
-}
-
 [data-theme="dark"] .detail-id-input {
     background: transparent;
     color: var(--text-primary, #f1f5f9);
