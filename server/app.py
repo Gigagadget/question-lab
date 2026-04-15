@@ -10,6 +10,8 @@ def check_and_install_requirements():
     requirements = [
         'Flask==2.3.3',
         'flask-cors==4.0.0',
+        'pyopenssl==23.3.0',
+        'cryptography==41.0.7',
         'python-docx==1.1.0',
         'reportlab==4.0.4',
         'requests==2.31.0'
@@ -708,4 +710,82 @@ if __name__ == '__main__':
     if migrated > 0:
         logger.info(f"Migrati {migrated} backup nella nuova struttura")
 
-    app.run(debug=True, host='0.0.0.0', port=5015)
+def generate_self_signed_cert():
+    """Genera certificato SSL self-signed se non esiste"""
+    import ipaddress
+    from cryptography import x509
+    from cryptography.x509.oid import NameOID
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    import datetime
+    
+    cert_dir = Path(__file__).parent / 'certs'
+    cert_dir.mkdir(exist_ok=True)
+    
+    cert_file = cert_dir / 'cert.pem'
+    key_file = cert_dir / 'key.pem'
+    
+    if not cert_file.exists() or not key_file.exists():
+        logger.info("🔐 Generazione certificato SSL self-signed...")
+        
+        # Genera chiave privata
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+        )
+        
+        # Crea soggetto e issuer (stessi per self-signed)
+        subject = issuer = x509.Name([
+            x509.NameAttribute(NameOID.COMMON_NAME, u"Question Lab"),
+        ])
+        
+        # Crea certificato valido per 10 anni
+        cert = x509.CertificateBuilder().subject_name(
+            subject
+        ).issuer_name(
+            issuer
+        ).public_key(
+            private_key.public_key()
+        ).serial_number(
+            x509.random_serial_number()
+        ).not_valid_before(
+            datetime.datetime.utcnow()
+        ).not_valid_after(
+            datetime.datetime.utcnow() + datetime.timedelta(days=3650)
+        ).add_extension(
+            x509.SubjectAlternativeName([
+                x509.DNSName(u"localhost"),
+                x509.IPAddress(ipaddress.IPv4Address("127.0.0.1")),
+                x509.IPAddress(ipaddress.IPv4Address("0.0.0.0")),
+            ]),
+            critical=False,
+        ).sign(private_key, hashes.SHA256())
+        
+        # Salva chiave privata
+        with open(key_file, "wb") as f:
+            f.write(private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption()
+            ))
+        
+        # Salva certificato
+        with open(cert_file, "wb") as f:
+            f.write(cert.public_bytes(serialization.Encoding.PEM))
+        
+        logger.info("✅ Certificato SSL generato correttamente")
+    
+    return (str(cert_file), str(key_file))
+
+# Genera certificato se non esiste
+cert_chain = generate_self_signed_cert()
+
+# Crea contesto SSL che forza TLS 1.2 (risolve bug GREASE Chrome)
+import ssl
+context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+context.load_cert_chain(certfile=cert_chain[0], keyfile=cert_chain[1])
+context.minimum_version = ssl.TLSVersion.TLSv1_2
+context.maximum_version = ssl.TLSVersion.TLSv1_2
+
+# Avvia server con HTTPS e TLS 1.2 forzato
+app.run(debug=True, host='0.0.0.0', port=5015, ssl_context=context)

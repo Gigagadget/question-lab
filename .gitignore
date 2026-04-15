@@ -7,6 +7,9 @@ database.json
 categories.json
 preferences.json
 
+# Certificati SSL
+server/certs/
+
 # Log e backup utente
 databases/
 update_log.json
