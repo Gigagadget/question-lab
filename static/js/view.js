@@ -534,7 +534,7 @@ function renderQuestionList() {
                 <span class="question-id-modern">${escapeHtml(q.id)}</span>
                 ${statusBadge}
             </div>
-            <div class="question-text-modern">${escapeHtml(preview)}${moreText}</div>
+            <div class="question-text-modern">${SmartSearch.highlight(escapeHtml(preview), searchInput.value)}${moreText}</div>
             <div class="question-meta-modern">
                 <span>
                     <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
@@ -683,7 +683,7 @@ function renderDetailView(id) {
                 editButtonHtml +
             '</div>' +
             '<div class="view-question-text">' +
-                escapeHtml(question.raw_text || 'Nessun testo disponibile') +
+                SmartSearch.highlight(escapeHtml(question.raw_text || 'Nessun testo disponibile'), searchInput.value) +
             '</div>' +
             '<div class="view-answers-section">' +
                 (answersHtml || noAnswersMsg) +

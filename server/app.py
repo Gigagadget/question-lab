@@ -108,7 +108,9 @@ from server.utils import (
     save_user_prefs,
     get_unique_categories,
     normalize_question_categories,
-    migrate_old_backups
+    migrate_old_backups,
+    load_config,
+    save_config
 )
 
 app = Flask(
@@ -452,6 +454,42 @@ def save_preferences():
             return jsonify({"error": "Salvataggio delle preferenze fallito"}), 500
     except Exception as e:
         logger.error(f"Errore in POST /api/preferences: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/search-config', methods=['GET'])
+def get_search_config():
+    """Ottiene la configurazione di ricerca"""
+    try:
+        config = load_config()
+        search_config = config.get("search", {
+            "mode": "normal",
+            "highlightEnabled": True,
+            "searchAnswers": True,
+            "searchNotes": True,
+            "searchCategories": True
+        })
+        return jsonify(search_config), 200
+    except Exception as e:
+        logger.error(f"Errore in GET /api/search-config: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/config/save', methods=['POST'])
+def save_search_config():
+    """Salva la configurazione di ricerca"""
+    try:
+        data = request.get_json()
+        if not isinstance(data, dict):
+            return jsonify({"error": "Formato dati non valido"}), 400
+
+        search_data = data.get("search", data)
+        config = load_config()
+        config["search"] = search_data
+        if save_config(config):
+            return jsonify({"success": True, "message": "Configurazione salvata"}), 200
+        else:
+            return jsonify({"error": "Salvataggio fallito"}), 500
+    except Exception as e:
+        logger.error(f"Errore in POST /api/config/save: {e}")
         return jsonify({"error": str(e)}), 500
 
 # ==================== API ====================

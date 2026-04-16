@@ -120,12 +120,28 @@ class FuzzyMatcher {
      * @returns {Object|null} Match result or null
      */
     static fuzzyMatch(text, query, options = {}) {
-        // Global configuration
-        const strictMode = window.SMART_SEARCH_STRICT_MODE || true;
+        // Global configuration based on search mode
+        const searchMode = window.SEARCH_CONFIG?.mode || 'normal';
+        
+        let maxDistance, minSimilarity;
+        switch (searchMode) {
+            case 'strict':
+                maxDistance = 0;
+                minSimilarity = 1.0;
+                break;
+            case 'fuzzy':
+                maxDistance = 3;
+                minSimilarity = 0.65;
+                break;
+            case 'normal':
+            default:
+                maxDistance = 2;
+                minSimilarity = 0.75;
+        }
         
         const {
-            maxDistance = strictMode ? 1 : 2,  // More restrictive in strict mode
-            minSimilarity = strictMode ? 0.85 : 0.75,  // MUCH higher threshold in strict mode
+            maxDistance: overrideMaxDistance = maxDistance,
+            minSimilarity: overrideMinSimilarity = minSimilarity,
             caseSensitive = false,
             wholeWord = false,     // Match whole words only
             enableSoundex = false  // Disabled by default for Italian

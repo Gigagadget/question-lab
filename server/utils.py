@@ -425,7 +425,7 @@ def load_config():
         logger.error(f"Errore nel caricamento di config.json: {e}")
         return {}
     
-    # Aggiungi campi LAN password se non esistono
+# Aggiungi campi LAN password se non esistono
     if "lan_password_hash" not in config:
         config["lan_password_hash"] = None
     if "lan_password_enabled" not in config:
@@ -435,9 +435,18 @@ def load_config():
         config["lan_auth_realm"] = f"QuestionLab {random.randint(1000,9999)}"
     if "log_failed_auth" not in config:
         config["log_failed_auth"] = False
-        # Salva automaticamente il campo se manca
+
+    # Aggiungi search settings defaults se non esistono
+    if "search" not in config:
+        config["search"] = {
+            "mode": "normal",
+            "highlightEnabled": True,
+            "searchAnswers": True,
+            "searchNotes": True,
+            "searchCategories": True
+        }
         save_config(config)
-        
+
     return config
 
 

@@ -3,10 +3,37 @@
  * Combines all search modules for comprehensive, fuzzy, and operator-based search
  */
 
+// Search configuration with defaults
+window.SEARCH_CONFIG = {
+    mode: 'normal', // strict, normal, fuzzy
+    highlightEnabled: true,
+    searchAnswers: true,
+    searchNotes: true,
+    searchCategories: true,
+    minScore: 15
+};
+
 class SmartSearch {
     constructor() {
         this.cache = new Map();
         this.maxCacheSize = 100;
+    }
+
+    /**
+     * Set search configuration
+     * @param {Object} config - New configuration values
+     */
+    static setConfig(config) {
+        window.SEARCH_CONFIG = { ...window.SEARCH_CONFIG, ...config };
+        SmartSearch.clearCache();
+    }
+
+    /**
+     * Get current search configuration
+     * @returns {Object} Current config
+     */
+    static getConfig() {
+        return { ...window.SEARCH_CONFIG };
     }
 
     /**
@@ -112,8 +139,22 @@ class SmartSearch {
      */
     static findAllMatches(question, query) {
         const matches = [];
-        const fields = SearchUtils.extractSearchableFields(question);
+        const allFields = SearchUtils.extractSearchableFields(question);
         const normalizedQuery = SearchUtils.normalizeText(query);
+        
+        // Filter fields based on configuration
+        const fields = {};
+        const config = window.SEARCH_CONFIG;
+        
+        fields.id = allFields.id;
+        fields.raw_text = allFields.raw_text;
+        
+        if (config.searchAnswers) fields.answers = allFields.answers;
+        if (config.searchNotes) fields.notes = allFields.notes;
+        if (config.searchCategories) {
+            fields.primary_domain = allFields.primary_domain;
+            fields.subdomain = allFields.subdomain;
+        }
 
         // Check each field for matches
         for (const [fieldName, fieldValue] of Object.entries(fields)) {
@@ -309,6 +350,40 @@ class SmartSearch {
             cacheSize: this.cache.size,
             maxCacheSize: this.maxCacheSize
         };
+    }
+
+    /**
+     * Highlight search matches in text
+     * @param {string} text - Text to highlight
+     * @param {string} query - Search query
+     * @returns {string} Highlighted text
+     */
+    static highlight(text, query) {
+        if (!window.SEARCH_CONFIG.highlightEnabled || !query) return text;
+        
+        const parsedQuery = QueryParser.parse(query);
+        let terms = [];
+        
+        if (parsedQuery.text) {
+            terms.push(parsedQuery.text);
+        }
+        
+        if (parsedQuery.operators) {
+            parsedQuery.operators.forEach(op => {
+                if (typeof op.value === 'string') {
+                    terms.push(op.value);
+                }
+            });
+        }
+        
+        return SearchUtils.highlightMatches(text, terms);
+    }
+
+    /**
+     * Clear search cache
+     */
+    static clearCache() {
+        this.cache = new Map();
     }
 }
 

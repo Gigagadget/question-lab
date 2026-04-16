@@ -143,6 +143,83 @@ class SearchUtils {
     static isFlagged(question) {
         return Boolean(question.flagged);
     }
+
+    /**
+     * Highlight search matches in text
+     * @param {string} text - Original text (already escaped HTML)
+     * @param {string|Array} query - Search query or array of terms
+     * @param {Object} options - Highlight options
+     * @returns {string} Text with matches wrapped in <mark> tags
+     */
+    static highlightMatches(text, query, options = {}) {
+        if (!text || !query) return text || '';
+        
+        const {
+            className = 'search-match',
+            caseSensitive = false,
+            wholeWord = false
+        } = options;
+
+        let terms;
+        if (typeof query === 'string') {
+            terms = [query.trim()];
+        } else if (Array.isArray(query)) {
+            terms = query;
+        } else {
+            return text;
+        }
+
+        // Normalize and deduplicate terms
+        const normalizedTerms = terms
+            .filter(term => term && term.length > 0)
+            .map(term => SearchUtils.normalizeText(term))
+            .filter((term, index, self) => self.indexOf(term) === index);
+
+        if (normalizedTerms.length === 0) return text;
+
+        // Create regex pattern for all terms - escape special regex chars
+        const pattern = normalizedTerms
+            .map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+            .join('|');
+
+        const flags = caseSensitive ? 'g' : 'gi';
+        const regex = new RegExp(`(${pattern})`, flags);
+
+        // Replace matches while preserving original case
+        return text.replace(regex, (match) => {
+            return `<mark class="${className}">${match}</mark>`;
+        });
+    }
+
+    /**
+     * Get all match positions in text for multiple terms
+     * @param {string} text - Text to search
+     * @param {Array} terms - Search terms
+     * @returns {Array} Array of match positions
+     */
+    static findAllMatchPositions(text, terms) {
+        if (!text || !terms || terms.length === 0) return [];
+        
+        const matches = [];
+        const normalizedText = SearchUtils.normalizeText(text);
+        
+        for (const term of terms) {
+            const normalizedTerm = SearchUtils.normalizeText(term);
+            if (!normalizedTerm) continue;
+            
+            let position = 0;
+            while ((position = normalizedText.indexOf(normalizedTerm, position)) !== -1) {
+                matches.push({
+                    start: position,
+                    end: position + normalizedTerm.length,
+                    term: term
+                });
+                position += normalizedTerm.length;
+            }
+        }
+        
+        return matches;
+    }
 }
 
 // Export for use in other modules
