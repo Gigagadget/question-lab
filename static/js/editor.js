@@ -468,14 +468,11 @@ function createFilterUI() {
 // Filter questions
 function filterQuestions(questionsList) {
     let filtered = [...questionsList];
-    
-    // Search filter
-    const searchTerm = searchInput.value.toLowerCase();
+
+    // Search filter - use new intelligent search
+    const searchTerm = searchInput.value.trim();
     if (searchTerm) {
-        filtered = filtered.filter(q =>
-            q.id.toLowerCase().includes(searchTerm) ||
-            (q.raw_text && q.raw_text.toLowerCase().includes(searchTerm))
-        );
+        filtered = SmartSearch.filter(filtered, searchTerm);
     }
     
     // Primary domain filter

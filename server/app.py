@@ -405,6 +405,11 @@ def view():
     """Pagina modalità visualizzazione"""
     return render_template('view.html')
 
+@app.route('/test-search')
+def test_search():
+    """Test page for search functionality"""
+    return render_template('test-search.html')
+
 @app.route('/databases')
 def databases_page():
     """Pagina gestione database"""

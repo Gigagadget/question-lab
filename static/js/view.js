@@ -467,13 +467,10 @@ function sortQuestions(questionsToSort) {
 function applyFilters() {
     let filtered = questions.slice();
 
-    // Search filter
-    const searchTerm = searchInput.value.toLowerCase().trim();
+    // Search filter - use new intelligent search
+    const searchTerm = searchInput.value.trim();
     if (searchTerm) {
-        filtered = filtered.filter(function(q) {
-            return q.id.toLowerCase().includes(searchTerm) ||
-                (q.raw_text && q.raw_text.toLowerCase().includes(searchTerm));
-        });
+        filtered = SmartSearch.filter(filtered, searchTerm);
     }
 
     // Primary domain filter - only if not all selected
