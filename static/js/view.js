@@ -566,6 +566,10 @@ function selectQuestion(id) {
     updateCounter();
     updateNavButtons();
     scrollToSelectedQuestion();
+    // On mobile, switch to detail panel when selecting a question
+    if (window.innerWidth <= 768) {
+        setActiveMobilePanel('detail');
+    }
 }
 
 // Scroll to selected question in the list
@@ -1008,25 +1012,31 @@ if (detailNextBtn) {
 }
 
 // === Mobile panel tabs ===
+let currentMobilePanel = 'detail';
+
+function setActiveMobilePanel(panelName) {
+  mobileTabs.forEach(function(t) { t.classList.remove('active'); });
+  document.querySelector(`.mobile-panel-tab[data-panel="${panelName}"]`)?.classList.add('active');
+
+  if (questionsPanelEl) questionsPanelEl.classList.remove('mobile-active');
+  if (detailPanelEl) detailPanelEl.classList.remove('mobile-active');
+
+  if (panelName === 'questions' && questionsPanelEl) {
+    questionsPanelEl.classList.add('mobile-active');
+  } else if (panelName === 'detail' && detailPanelEl) {
+    detailPanelEl.classList.add('mobile-active');
+  }
+}
+
 const mobileTabs = document.querySelectorAll('.mobile-panel-tab');
 if (mobileTabs.length > 0) {
-    mobileTabs.forEach(function(tab) {
-        tab.addEventListener('click', function() {
-            const panelName = this.getAttribute('data-panel');
-
-            mobileTabs.forEach(function(t) { t.classList.remove('active'); });
-            this.classList.add('active');
-
-            if (questionsPanelEl) questionsPanelEl.classList.remove('mobile-active');
-            if (detailPanelEl) detailPanelEl.classList.remove('mobile-active');
-
-            if (panelName === 'questions' && questionsPanelEl) {
-                questionsPanelEl.classList.add('mobile-active');
-            } else if (panelName === 'detail' && detailPanelEl) {
-                detailPanelEl.classList.add('mobile-active');
-            }
-        });
+  mobileTabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      const panelName = this.getAttribute('data-panel');
+      currentMobilePanel = panelName;
+      setActiveMobilePanel(panelName);
     });
+  });
 }
 
 // === Help modal ===

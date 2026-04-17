@@ -631,6 +631,11 @@ function selectQuestion(id) {
     renderQuestionList();
     renderFormForId(id);
     scrollToSelectedQuestion();
+    // On mobile, switch to detail panel when selecting a question
+    if (window.innerWidth <= 768) {
+        currentMobilePanel = 'detail';
+        setActiveMobilePanel('detail');
+    }
 }
 
 // ==================== SELEZIONE MULTIPLA E AZIONI BATCH ====================
@@ -2327,31 +2332,36 @@ function updateThemeIcons() {
 // Listen for theme changes to update icons
 document.addEventListener('themeChanged', updateThemeIcons);
 
+// Track current mobile panel to preserve it across resize events (especially keyboard appearance)
+let currentMobilePanel = 'detail';
+
+function setActiveMobilePanel(panelName) {
+    const filtersPanel = document.getElementById('filtersPanel');
+    const questionsPanel = document.getElementById('questionsPanel');
+    const detailPanel = document.getElementById('formPanel');
+
+    document.querySelectorAll('.mobile-panel-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.mobile-panel-tab[data-panel="${panelName}"]`)?.classList.add('active');
+
+    filtersPanel.classList.remove('mobile-active');
+    questionsPanel.classList.remove('mobile-active');
+    detailPanel.classList.remove('mobile-active');
+
+    if (panelName === 'filters') {
+        filtersPanel.classList.add('mobile-active');
+    } else if (panelName === 'questions') {
+        questionsPanel.classList.add('mobile-active');
+    } else {
+        detailPanel.classList.add('mobile-active');
+    }
+}
+
 // Mobile panel tabs
 document.querySelectorAll('.mobile-panel-tab').forEach(tab => {
     tab.addEventListener('click', () => {
         const panel = tab.getAttribute('data-panel');
-        const filtersPanel = document.getElementById('filtersPanel');
-        const questionsPanel = document.getElementById('questionsPanel');
-        const detailPanel = document.getElementById('formPanel');
-
-        // Update active tab
-        document.querySelectorAll('.mobile-panel-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        // Remove mobile-active from all
-        filtersPanel.classList.remove('mobile-active');
-        questionsPanel.classList.remove('mobile-active');
-        detailPanel.classList.remove('mobile-active');
-
-        // Add mobile-active to selected
-        if (panel === 'filters') {
-            filtersPanel.classList.add('mobile-active');
-        } else if (panel === 'questions') {
-            questionsPanel.classList.add('mobile-active');
-        } else {
-            detailPanel.classList.add('mobile-active');
-        }
+        currentMobilePanel = panel;
+        setActiveMobilePanel(panel);
     });
 });
 
@@ -2367,11 +2377,8 @@ function setDefaultMobilePanel() {
         questionsPanel.classList.remove('mobile-active');
         detailPanel.classList.remove('mobile-active');
 
-        // Set Editor tab as active by default
-        detailPanel.classList.add('mobile-active');
-
-        document.querySelectorAll('.mobile-panel-tab').forEach(t => t.classList.remove('active'));
-        document.querySelector('.mobile-panel-tab[data-panel="detail"]')?.classList.add('active');
+        // Preserve current panel instead of always switching to detail
+        setActiveMobilePanel(currentMobilePanel);
     } else {
         // Remove mobile classes on desktop - show all panels normally
         filtersPanel.classList.remove('mobile-active');
