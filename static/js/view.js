@@ -1015,6 +1015,7 @@ if (detailNextBtn) {
 let currentMobilePanel = 'detail';
 
 function setActiveMobilePanel(panelName) {
+  currentMobilePanel = panelName;
   mobileTabs.forEach(function(t) { t.classList.remove('active'); });
   document.querySelector(`.mobile-panel-tab[data-panel="${panelName}"]`)?.classList.add('active');
 
