@@ -20,11 +20,11 @@
   "lan_auth_realm": "QuestionLab 2447",
   "log_failed_auth": false,
   "search": {
-    "mode": "fuzzy",
+    "mode": "normal",
     "highlightEnabled": true,
     "searchAnswers": true,
-    "searchNotes": false,
-    "searchCategories": false,
+    "searchNotes": true,
+    "searchCategories": true,
     "minScore": 15
   }
 }

@@ -569,7 +569,32 @@ function renderQuestionList() {
         return `
             <div class="question-card-modern ${selectedId === q.id ? 'selected' : ''} ${isSelected ? 'batch-selected' : ''} ${isDuplicate ? 'duplicate-item' : ''} ${isFlagged ? 'flagged-item' : ''}" data-id="${q.id}">
                 <div class="card-header">
-                    <span class="question-id-modern">${escapeHtml(q.id)}</span>
+                    <span class="question-id-modern">${escapeHtml(q.id)}${(() => {
+                        if (window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(q.id) && searchInput.value) {
+                            const matches = window.SEARCH_MATCHES.get(q.id);
+                            const matchFields = new Set();
+                            matches.forEach(match => {
+                                if (match.field !== 'raw_text') {
+                                    matchFields.add(match.field);
+                                }
+                            });
+                            const searchIcon = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+                            const fieldLabels = {
+                                'id': searchIcon + ' ID',
+                                'answers': searchIcon + ' Risposte',
+                                'notes': searchIcon + ' Note',
+                                'primary_domain': searchIcon + ' Categoria',
+                                'subdomain': searchIcon + ' Sottocategoria'
+                            };
+                            let badges = '';
+                            matchFields.forEach(field => {
+                                const label = fieldLabels[field] || '🔍 ' + field;
+                                badges += '<span class="search-match-badge ' + field.replace('_', '-') + '">' + label + '</span>';
+                            });
+                            return badges;
+                        }
+                        return '';
+                    })()}</span>
                     <div style="display: flex; gap: 6px; align-items: center;">
                         ${isDuplicate ? `<span class="status-badge status-duplicate">dup</span>` : ''}
                         ${statusBadge}

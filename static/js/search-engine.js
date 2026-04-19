@@ -378,15 +378,26 @@ class SmartSearch {
      * @param {string} text - Text to highlight
      * @param {string} query - Search query
      * @param {string} questionId - Optional question ID to use cached matches
+     * @param {string} fieldFilter - Optional field to filter matches
      * @returns {string} Highlighted text
      */
-    static highlight(text, query, questionId = null) {
+    static highlight(text, query, questionId = null, fieldFilter = null) {
         if (!window.SEARCH_CONFIG.highlightEnabled || !query) return text;
         
         // If we have cached matches for this question, use them
         if (questionId && window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(questionId)) {
             const matches = window.SEARCH_MATCHES.get(questionId);
-            return SearchUtils.highlightMatchesWithPositions(text, matches);
+            let filteredMatches = matches;
+            
+            // Filter matches by field if specified
+            if (fieldFilter) {
+                filteredMatches = matches.filter(m => m.field === fieldFilter);
+            }
+            
+            // For raw_text, we need to use the correct positions
+            if (!fieldFilter || fieldFilter === 'raw_text' || fieldFilter === 'answers' || fieldFilter === 'notes') {
+                return SearchUtils.highlightMatchesWithPositions(text, filteredMatches);
+            }
         }
         
         // Fallback to old behavior

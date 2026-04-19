@@ -1989,6 +1989,50 @@ textarea.form-input {
 }
 
 /* ==================== REVIEW FILTER PILLS - MOBILE ==================== */
+/* Search match field badges */
+.search-match-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    font-weight: 500;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.search-match-badge svg {
+    flex-shrink: 0;
+}
+
+.search-match-badge.id {
+    background-color: #6366f1;
+    color: white;
+}
+
+.search-match-badge.answers {
+    background-color: #10b981;
+    color: white;
+}
+
+.search-match-badge.notes {
+    background-color: #f59e0b;
+    color: white;
+}
+
+.search-match-badge.primary-domain,
+.search-match-badge.categories {
+    background-color: #8b5cf6;
+    color: white;
+}
+
+.search-match-badge.subdomain {
+    background-color: #a855f7;
+    color: white;
+}
+
 @media (max-width: 768px) {
     .review-filter-bar {
         gap: 6px;
