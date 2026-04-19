@@ -2172,6 +2172,14 @@ window.renameCategory = renameCategory;
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         searchInput.addEventListener('input', () => renderQuestionList());
+        
+        // Auto-refresh search when settings change
+        document.addEventListener('search-config-changed', function() {
+            if (searchInput && searchInput.value.trim()) {
+                renderQuestionList();
+            }
+        });
+        
         document.getElementById('btnCategories').addEventListener('click', showCategoriesModal);
         document.getElementById('btnReload').addEventListener('click', async () => {
             if (isDirty) {

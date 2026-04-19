@@ -916,6 +916,13 @@ if (searchInput) {
     searchInput.addEventListener('input', function() { applyFilters(); });
 }
 
+// Auto-refresh search when settings change
+document.addEventListener('search-config-changed', function() {
+    if (searchInput && searchInput.value.trim()) {
+        applyFilters();
+    }
+});
+
 // Sort select
 if (sortSelect) {
     sortSelect.addEventListener('change', function() { applyFilters(); });
