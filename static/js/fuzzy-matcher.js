@@ -259,7 +259,7 @@ class FuzzyMatcher {
         if (!text || !query) return [];
 
         const matches = [];
-        const normalizedText = SearchUtils.normalizeText(text);
+        const { normalized: normalizedText, positionMap } = SearchUtils.createNormalizationPositionMap(text);
         const normalizedQuery = SearchUtils.normalizeText(query);
 
         // Split both texts into words
@@ -272,11 +272,16 @@ class FuzzyMatcher {
                 const match = this.fuzzyMatch(textWord, queryWord, { wholeWord: true });
 
                 if (match) {
+                    // Find start position of this word in normalized text
+                    const wordStartNormalized = normalizedText.indexOf(textWord, i > 0 ? normalizedText.indexOf(textWords[i-1]) + textWords[i-1].length + 1 : 0);
+                    const originalPosition = SearchUtils.mapNormalizedPositionToOriginal(wordStartNormalized, positionMap);
+                    
                     matches.push({
                         ...match,
                         queryWord: queryWord,
                         textWord: textWord,
-                        position: i
+                        position: originalPosition,
+                        normalizedPosition: wordStartNormalized
                     });
                 }
             }

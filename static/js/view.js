@@ -512,8 +512,16 @@ function renderQuestionList() {
     var html = '';
     filteredQuestions.forEach(function(q) {
         var isSelected = selectedId === q.id;
-        var preview = q.raw_text ? q.raw_text.substring(0, 80) : 'Nessun testo';
-        var moreText = q.raw_text && q.raw_text.length > 80 ? '...' : '';
+        // Use combined smart preview + highlight function
+        var highlightedPreview = '';
+        if (window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(q.id) && searchInput.value) {
+            const matches = window.SEARCH_MATCHES.get(q.id);
+            highlightedPreview = SearchUtils.getSmartHighlightedPreview(q.raw_text || '', matches, 80);
+        } else {
+            // Fallback to old behavior
+            const preview = SearchUtils.getSmartPreview(q.raw_text || '', searchInput.value, 80);
+            highlightedPreview = SmartSearch.highlight(escapeHtml(preview), searchInput.value);
+        }
 
         // Determine status badge
         let statusBadge = '';
@@ -534,7 +542,7 @@ function renderQuestionList() {
                 <span class="question-id-modern">${escapeHtml(q.id)}</span>
                 ${statusBadge}
             </div>
-            <div class="question-text-modern">${SmartSearch.highlight(escapeHtml(preview), searchInput.value)}${moreText}</div>
+            <div class="question-text-modern">${highlightedPreview}</div>
             <div class="question-meta-modern">
                 <span>
                     <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>

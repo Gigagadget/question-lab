@@ -54,6 +54,11 @@ class SmartSearch {
         const trimmedQuery = query.trim();
         if (!trimmedQuery) return questions;
 
+        // Initialize global matches cache if not exists
+        if (!window.SEARCH_MATCHES) {
+            window.SEARCH_MATCHES = new Map();
+        }
+
         // Global configuration
         const minRelevanceScore = window.SMART_SEARCH_MIN_SCORE || 15;
 
@@ -90,11 +95,23 @@ class SmartSearch {
                 
                 // Filter out results below minimum score
                 const filteredAndRanked = scored
-                    .filter(item => item.relevance >= threshold)
-                    .map(item => item.question);
+                    .filter(item => item.relevance >= threshold);
 
-                return filteredAndRanked;
+                // Cache all matches for highlighting
+                window.SEARCH_MATCHES.clear();
+                filteredAndRanked.forEach(item => {
+                    window.SEARCH_MATCHES.set(item.question.id, item.matches);
+                });
+
+                return filteredAndRanked.map(item => item.question);
             }
+
+            // For non-simple queries, still cache matches
+            window.SEARCH_MATCHES.clear();
+            filtered.forEach(question => {
+                const matches = this.findAllMatches(question, trimmedQuery);
+                window.SEARCH_MATCHES.set(question.id, matches);
+            });
 
             return filtered;
 
@@ -160,16 +177,20 @@ class SmartSearch {
         for (const [fieldName, fieldValue] of Object.entries(fields)) {
             if (!fieldValue) continue;
 
-            const normalizedField = SearchUtils.normalizeText(fieldValue);
+            // Create position map to track original positions after normalization
+            const { normalized: normalizedField, positionMap } = SearchUtils.createNormalizationPositionMap(fieldValue);
 
             // Exact substring match
             if (normalizedField.includes(normalizedQuery)) {
-                const position = normalizedField.indexOf(normalizedQuery);
+                const normalizedPosition = normalizedField.indexOf(normalizedQuery);
+                const originalPosition = SearchUtils.mapNormalizedPositionToOriginal(normalizedPosition, positionMap);
+                
                 matches.push({
                     field: fieldName,
                     type: 'exact',
-                    position: position,
-                    matchLength: normalizedQuery.length
+                    position: originalPosition,
+                    matchLength: normalizedQuery.length,
+                    normalizedPosition: normalizedPosition
                 });
                 continue; // Skip fuzzy matching for this field if exact match found
             }
@@ -356,11 +377,19 @@ class SmartSearch {
      * Highlight search matches in text
      * @param {string} text - Text to highlight
      * @param {string} query - Search query
+     * @param {string} questionId - Optional question ID to use cached matches
      * @returns {string} Highlighted text
      */
-    static highlight(text, query) {
+    static highlight(text, query, questionId = null) {
         if (!window.SEARCH_CONFIG.highlightEnabled || !query) return text;
         
+        // If we have cached matches for this question, use them
+        if (questionId && window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(questionId)) {
+            const matches = window.SEARCH_MATCHES.get(questionId);
+            return SearchUtils.highlightMatchesWithPositions(text, matches);
+        }
+        
+        // Fallback to old behavior
         const parsedQuery = QueryParser.parse(query);
         let terms = [];
         

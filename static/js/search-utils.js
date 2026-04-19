@@ -10,6 +10,20 @@ window.SMART_SEARCH_MIN_SCORE = 15;
 
 class SearchUtils {
     /**
+     * Escape HTML special characters
+     * @param {string} str - String to escape
+     * @returns {string} Escaped string
+     */
+    static escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+    /**
      * Normalize text for consistent searching
      * @param {string} text - Text to normalize
      * @returns {string} Normalized text
@@ -24,6 +38,78 @@ class SearchUtils {
             // Normalize accents for Italian
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    /**
+     * Create position map from original text to normalized text
+     * @param {string} originalText - Original text
+     * @returns {Object} Object with normalized text and position map
+     */
+    static createNormalizationPositionMap(originalText) {
+        if (!originalText) {
+            return { normalized: '', positionMap: [] };
+        }
+
+        const normalized = [];
+        const positionMap = []; // maps normalized index → original index
+
+        let i = 0;
+        let originalLength = originalText.length;
+
+        // Skip leading whitespace (trim)
+        while (i < originalLength && /\s/.test(originalText[i])) {
+            i++;
+        }
+
+        // Process remaining characters
+        let lastWasSpace = false;
+        while (i < originalLength) {
+            const char = originalText[i];
+            
+            // Handle spaces - collapse multiple to single
+            if (/\s/.test(char)) {
+                if (!lastWasSpace) {
+                    normalized.push(' ');
+                    positionMap.push(i);
+                    lastWasSpace = true;
+                }
+                i++;
+                continue;
+            }
+
+            lastWasSpace = false;
+
+            // Handle accented characters
+            const normalizedChar = char
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+
+            for (const c of normalizedChar) {
+                normalized.push(c);
+                positionMap.push(i);
+            }
+
+            i++;
+        }
+
+        return {
+            normalized: normalized.join(''),
+            positionMap: positionMap
+        };
+    }
+
+    /**
+     * Map normalized position to original position
+     * @param {number} normalizedPos - Position in normalized text
+     * @param {Array} positionMap - Position map from createNormalizationPositionMap
+     * @returns {number} Position in original text
+     */
+    static mapNormalizedPositionToOriginal(normalizedPos, positionMap) {
+        if (normalizedPos < 0 || normalizedPos >= positionMap.length) {
+            return positionMap[positionMap.length - 1] || 0;
+        }
+        return positionMap[normalizedPos];
     }
 
     /**
@@ -219,6 +305,189 @@ class SearchUtils {
         }
         
         return matches;
+    }
+
+    /**
+     * Get smart preview that centers around the first match AND highlights correctly
+     * This combines both operations to fix position offset bugs
+     * @param {string} text - Full original text
+     * @param {Array} matches - Array of match objects from findAllMatches()
+     * @param {number} length - Desired preview length
+     * @param {Object} options - Highlight options
+     * @returns {string} Smart preview with correct highlighting
+     */
+    static getSmartHighlightedPreview(text, matches, length = 80, options = {}) {
+        if (!text) return 'Nessun testo';
+        if (!matches || matches.length === 0) {
+            return text.length <= length 
+                ? text 
+                : text.substring(0, length) + '...';
+        }
+
+        const { className = 'search-match', fieldFilter = 'raw_text' } = options;
+
+        // ONLY use matches from the correct field (raw_text for question preview)
+        // Ignore matches from id, answers, notes, etc.
+        const textMatches = matches.filter(m => m.field === fieldFilter);
+        
+        if (textMatches.length === 0) {
+            // No matches in this field, return standard preview
+            return text.length <= length 
+                ? text 
+                : text.substring(0, length) + '...';
+        }
+
+        // Find first valid match in this field
+        const firstMatch = textMatches.find(m => m.position !== undefined && m.matchLength !== undefined);
+        if (!firstMatch) {
+            return text.length <= length 
+                ? text 
+                : text.substring(0, length) + '...';
+        }
+
+        const halfLength = Math.floor(length / 2);
+        let start = Math.max(0, firstMatch.position - halfLength);
+        let end = Math.min(text.length, start + length);
+
+        // Adjust if we're too close to start or end
+        if (start === 0) {
+            end = Math.min(text.length, length);
+        }
+        if (end === text.length) {
+            start = Math.max(0, text.length - length);
+        }
+
+        // Get the raw preview slice
+        const previewSlice = text.substring(start, end);
+        
+        // Filter matches that are actually inside this preview slice AND from correct field
+        const matchesInPreview = textMatches.filter(match => {
+            return match.position >= start && 
+                   match.position + match.matchLength <= end;
+        });
+
+        // Sort matches by position
+        matchesInPreview.sort((a, b) => a.position - b.position);
+
+        let result = '';
+        let lastIndex = start;
+
+        // Add leading ellipsis if needed
+        if (start > 0) {
+            result += '...';
+        }
+
+        // Process each match in the preview
+        for (const match of matchesInPreview) {
+            // Add text from last position up to this match (adjusted for preview start)
+            result += SearchUtils.escapeHtml(text.substring(lastIndex, match.position));
+            
+            // Add highlighted match
+            const matchText = SearchUtils.escapeHtml(text.substring(match.position, match.position + match.matchLength));
+            result += `<mark class="${className}">${matchText}</mark>`;
+            
+            lastIndex = match.position + match.matchLength;
+        }
+
+        // Add remaining text after last match
+        result += SearchUtils.escapeHtml(text.substring(lastIndex, end));
+
+        // Add trailing ellipsis if needed
+        if (end < text.length) {
+            result += '...';
+        }
+
+        return result;
+    }
+
+    /**
+     * Get smart preview that centers around the first match
+     * @deprecated Use getSmartHighlightedPreview instead for correct highlighting
+     * @param {string} text - Full text
+     * @param {string} query - Search query
+     * @param {number} length - Desired preview length
+     * @returns {string} Smart preview with match centered
+     */
+    static getSmartPreview(text, query, length = 80) {
+        if (!text) return 'Nessun testo';
+        if (!query || query.trim() === '') {
+            return text.length <= length 
+                ? text 
+                : text.substring(0, length) + '...';
+        }
+
+        const matches = SearchUtils.findAllMatchPositions(text, [query]);
+        
+        // If no matches found, return standard preview
+        if (matches.length === 0) {
+            return text.length <= length 
+                ? text 
+                : text.substring(0, length) + '...';
+        }
+
+        const firstMatch = matches[0];
+        const halfLength = Math.floor(length / 2);
+        let start = Math.max(0, firstMatch.start - halfLength);
+        let end = Math.min(text.length, start + length);
+
+        // Adjust if we're too close to start or end
+        if (start === 0) {
+            end = Math.min(text.length, length);
+        }
+        if (end === text.length) {
+            start = Math.max(0, text.length - length);
+        }
+
+        let preview = text.substring(start, end);
+        let result = '';
+        
+        if (start > 0) result += '...';
+        result += preview;
+        if (end < text.length) result += '...';
+
+        return result;
+    }
+
+    /**
+     * Highlight matches using pre-calculated positions (for fuzzy matches)
+     * @param {string} text - Text to highlight
+     * @param {Array} matches - Array of match objects with position and matchLength
+     * @param {Object} options - Highlight options
+     * @returns {string} Text with matches highlighted
+     */
+    static highlightMatchesWithPositions(text, matches, options = {}) {
+        if (!text || !matches || matches.length === 0) return text;
+
+        const { className = 'search-match', fieldFilter = 'raw_text' } = options;
+
+        // ONLY use matches from the correct field
+        const textMatches = matches.filter(m => m.field === fieldFilter);
+        
+        if (textMatches.length === 0) {
+            return text;
+        }
+
+        // Sort matches by position ascending
+        const sortedMatches = [...textMatches].sort((a, b) => a.position - b.position);
+
+        let result = '';
+        let lastIndex = 0;
+
+        for (const match of sortedMatches) {
+            // Add text before the match
+            result += SearchUtils.escapeHtml(text.substring(lastIndex, match.position));
+            
+            // Add highlighted match
+            const matchText = SearchUtils.escapeHtml(text.substring(match.position, match.position + match.matchLength));
+            result += `<mark class="${className}">${matchText}</mark>`;
+            
+            lastIndex = match.position + match.matchLength;
+        }
+
+        // Add remaining text
+        result += SearchUtils.escapeHtml(text.substring(lastIndex));
+
+        return result;
     }
 }
 

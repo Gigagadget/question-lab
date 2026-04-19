@@ -23,8 +23,8 @@
     "mode": "fuzzy",
     "highlightEnabled": true,
     "searchAnswers": true,
-    "searchNotes": true,
-    "searchCategories": true,
+    "searchNotes": false,
+    "searchCategories": false,
     "minScore": 15
   }
 }

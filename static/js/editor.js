@@ -576,7 +576,15 @@ function renderQuestionList() {
                         <input type="checkbox" class="batch-select-checkbox" data-id="${q.id}" ${isSelected ? 'checked' : ''}>
                     </div>
                 </div>
-                <div class="question-text-modern">${SmartSearch.highlight(escapeHtml(q.raw_text ? q.raw_text.substring(0, 80) : 'Nessun testo disponibile'), searchInput.value)}${q.raw_text?.length > 80 ? '...' : ''}</div>
+                <div class="question-text-modern">${(() => {
+                    if (window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(q.id) && searchInput.value) {
+                        const matches = window.SEARCH_MATCHES.get(q.id);
+                        return SearchUtils.getSmartHighlightedPreview(q.raw_text || 'Nessun testo disponibile', matches, 80);
+                    } else {
+                        const preview = SearchUtils.getSmartPreview(q.raw_text || 'Nessun testo disponibile', searchInput.value, 80);
+                        return SmartSearch.highlight(escapeHtml(preview), searchInput.value);
+                    }
+                })()}</div>
                 <div class="question-meta-modern">
                     <span>
                         <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
