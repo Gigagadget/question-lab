@@ -1,237 +1,333 @@
-/* Stili per la pagina Gestione Database */
+/* ==================== DATABASE UI ====================
+ * Stili per la pagina Gestione Database
+ * Compatibile con theme.css e modern.css
+ */
 
-.databases-layout {
-    display: flex;
-    gap: 20px;
+/* ==================== WORKSPACE ==================== */
+/* Override modern.css display:flex che forza layout orizzontale */
+.workspace {
+    display: block;
     flex: 1;
-    overflow: hidden;
-    padding: 0 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 32px;
+    background: var(--bg-primary);
 }
 
-/* Lista Database */
-.databases-list-panel {
-    width: 400px;
-    flex-shrink: 0;
-    background: var(--bg-secondary);
-    border-radius: 12px;
+/* ==================== SECTION HEADER ==================== */
+.section-header {
     display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
-.list-header {
-    padding: 15px;
-    background: var(--bg-tertiary);
-    border-bottom: 1px solid var(--border-light);
-    flex-shrink: 0;
-}
-
-.databases-title {
+.section-title {
+    font-size: 18px;
     font-weight: 600;
     color: var(--text-primary);
 }
 
-.databases-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px;
+.section-title span {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: normal;
+    margin-left: 8px;
 }
 
+/* ==================== STATS BAR ==================== */
+/* Layout orizzontale sopra le card (come da mockup) */
+.stats-bar {
+    display: flex;
+    gap: 16px;
+    background: var(--bg-tertiary);
+    padding: 12px 20px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.stat-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    /* Centra verticalmente SVG rispetto al testo */
+    align-self: center;
+    display: block;
+    line-height: 1;
+    margin-bottom: 0px;
+}
+
+.stat-item .stat-value {
+    font-weight: 700;
+    color: var(--accent-blue);
+    font-size: 14px;
+}
+
+/* ==================== DATABASE CARDS GRID ==================== */
+.databases-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+}
+
+/* ==================== DATABASE CARD ==================== */
 .database-card {
     background: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 8px var(--shadow-color);
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
-    cursor: pointer;
+    border-radius: 20px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px var(--shadow-color);
 }
 
 .database-card:hover {
-    box-shadow: 0 4px 12px var(--shadow-hover);
     transform: translateY(-2px);
+    box-shadow: 0 12px 24px -12px var(--shadow-hover);
+    border-color: var(--accent-blue);
 }
 
+/* Card database attivo: stile sobrio in linea col design */
 .database-card.active {
-    border-color: var(--status-correct-border);
-    background: var(--status-correct-bg);
+    border-color: var(--accent-blue);
+    box-shadow:
+        0 0 0 1px var(--accent-blue),
+        0 4px 12px rgba(59, 130, 246, 0.12);
 }
 
-.database-card-header {
+/* Card Header */
+.card-header {
+    padding: 20px 20px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-light);
+    gap: 12px;
+}
+
+.db-name-section {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 12px;
+    flex-wrap: wrap;
+    min-width: 0;
 }
 
-.database-icon {
-    font-size: 1.5rem;
-}
-
-.database-name {
-    font-weight: 600;
-    font-size: 1.1rem;
+.db-name {
+    font-size: 18px;
+    font-weight: 700;
     color: var(--text-primary);
-    flex: 1;
+    word-break: break-word;
 }
 
+/* Badges */
 .active-badge {
-    background: var(--status-correct-text);
-    color: white;
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 10px;
+    background: #dcfce7;
+    color: #16a34a;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
     font-weight: 600;
-}
-
-.database-info {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 12px;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.database-info span {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 4px;
+    white-space: nowrap;
 }
 
-.database-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+[data-theme="dark"] .active-badge {
+    background: rgba(74, 222, 128, 0.12);
+    color: #4ade80;
 }
 
-.database-actions button {
-    flex: 1;
-    min-width: 70px;
-    padding: 6px 10px;
-    font-size: 0.8rem;
+.badge-icon {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    display: block;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
-/* Dettaglio Database */
-.database-detail-panel {
-    flex: 1;
-    background: var(--bg-secondary);
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.detail-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--text-secondary);
-    text-align: center;
-    padding: 40px;
-}
-
-.placeholder-icon {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    opacity: 0.5;
-}
-
-.detail-placeholder h3 {
-    margin: 0 0 10px 0;
-    color: var(--text-primary);
-}
-
-.detail-placeholder p {
-    margin: 0;
-    font-size: 0.9rem;
-}
-
-/* Database detail content */
-.database-detail-content {
-    padding: 20px;
-    overflow-y: auto;
-}
-
-.detail-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-light);
-}
-
-.detail-icon {
-    font-size: 2.5rem;
-}
-
-.detail-title {
-    flex: 1;
-}
-
-.detail-title h2 {
-    margin: 0 0 5px 0;
-    color: var(--text-primary);
-}
-
-.detail-title p {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.detail-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.stat-card {
+.timestamp-badge {
     background: var(--bg-tertiary);
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 2px 6px var(--shadow-color);
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.stat-value {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--accent-primary);
-    margin-bottom: 5px;
-}
-
-.stat-label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.detail-actions {
+/* Card Stats */
+.card-stats {
+    padding: 12px 20px;
     display: flex;
-    gap: 10px;
+    gap: 20px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-tertiary);
     flex-wrap: wrap;
 }
 
-.detail-actions button {
-    flex: 1;
-    min-width: 120px;
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
 }
 
-/* Empty list */
-.empty-list {
+.stat strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.stat .stat-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+    /* Centra verticalmente SVG */
+    display: block;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-bottom: 0px;
+}
+
+/* Card Actions */
+.card-actions {
+    padding: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.db-action-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.db-action-btn:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+.db-action-btn.primary {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+}
+
+.db-action-btn.primary:hover:not(:disabled) {
+    background: var(--accent-blue-hover);
+}
+
+.db-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Bottone danger: testo rosso, sfondo trasparente, hover con sfondo leggero */
+.db-action-btn.danger {
+    color: var(--accent-red);
+    border-color: var(--accent-red);
+    background: transparent;
+}
+
+.db-action-btn.danger:hover:not(:disabled) {
+    background: var(--status-wrong-bg);
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+}
+
+.btn-icon {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    flex-shrink: 0;
+    display: block;
+    line-height: 1;
+}
+
+/* ==================== EMPTY STATE ==================== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    border: 1px solid var(--border-light);
+    grid-column: 1 / -1;
+}
+
+.empty-state .empty-icon {
+    width: 64px;
+    height: 64px;
+    color: var(--text-muted);
+    opacity: 0.4;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 24px 0;
+}
+
+/* ==================== LOADING STATE ==================== */
+.loading-state {
     text-align: center;
     padding: 40px 20px;
-    color: var(--text-light);
+    color: var(--text-muted);
+    font-size: 14px;
+    grid-column: 1 / -1;
 }
 
-/* Form group per input */
+/* ==================== MODAL ADAPTERS ==================== */
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+
 .form-group {
     margin-bottom: 15px;
 }
@@ -241,34 +337,14 @@
     margin-bottom: 5px;
     color: var(--text-primary);
     font-weight: 500;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font-size: 0.9rem;
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 2px rgba(91, 163, 221, 0.2);
-}
-
-.form-group input.error {
-    border-color: var(--accent-red);
-    box-shadow: 0 0 0 2px rgba(216, 93, 111, 0.2);
+    font-size: 0.85rem;
 }
 
 .form-group small {
     display: block;
     margin-top: 5px;
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 }
 
 .form-group .error-message {
@@ -279,26 +355,140 @@
     font-weight: 500;
 }
 
-/* Modal actions */
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    justify-content: flex-end;
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 13px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: inherit;
+    transition: all 0.2s;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-    .databases-layout {
+.form-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background: var(--bg-secondary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input.error {
+    border-color: var(--accent-red);
+    box-shadow: 0 0 0 2px rgba(216, 93, 111, 0.2);
+}
+
+/* ==================== TOP BAR STATUS ==================== */
+.top-bar-left #statusMsg {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1200px) {
+    .databases-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .workspace {
+        padding: 20px;
+    }
+
+    .databases-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-bar {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .card-actions {
+        justify-content: center;
+    }
+
+    .card-header {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .card-stats {
+        gap: 12px;
+    }
+
+    .top-bar {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .top-bar-left {
+        flex-wrap: wrap;
+        gap: 2px;
+        align-items: baseline;
+    }
+
+    .top-bar-left .page-title {
+        font-size: 16px;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .top-bar-left #statusMsg {
+        font-size: 0.7rem;
+        width: 100%;
+        order: 10;
+    }
+
+    .header-actions {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 6px;
+        padding-bottom: 4px;
+    }
+
+    .header-actions .btn-icon-modern {
+        padding: 6px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .header-actions .btn-primary {
+        padding: 8px 14px;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+
+    /* Touch target minimo 44px */
+    .db-action-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-title {
+        font-size: 16px;
+    }
+
+    .db-name {
+        font-size: 16px;
+    }
+
+    .card-actions {
         flex-direction: column;
     }
-    
-    .databases-list-panel {
+
+    .db-action-btn {
         width: 100%;
-        max-height: 40vh;
-    }
-    
-    .database-detail-panel {
-        min-height: 50vh;
+        justify-content: center;
     }
 }

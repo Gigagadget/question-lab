@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -6,122 +6,276 @@
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=1">
     <link rel="apple-touch-icon" href="/static/favicon.svg?v=1">
     <title>QuestionLab - View</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
     <link rel="stylesheet" href="/static/css/view.css">
+    <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/theme.css">
     <link rel="stylesheet" href="/static/css/no-db-blocker.css">
+    <link rel="stylesheet" href="/static/css/immersive.css">
+
 </head>
-<body>
+<body class="page-view">
     <!-- Overlay di blocco quando nessun database è selezionato -->
     <div id="noDbBlocker" class="no-db-blocker" style="display: none;">
         <div class="block-message">
-            <div class="icon">🗃️</div>
+            <div class="icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
             <h2>Nessun Database Selezionato</h2>
             <p>Per visualizzare le domande, devi prima selezionare o creare un database.</p>
-            <a href="/databases" class="btn-go-to-databases">📂 Vai alla Gestione Database</a>
+            <a href="/databases" class="btn-go-to-databases"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Vai alla Gestione Database</a>
         </div>
     </div>
 
-    <div class="app-container">
-        <div class="header">
-            <h1>👁️ Modalità Visualizzazione</h1>
-            <p>Naviga e visualizza le domande in formato ottimizzato per la lettura</p>
-        </div>
-
-        <div class="toolbar">
-            <button id="btnHome" class="info">🏠 Home</button>
-            <button id="btnHelp" class="info">❓ Aiuto</button>
-            <button id="btnExportDoc" class="export-btn">📄 Esporta DOC</button>
-            <button id="btnExportPdf" class="export-btn">📕 Esporta PDF</button>
-            <select id="sortSelect" class="view-filter-select" style="width: auto; margin-left: 10px;">
-                <option value="id">🔢 Per Numero</option>
-                <option value="category">🏷️ Per Categoria</option>
-            </select>
-            <div class="view-counter" id="viewCounter">Domanda 0 di 0</div>
-            <div class="status" id="statusMsg">Pronto</div>
-        </div>
-        
-        <!-- Help Modal -->
-        <div id="helpModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h3>ℹ️ Guida alla Modalità Visualizzazione</h3>
-                <div class="help-content">
-                    <h4> panoramica delle funzionalità</h4>
-                    <ul>
-                        <li><strong>Navigazione tra le domande</strong>: Usa i pulsanti "Precedente" e "Successiva" oppure i tasti freccia della tastiera</li>
-                        <li><strong>Filtri</strong>: Filtra le domande per dominio e sottodominio usando le caselle di controllo</li>
-                        <li><strong>Ricerca</strong>: Cerca parole specifiche nelle domande usando la barra di ricerca</li>
-                        <li><strong>Ordinamento</strong>: Scegli come ordinare le domande dal menu a tendina (per numero o per categoria)</li>
-                        <li><strong>Mostra/Nascondi risposte</strong>: Usa il pulsante "Mostra Risposte" per vedere quali risposte sono corrette</li>
-                        <li><strong>Esportazione</strong>: Esporta le domande visualizzate in formato DOC o PDF</li>
-                        <li><strong>Modifica rapida</strong>: Clicca su "Modifica" per aprire la domanda nell'editor</li>
-                    </ul>
-                    
-                    <h4>Scorciatoie da tastiera</h4>
-                    <ul>
-                        <li><strong>Frecce sinistra/destra</strong>: Naviga tra le domande</li>
-                    </ul>
-                    
-                    <h4>Suggerimenti utili</h4>
-                    <ul>
-                        <li>Puoi selezionare più domini e sottodomini contemporaneamente</li>
-                        <li>I filtri si applicano automaticamente man mano che selezioni le opzioni</li>
-                        <li>Il contatore in alto mostra la posizione attuale tra le domande filtrate</li>
-                        <li>Le domande selezionate vengono evidenziate nella lista</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="view-layout">
-            <!-- Left Panel: Filters + Question List -->
-            <div class="view-list-panel">
-            <div class="view-filters">
-                <div class="filter-row">
-                    <input type="text" id="searchInput" placeholder="🔍 Cerca domande..." class="view-search">
-                </div>
-                <div class="filter-row">
-                    <div class="category-filter-group">
-                        <label class="filter-label">Domini:</label>
-                        <div id="primaryDomainCheckboxes" class="checkbox-group"></div>
+    <div class="app">
+        <!-- Sidebar minimal a icone -->
+        <aside class="sidebar">
+            <div class="nav-items">
+                <a href="/" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>Home</span>
+                </a>
+                <a href="/editor" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Editor</span>
+                </a>
+                <a href="/quiz" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    <span>Quiz</span>
+                </a>
+                <a href="/view" class="nav-item active">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>View</span>
+                </a>
+                <a href="/databases" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    <span>Database</span>
+                </a>
+<div class="nav-item" id="settingsNavItem">
+<div class="nav-icon">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+</div>
+<span>Impostazioni</span>
+</div>
+<div class="settings-backdrop" id="settingsBackdrop"></div>
+<div class="settings-panel collapsed" id="searchSettingsPanel">
+<div class="settings-group">
+<div class="setting-row">
+<span>Modalità Ricerca</span>
+<select id="searchModeSelect">
+<option value="strict"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Stretta</option>
+<option value="normal" selected><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Normale</option>
+<option value="fuzzy"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Fuzzy</option>
+</select>
+</div>
+                        <div class="setting-row">
+                            <span>Evidenzia risultati</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="highlightEnabled" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <span>Cerca nelle risposte</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="searchAnswers" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <span>Cerca nelle note</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="searchNotes" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <span>Cerca nelle categorie</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="searchCategories" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
-                <div class="filter-row">
-                    <div class="category-filter-group">
-                        <label class="filter-label">Sottodomini:</label>
-                        <div id="subdomainCheckboxes" class="checkbox-group"></div>
+            </div>
+            <div class="nav-item" id="btnHelpSidebar">
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Aiuto</span>
+            </div>
+            <div class="nav-item" id="themeToggleNav" onclick="toggleTheme()">
+                <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <span>Tema</span>
+            </div>
+            <div class="nav-item" id="btnImmersiveSidebar">
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                <span>Immersiva</span>
+            </div>
+        </aside>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <!-- Top bar -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="page-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Visualizzazione</h1>
+                    <span id="activeDbName" class="title-db-name"></span>
+                    <span id="statusMsg" style="display: none;"></span>
+                </div>
+                <div class="header-actions">
+                    <button id="btnFilters" class="btn-icon-modern btn-filters-trigger">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                        Filtri
+                        <span id="filtersBadge" class="filters-badge" style="display: none;">0</span>
+                    </button>
+                    <button id="btnExportDoc" class="btn-icon-modern"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> DOC</button>
+                    <button id="btnExportPdf" class="btn-icon-modern"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF</button>
+                    <select id="sortSelect" class="filter-select-modern" style="width: auto;">
+                        <option value="id"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> Ordina per numero</option>
+                        <option value="category"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Ordina per categoria</option>
+                    </select>
+                </div>
+            </header>
+
+            <!-- Active filters bar -->
+            <div class="active-filters-bar" id="activeFiltersBar" style="display: none;">
+                <div class="active-filters-tags" id="activeFiltersTags"></div>
+                <button class="clear-all-filters-btn" id="clearAllFiltersBtn">Cancella tutti</button>
+            </div>
+
+            <!-- Workspace 2 colonne -->
+            <div class="workspace">
+                <!-- Mobile panel tabs (no filters tab - filters are now in popover) -->
+                <div class="mobile-panel-tabs" style="display: none;">
+                    <button class="mobile-panel-tab" data-panel="questions">Domande</button>
+                    <button class="mobile-panel-tab active" data-panel="detail">Visualizza</button>
+                </div>
+
+                <!-- Panel 1: Lista domande -->
+                <div class="questions-panel" id="questionsPanel">
+                    <div class="panel-collapse-toggle" id="toggleQuestions" title="Nascondi lista">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4L8 8L12 12"/></svg>
+                    </div>
+
+                    <!-- Search bar (inside questions panel) -->
+                    <div class="view-search-bar">
+                        <div class="search-bar-container">
+                            <svg class="search-bar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="searchInput" placeholder="Cerca domande..." class="search-bar-input">
+                        </div>
+                        <button id="toggleCorrectBtn" class="btn-icon-modern toggle-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Mostra Risposte</button>
+                    </div>
+
+                    <div class="questions-toolbar">
+                        <span class="questions-count"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> <span id="questionCount">0 domande</span></span>
+                    </div>
+
+                    <div id="questionsList" class="questions-list">
+                        <div class="empty-list">Caricamento...</div>
                     </div>
                 </div>
-                <div class="filter-row">
-                    <button id="clearFiltersBtn" class="small-btn">Pulisci Filtri</button>
-                    <button id="toggleCorrectBtn" class="small-btn toggle-btn">👁️ Mostra Risposte</button>
-                    <span id="questionCount" class="view-count">0 domande</span>
-                </div>
-            </div>
-                <div class="view-questions-list" id="questionsList">
-                    <div class="empty-list">Caricamento...</div>
+
+                <!-- Panel 2: Dettaglio domanda -->
+                <div class="detail-panel mobile-active" id="detailPanel">
+                    <!-- Detail nav bar (stays above content, not replaced by JS) -->
+                    <div class="view-detail-nav" id="viewDetailNav">
+                        <button id="detailPrevBtn" class="btn-outline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg></button>
+                        <span class="view-counter" id="viewCounter">0 / 0</span>
+                        <button id="detailNextBtn" class="btn-outline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg></button>
+                    </div>
+                    <!-- Content container (this is what JS replaces) -->
+                    <div id="detailContent">
+                        <div class="view-placeholder">
+                            <div class="placeholder-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </div>
+                            <h3>Seleziona una domanda</h3>
+                            <p>Scegli una domanda dalla lista per visualizzarla</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Right Panel: Question Reading View -->
-            <div class="view-detail-panel" id="detailPanel">
-                <div class="view-placeholder">
-                    <div class="placeholder-icon">📖</div>
-                    <h3>Seleziona una domanda</h3>
-                    <p>Scegli una domanda dalla lista per visualizzarla</p>
+            <!-- Filters Popover Modal -->
+            <div class="filters-popover-overlay" id="filtersPopoverOverlay" style="display: none;"></div>
+            <div class="filters-popover" id="filtersPopover" style="display: none;">
+                <div class="filters-popover-header">
+                    <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> Filtri</h3>
+                    <button class="filters-popover-close" id="filtersPopoverClose" title="Chiudi">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div class="filters-popover-search">
+                    <input type="text" id="popoverDomainSearch" placeholder="Cerca dominio...">
+                </div>
+                <div class="filters-popover-body">
+                    <div id="popoverFilterHierarchy" class="popover-filter-hierarchy"></div>
+                </div>
+                <div class="filters-popover-footer">
+                    <button id="popoverResetBtn" class="btn-popover-secondary">Seleziona tutti</button>
+                    <div class="popover-footer-actions">
+                        <button id="popoverCloseBtn" class="btn-popover-secondary">Chiudi</button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
+    </div>
 
-        <!-- Navigation Arrows -->
-        <div class="view-nav-arrows">
-            <button id="navPrevBtn" class="nav-arrow" disabled>◀ Precedente</button>
-            <button id="navNextBtn" class="nav-arrow" disabled>Successiva ▶</button>
+    <!-- Desktop Navigation Arrows (hidden - nav is now in detail panel) -->
+    <div class="view-nav-arrows" id="viewNavArrows" style="display: none;">
+        <button id="navPrevBtn" class="btn-outline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg> Precedente</button>
+        <button id="navNextBtn" class="btn-outline">Successiva <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+
+    <!-- Mobile Navigation Bar (visible only on mobile) -->
+    <div class="view-mobile-nav" id="viewMobileNav">
+        <button id="navPrevBtnMobile" class="btn-outline"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <span class="view-mobile-counter" id="viewMobileCounter">0 / 0</span>
+        <button id="navNextBtnMobile" class="btn-outline"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Guida alla Modalità Visualizzazione</h3>
+            <div class="help-content">
+                <h4>Panoramica delle funzionalità</h4>
+                <ul>
+                    <li><strong>Navigazione tra le domande</strong>: Usa i pulsanti "Precedente" e "Successiva" oppure i tasti freccia della tastiera</li>
+                    <li><strong>Filtri</strong>: Clicca il pulsante "Filtri" nella barra superiore per aprire il pannello dei filtri per dominio e sottodominio</li>
+                    <li><strong>Ricerca</strong>: Cerca parole specifiche nelle domande usando la barra di ricerca</li>
+                    <li><strong>Ordinamento</strong>: Scegli come ordinare le domande dal menu a tendina (per numero o per categoria)</li>
+                    <li><strong>Mostra/Nascondi risposte</strong>: Usa il pulsante "Mostra Risposte" per vedere quali risposte sono corrette</li>
+                    <li><strong>Filtri attivi</strong>: I filtri selezionati appaiono come tag rimovibili sotto la barra superiore</li>
+                    <li><strong>Esportazione</strong>: Esporta le domande visualizzate in formato DOC o PDF</li>
+                    <li><strong>Modifica rapida</strong>: Clicca su "Modifica" per aprire la domanda nell'editor</li>
+                </ul>
+
+                <h4>Scorciatoie da tastiera</h4>
+                <ul>
+                    <li><strong>Frecce sinistra/destra</strong>: Naviga tra le domande</li>
+                    <li><strong>Esc</strong>: Chiude il pannello dei filtri</li>
+                </ul>
+
+                <h4>Suggerimenti utili</h4>
+                <ul>
+                    <li>Puoi selezionare più domini e sottodomini contemporaneamente nel pannello dei filtri</li>
+                    <li>I filtri si applicano solo quando premi "Applica" nel pannello</li>
+                    <li>Ogni tag filtro può essere rimosso singolarmente cliccando sulla ✕</li>
+                    <li>Il contatore nel dettaglio mostra la posizione attuale tra le domande filtrate</li>
+                    <li>Le domande selezionate vengono evidenziate nella lista</li>
+                </ul>
+            </div>
         </div>
     </div>
 
+    <script src="/static/js/search-utils.js"></script>
+    <script src="/static/js/fuzzy-matcher.js"></script>
+    <script src="/static/js/query-parser.js"></script>
+    <script src="/static/js/search-engine.js"></script>
+    <script src="/static/js/search-settings.js"></script>
     <script src="/static/js/view.js"></script>
     <script src="/static/js/theme.js"></script>
+    <script src="/static/js/immersive.js" defer></script>
 </body>
 </html>

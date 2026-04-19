@@ -375,10 +375,10 @@ def get_unique_categories(questions):
 def load_user_prefs():
     """Carica le preferenze utente da file JSON"""
     from pathlib import Path
-    
+
     BASE_DIR = Path(__file__).resolve().parent.parent
     USER_PREFS_FILE = str(BASE_DIR / 'preferences.json')
-    default_prefs = {"theme": "light"}
+    default_prefs = {"theme": "light", "lan_access": False}
 
     if not os.path.exists(USER_PREFS_FILE):
         save_user_prefs(default_prefs)
@@ -386,7 +386,11 @@ def load_user_prefs():
 
     try:
         with open(USER_PREFS_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            prefs = json.load(f)
+        # Ensure lan_access default exists
+        if "lan_access" not in prefs:
+            prefs["lan_access"] = False
+        return prefs
     except Exception as e:
         logger.error(f"Errore nel caricamento delle preferenze: {e}")
         return default_prefs
@@ -406,6 +410,91 @@ def save_user_prefs(prefs):
     except Exception as e:
         logger.error(f"Errore nel salvataggio delle preferenze: {e}")
         return False
+
+
+def load_config():
+    """Carica config.json e aggiunge automaticamente campi mancanti"""
+    from pathlib import Path
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    CONFIG_FILE = str(BASE_DIR / 'config.json')
+    
+    try:
+        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+    except Exception as e:
+        logger.error(f"Errore nel caricamento di config.json: {e}")
+        return {}
+    
+# Aggiungi campi LAN password se non esistono
+    if "lan_password_hash" not in config:
+        config["lan_password_hash"] = None
+    if "lan_password_enabled" not in config:
+        config["lan_password_enabled"] = False
+    if "lan_auth_realm" not in config:
+        import random
+        config["lan_auth_realm"] = f"QuestionLab {random.randint(1000,9999)}"
+    if "log_failed_auth" not in config:
+        config["log_failed_auth"] = False
+
+    # Aggiungi search settings defaults se non esistono
+    if "search" not in config:
+        config["search"] = {
+            "mode": "normal",
+            "highlightEnabled": True,
+            "searchAnswers": True,
+            "searchNotes": True,
+            "searchCategories": True
+        }
+        save_config(config)
+
+    return config
+
+
+def save_config(config):
+    """Salva config.json mantenendo tutti i campi esistenti"""
+    from pathlib import Path
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    CONFIG_FILE = str(BASE_DIR / 'config.json')
+
+    try:
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+        return True
+    except Exception as e:
+        logger.error(f"Errore nel salvataggio di config.json: {e}")
+        return False
+
+
+def set_lan_password(password: str) -> bool:
+    """Imposta password LAN (solo se chiamata da localhost)"""
+    import bcrypt
+    import random
+    config = load_config()
+    salt = bcrypt.gensalt()
+    config["lan_password_hash"] = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+    config["lan_password_enabled"] = True
+    # ✅ Rigenera realm random ogni volta che cambia la password
+    # Questo forza il browser a dimenticare le vecchie credenziali in cache
+    config["lan_auth_realm"] = f"QuestionLab {random.randint(1000,9999)}"
+    return save_config(config)
+
+
+def verify_lan_password(password: str) -> bool:
+    """Verifica password LAN contro hash salvato"""
+    import bcrypt
+    config = load_config()
+    if not config.get("lan_password_hash"):
+        return False
+    try:
+        return bcrypt.checkpw(password.encode('utf-8'), config["lan_password_hash"].encode('utf-8'))
+    except Exception:
+        return False
+
+
+def is_lan_password_set() -> bool:
+    """Verifica se password LAN è stata impostata"""
+    config = load_config()
+    return config.get("lan_password_hash") is not None and config["lan_password_hash"] != ""
 
 
 def migrate_old_backups():

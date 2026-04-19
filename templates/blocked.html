@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuestionLab - Accesso Bloccato</title>
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-light: #64748b;
+            --accent-red: #bf5b68;
+            --accent-red-light: rgba(191, 91, 104, 0.1);
+            --border-light: #e2e8f0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        html[data-theme="dark"] {
+            --bg-primary: #0f0f12;
+            --bg-secondary: #1a1a1e;
+            --text-primary: #e2e8f0;
+            --text-light: #94a3b8;
+            --accent-red: #bf5b68;
+            --accent-red-light: rgba(191, 91, 104, 0.15);
+            --border-light: #2d2d31;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .blocked-container {
+            max-width: 480px;
+            width: 100%;
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            text-align: center;
+        }
+
+        .blocked-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: var(--accent-red-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .blocked-icon svg {
+            width: 40px;
+            height: 40px;
+            color: var(--accent-red);
+        }
+
+        .blocked-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .blocked-subtitle {
+            font-size: 16px;
+            color: var(--text-light);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .blocked-info {
+            background: var(--accent-red-light);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .blocked-info p {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .blocked-info p:last-child {
+            margin-bottom: 0;
+        }
+
+        .blocked-info code {
+            background: var(--bg-primary);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: var(--accent-red);
+        }
+
+        .blocked-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .blocked-btn {
+            background: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .blocked-btn:hover {
+            opacity: 0.85;
+        }
+
+        .blocked-note {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-top: 16px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 480px) {
+            .blocked-container {
+                padding: 32px 24px;
+            }
+
+            .blocked-title {
+                font-size: 20px;
+            }
+
+            .blocked-subtitle {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="blocked-container">
+        <div class="blocked-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+        </div>
+
+        <h1 class="blocked-title">Accesso Bloccato</h1>
+        <p class="blocked-subtitle">L'accesso da rete locale è disabilitato. Solo le connessioni localhost sono consentite.</p>
+
+        <div class="blocked-info">
+            <p>La tua richiesta proviene da:</p>
+            <p><code>{{ client_ip }}</code></p>
+        </div>
+
+        <div class="blocked-actions">
+            <button class="blocked-btn" onclick="window.location.reload()">Prova di nuovo</button>
+        </div>
+
+        <p class="blocked-note">
+            Per abilitare l'accesso LAN, contatta l'amministratore del server e abilita l'opzione "Accesso LAN" dalla pagina principale dell'applicazione.
+        </p>
+    </div>
+
+    <script>
+        // Detect theme preference - matches main app logic
+        (async function() {
+            const DARK_THEME = 'dark';
+            const LIGHT_THEME = 'light';
+            
+            let theme = LIGHT_THEME;
+            
+            // First try to get from server preferences (same as main app)
+            try {
+                const response = await fetch('/api/preferences');
+                if (response.ok) {
+                    const data = await response.json();
+                    theme = data.theme || LIGHT_THEME;
+                } else {
+                    // If server returns error (like 403 when blocked), throw to trigger fallback
+                    throw new Error('Server response not ok');
+                }
+            } catch (err) {
+                // Fallback to localStorage if server is unreachable or blocked
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme) {
+                    theme = savedTheme;
+                } else {
+                    // Fallback to system preference
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    theme = prefersDark ? DARK_THEME : LIGHT_THEME;
+                }
+            }
+            
+            if (theme === DARK_THEME) {
+                document.documentElement.setAttribute('data-theme', DARK_THEME);
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        })();
+    </script>
+</body>
+</html>

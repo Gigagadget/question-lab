@@ -5,10 +5,10 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #f0f2f5;
     margin: 0;
-    padding: 15px;
+    padding: 0;
     color: #1a2c3e;
 }
 
@@ -52,20 +52,13 @@ body {
 }
 
 button {
-    background: #2c3e66;
-    color: white;
     border: none;
     padding: 5px 12px;
-    border-radius: 20px;
+    border-radius: 10px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.8rem;
-}
-
-button:hover {
-    background: #1e2f4a;
-    transform: translateY(-1px);
 }
 
 /* Button color variants - ONLY COLORS, no other properties */
@@ -136,7 +129,7 @@ button.small-btn {
 }
 
 .search-box {
-    padding: 8px 12px;
+    padding: 8px 0px;
     border-bottom: 1px solid #edf2f7;
 }
 
@@ -450,14 +443,9 @@ textarea {
 
 .duplicate-item-detail {
     padding: 6px;
-    border-bottom: 1px solid #fde68a;
-    font-size: 0.7rem;
-}
-
-.duplicate-item-detail strong {
-    color: #b45309;
-    font-family: monospace;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
+    display: grid;
+    grid-template-columns: 70px 1fr;
 }
 
 /* Modal styles */
@@ -484,45 +472,7 @@ textarea {
     font-size: 0.8rem;
 }
 
-/* Help modal - larger size for all pages */
-#helpModal .modal-content {
-    max-width: 700px;
-    max-height: 90vh;
-}
-
-.help-content h4 {
-    margin: 15px 0 10px 0;
-    padding-bottom: 5px;
-    border-bottom: 2px solid #2c7da0;
-    color: #1e293b;
-    font-size: 0.9rem;
-}
-
-.help-content ul {
-    padding-left: 20px;
-    margin: 10px 0;
-}
-
-.help-content li {
-    margin-bottom: 8px;
-    line-height: 1.4;
-}
-
-.help-content strong {
-    color: #2c3e66;
-}
-
-/* Dark mode - help modal */
-body.dark .help-content h4,
-[data-theme="dark"] .help-content h4 {
-    border-bottom-color: #6eb5f0;
-    color: #e8edf2;
-}
-
-body.dark .help-content strong,
-[data-theme="dark"] .help-content strong {
-    color: #6eb5f0;
-}
+/* Help modal styles now defined in modern.css */
 
 .close {
     color: #aaa;
@@ -579,15 +529,6 @@ body.dark .help-content strong,
     font-size: 0.7rem;
 }
 
-#clearFiltersBtn {
-    background: #6c757d;
-    padding: 5px 10px;
-    font-size: 0.7rem;
-}
-
-#clearFiltersBtn:hover {
-    background: #5a6268;
-}
 
 button.active {
     background: #e67e22;
@@ -626,10 +567,7 @@ button.active {
     }
 }
 
-/* Stats modal styles */
-.stats-section {
-    margin-bottom: 20px;
-}
+
 
 .stats-section h4 {
     margin: 0 0 10px 0;
@@ -679,24 +617,6 @@ button.active {
     justify-content: space-between;
 }
 
-/* Navigation buttons */
-.nav-buttons {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-    justify-content: flex-end;
-}
-
-.nav-buttons button {
-    padding: 4px 10px;
-    font-size: 0.7rem;
-    background: #5a6e7a;
-}
-
-.nav-buttons button:hover {
-    background: #2c3e66;
-}
-
 /* Flag feature styles */
 .flag-indicator {
     margin-right: 4px;
@@ -730,4 +650,200 @@ body.dark .question-item.flagged-item:hover {
 
 #btnFlagQuestion.flag-inactive {
     background: #6c757d;
+}
+
+/* Search Match Highlighting */
+.search-match {
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-weight: 500;
+}
+
+.theme-light .search-match {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.theme-dark .search-match {
+    background-color: #4b3d00;
+    color: #ffd43b;
+}
+
+/* Settings Panel */
+.settings-nav-item {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+.settings-nav-item:hover {
+    background-color: var(--nav-hover-bg);
+}
+
+.settings-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.settings-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.settings-panel {
+  position: fixed;
+  left: 80px;
+  top: 16px;
+  min-width: 280px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px var(--shadow-color);
+  z-index: 10000;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.settings-panel.collapsed {
+  max-height: 0;
+  opacity: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.settings-panel:not(.collapsed) {
+  max-height: 500px;
+  opacity: 1;
+  padding: 16px;
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.setting-row:last-child {
+  border-bottom: none;
+}
+
+.setting-row span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.setting-row select {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.setting-row select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: 0.2s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.2s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--accent-blue);
+}
+
+input:focus + .toggle-slider {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .settings-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    z-index: 10001;
+    border-radius: 16px 16px 0 0;
+    max-height: 70vh;
+    border: none;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .sidebar #settingsNavItem {
+    position: static;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    display: flex;
+    padding: 8px 0;
+  }
+
+  .sidebar #settingsNavItem span:not(.nav-icon) {
+    display: none;
+  }
 }

@@ -211,3 +211,17 @@ def delete_all_quiz_logs():
     except Exception as e:
         logger.error(f"Errore in DELETE /api/quiz/logs: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+@quiz_bp.route('/api/quiz/statistics', methods=['GET'])
+def get_quiz_statistics():
+    """Ottiene le statistiche generali del quiz"""
+    try:
+        quiz_manager = get_quiz_manager()
+        if quiz_manager is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
+        stats = quiz_manager.get_quiz_statistics()
+        return jsonify(stats), 200
+    except Exception as e:
+        logger.error(f"Errore in GET /api/quiz/statistics: {e}")
+        return jsonify({"error": str(e)}), 500

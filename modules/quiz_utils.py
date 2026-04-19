@@ -194,7 +194,7 @@ class QuizManager:
         Valida le risposte dell'utente per una domanda
         
         Returns:
-            Dict con: is_correct, is_partial, correct_answers, feedback
+            Dict con: is_correct, is_partial, correct_answers, feedback, score
         """
         questions = self.load_database()
         
@@ -211,8 +211,83 @@ class QuizManager:
                 'is_correct': False,
                 'is_partial': False,
                 'correct_answers': [],
-                'feedback': 'error'
+                'feedback': 'error',
+                'score': 0.0
             }
+        
+        correct_answers = question.get('correct', [])
+        valid_correct = [c for c in correct_answers if c and c != 'null' and c.strip()]
+        
+        # Normalizza le risposte utente
+        user_answers_set = set(answer.strip().upper() for answer in user_answers if answer and answer.strip())
+        correct_answers_set = set(answer.strip().upper() for answer in valid_correct if answer and answer.strip())
+        total_correct = len(correct_answers_set)
+        
+        # Calcola il risultato
+        if not correct_answers_set:
+            # Nessuna risposta corretta definita
+            return {
+                'is_correct': False,
+                'is_partial': False,
+                'correct_answers': list(correct_answers_set),
+                'feedback': 'nessuna_risposta_corretta_definita',
+                'score': 0.0
+            }
+        
+        if not user_answers_set:
+            # L'utente non ha selezionato nulla
+            return {
+                'is_correct': False,
+                'is_partial': False,
+                'correct_answers': list(correct_answers_set),
+                'feedback': 'nessuna_risposta',
+                'score': 0.0
+            }
+        
+        # Verifica correttezza
+        if user_answers_set == correct_answers_set:
+            return {
+                'is_correct': True,
+                'is_partial': False,
+                'correct_answers': list(correct_answers_set),
+                'feedback': 'corretto',
+                'score': 1.0
+            }
+        
+        # Verifica parziale
+        correct_selected = user_answers_set.intersection(correct_answers_set)
+        wrong_selected = user_answers_set - correct_answers_set
+        correct_selected_count = len(correct_selected)
+        
+        if correct_selected and not wrong_selected:
+            # Ha selezionato solo alcune risposte corrette - Punteggio proporzionale
+            score = correct_selected_count / total_correct
+            return {
+                'is_correct': False,
+                'is_partial': True,
+                'correct_answers': list(correct_answers_set),
+                'feedback': 'parziale_mancanti',
+                'score': score
+            }
+        
+        if correct_selected and wrong_selected:
+            # Ha selezionato alcune corrette e alcune sbagliate - 0 punti
+            return {
+                'is_correct': False,
+                'is_partial': True,
+                'correct_answers': list(correct_answers_set),
+                'feedback': 'parziale_errate',
+                'score': 0.0
+            }
+        
+        # Ha selezionato solo risposte sbagliate
+        return {
+            'is_correct': False,
+            'is_partial': False,
+            'correct_answers': list(correct_answers_set),
+            'feedback': 'errato',
+            'score': 0.0
+        }
         
         correct_answers = question.get('correct', [])
         valid_correct = [c for c in correct_answers if c and c != 'null' and c.strip()]
@@ -387,3 +462,33 @@ class QuizManager:
                 print(f"Errore nel cancellare il log {file}: {e}")
         
         return deleted_count
+    
+    def get_quiz_statistics(self) -> Dict:
+        """
+        Ottiene le statistiche generali del quiz:
+        - Numero totale di tentativi
+        - Media punteggio
+        - Ultimo quiz effettuato
+        
+        Returns:
+            Dict con le statistiche
+        """
+        logs = self.get_quiz_logs()
+        
+        if not logs:
+            return {
+                'total_attempts': 0,
+                'average_score': 0.0,
+                'last_quiz_date': None
+            }
+        
+        total_attempts = len(logs)
+        total_score = sum(log.get('score_percentage', 0) for log in logs)
+        average_score = total_score / total_attempts if total_attempts > 0 else 0.0
+        last_quiz_date = logs[0].get('date') if logs else None
+        
+        return {
+            'total_attempts': total_attempts,
+            'average_score': round(average_score, 1),
+            'last_quiz_date': last_quiz_date
+        }

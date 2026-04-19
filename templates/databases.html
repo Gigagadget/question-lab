@@ -5,44 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=1">
     <link rel="apple-touch-icon" href="/static/favicon.svg?v=1">
-    <title>QuestionLab - Databases</title>
+    <title>QuestionLab - Gestione Database</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
     <link rel="stylesheet" href="/static/css/theme.css">
     <link rel="stylesheet" href="/static/css/databases.css">
+    <link rel="stylesheet" href="/static/css/immersive.css">
 </head>
-<body>
-    <div class="app-container">
-        <div class="header">
-            <h1>🗃️ Gestione Database</h1>
-            <p>Seleziona, crea e gestisci i tuoi database di domande</p>
+<body class="page-database">
+    <div class="app">
+        <!-- Sidebar minimal a icone - IDENTICA a editor.html -->
+        <div class="sidebar">
+            <div class="nav-items">
+                <a href="/" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>Home</span>
+                </a>
+                <a href="/editor" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Editor</span>
+                </a>
+                <a href="/quiz" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    <span>Quiz</span>
+                </a>
+                <a href="/view" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>View</span>
+                </a>
+                <a href="/databases" class="nav-item active">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    <span>Database</span>
+                </a>
+            </div>
+            <div class="nav-item" id="btnHelpSidebar">
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Aiuto</span>
+            </div>
+            <div class="nav-item" id="themeToggleNav" onclick="toggleTheme()">
+                <svg class="theme-icon-moon nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg class="theme-icon-sun nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <span>Tema</span>
+            </div>
+            <div class="nav-item" id="btnImmersiveSidebar">
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                <span>Immersiva</span>
+            </div>
         </div>
 
-        <div class="toolbar">
-            <button id="btnHome" class="info">🏠 Home</button>
-            <button id="btnHelp" class="info">❓ Aiuto</button>
-            <button id="btnNew" class="primary">➕ Nuovo Database</button>
-            <button id="btnUpload" class="secondary">📤 Upload JSON</button>
-            <button id="btnScan" class="info">🔄 Aggiorna</button>
-            <div class="status" id="statusMsg">Pronto</div>
-        </div>
-
-        <div class="databases-layout">
-            <!-- Lista Database -->
-            <div class="databases-list-panel">
-                <div class="list-header">
-                    <span class="databases-title">📊 Database Disponibili (<span id="dbCount">0</span>)</span>
+        <!-- Main content -->
+        <div class="main-content">
+            <!-- Top bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="page-title">Gestione Database</h1>
+                    <span id="statusMsg"></span>
                 </div>
-                <div id="databasesList" class="databases-list">
-                    <div class="empty-list">Caricamento database...</div>
+                <div class="header-actions">
+                    <button id="btnScan" class="btn-icon-modern" aria-label="Aggiorna">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                        Aggiorna
+                    </button>
+                    <button id="btnUpload" class="btn-icon-modern" aria-label="Importa">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                        Importa
+                    </button>
+                    <button id="btnNew" class="btn-primary" aria-label="Nuovo Database">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Nuovo Database
+                    </button>
                 </div>
             </div>
 
-            <!-- Dettaglio Database -->
-            <div class="database-detail-panel" id="detailPanel">
-                <div class="detail-placeholder">
-                    <div class="placeholder-icon">📖</div>
-                    <h3>Seleziona un database</h3>
-                    <p>Scegli un database dalla lista per visualizzarne i dettagli</p>
+            <!-- Workspace -->
+            <div class="workspace">
+                <!-- Section Header -->
+                <div class="section-header">
+                    <div class="section-title">
+                        Database Disponibili
+                        <span id="dbCountLabel">(0 totali)</span>
+                    </div>
+                </div>
+
+                <!-- Stats Bar -->
+                <div id="statsBar" class="stats-bar">
+                    <div class="stat-item">
+                        <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                        <span>Totale domande:</span>
+                        <span class="stat-value" id="statTotalQuestions">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span>Database attivo:</span>
+                        <span class="stat-value" id="statActiveDb">Nessuno</span>
+                    </div>
+                    <div class="stat-item">
+                        <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        <span>Ultimo backup:</span>
+                        <span id="statLastBackup">N/D</span>
+                    </div>
+                </div>
+
+                <!-- Database Cards Grid -->
+                <div id="databasesGrid" class="databases-grid">
+                    <div class="loading-state">Caricamento database...</div>
                 </div>
             </div>
         </div>
@@ -51,16 +129,19 @@
     <!-- Modal per creazione nuovo database -->
     <div id="newDbModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>➕ Nuovo Database</h3>
+            <span class="close-modal">&times;</span>
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Nuovo Database
+            </h3>
             <div class="form-group">
                 <label for="newDbName">Nome database:</label>
-                <input type="text" id="newDbName" placeholder="es. esame_oncologia" maxlength="50">
+                <input type="text" id="newDbName" placeholder="es. esame_oncologia" maxlength="50" class="form-input">
                 <small>Il nome verrà sanitizzato automaticamente (minuscolo, senza spazi)</small>
             </div>
             <div class="modal-actions">
-                <button id="btnCreateDb" class="primary">Crea Database</button>
-                <button id="btnCancelNew" class="secondary">Annulla</button>
+                <button id="btnCreateDb" class="btn-primary">Crea Database</button>
+                <button id="btnCancelNew" class="btn-outline">Annulla</button>
             </div>
         </div>
     </div>
@@ -68,19 +149,22 @@
     <!-- Modal per upload database -->
     <div id="uploadModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>📤 Upload Database</h3>
+            <span class="close-modal">&times;</span>
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload Database
+            </h3>
             <div class="form-group">
                 <label for="uploadFile">File JSON:</label>
-                <input type="file" id="uploadFile" accept=".json">
+                <input type="file" id="uploadFile" accept=".json" class="form-input">
             </div>
             <div class="form-group">
                 <label for="uploadName">Nome database (opzionale):</label>
-                <input type="text" id="uploadName" placeholder="Lascia vuoto per usare il nome del file">
+                <input type="text" id="uploadName" placeholder="Lascia vuoto per usare il nome del file" class="form-input">
             </div>
             <div class="modal-actions">
-                <button id="btnDoUpload" class="primary">Carica</button>
-                <button id="btnCancelUpload" class="secondary">Annulla</button>
+                <button id="btnDoUpload" class="btn-primary">Carica</button>
+                <button id="btnCancelUpload" class="btn-outline">Annulla</button>
             </div>
         </div>
     </div>
@@ -88,16 +172,19 @@
     <!-- Modal per rinomina database -->
     <div id="renameModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>✏️ Rinomina Database</h3>
+            <span class="close-modal">&times;</span>
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Rinomina Database
+            </h3>
             <div class="form-group">
                 <label for="renameNewName">Nuovo nome:</label>
-                <input type="text" id="renameNewName" maxlength="50">
+                <input type="text" id="renameNewName" maxlength="50" class="form-input">
                 <input type="hidden" id="renameOldName">
             </div>
             <div class="modal-actions">
-                <button id="btnDoRename" class="primary">Rinomina</button>
-                <button id="btnCancelRename" class="secondary">Annulla</button>
+                <button id="btnDoRename" class="btn-primary">Rinomina</button>
+                <button id="btnCancelRename" class="btn-outline">Annulla</button>
             </div>
         </div>
     </div>
@@ -105,12 +192,15 @@
     <!-- Modal per conferma eliminazione -->
     <div id="deleteModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>⚠️ Conferma Eliminazione</h3>
+            <span class="close-modal">&times;</span>
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Conferma Eliminazione
+            </h3>
             <p id="deleteMessage"></p>
             <div class="modal-actions">
-                <button id="btnDoDelete" class="danger">Elimina</button>
-                <button id="btnCancelDelete" class="secondary">Annulla</button>
+                <button id="btnDoDelete" class="btn-danger">Elimina</button>
+                <button id="btnCancelDelete" class="btn-outline">Annulla</button>
             </div>
         </div>
     </div>
@@ -118,12 +208,15 @@
     <!-- Modal per seconda conferma eliminazione -->
     <div id="deleteConfirm2Modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>🚨 Ultima Conferma</h3>
+            <span class="close-modal">&times;</span>
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><polygon points="11 5 6 14 16 14 11 5"/><path d="M11 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Ultima Conferma
+            </h3>
             <p>Questa azione eliminerà anche <strong>tutti i backup</strong> del database. Sei <strong>assolutamente sicuro</strong>?</p>
             <div class="modal-actions">
-                <button id="btnDoDelete2" class="danger">Sì, elimina tutto</button>
-                <button id="btnCancelDelete2" class="secondary">Annulla</button>
+                <button id="btnDoDelete2" class="btn-danger">Sì, elimina tutto</button>
+                <button id="btnCancelDelete2" class="btn-outline">Annulla</button>
             </div>
         </div>
     </div>
@@ -131,47 +224,71 @@
     <!-- Help Modal -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3>ℹ️ Guida alla Gestione Database</h3>
-            <div class="help-content">
-                <h4>📊 Panoramica</h4>
+            <span class="close-modal">&times;</span>
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Guida alla Gestione Database
+            </h3>
+            <div class="modal-body help-content">
+                <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    Panoramica
+                </h4>
                 <p>Questa pagina permette di gestire multipli database di domande. Ogni database è indipendente con le sue domande, categorie e backup.</p>
-                
-                <h4>➕ Creare un Database</h4>
+
+                <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Creare un Database
+                </h4>
                 <ul>
-                    <li>Clicca "➕ Nuovo Database" per creare un database vuoto</li>
-                    <li>Clicca "📤 Upload JSON" per importare un file JSON esistente</li>
+                    <li>Clicca "Nuovo Database" per creare un database vuoto</li>
+                    <li>Clicca "Importa" per caricare un file JSON esistente</li>
                 </ul>
-                
-                <h4>✅ Selezionare un Database</h4>
+
+                <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>
+                    Selezionare un Database
+                </h4>
                 <ul>
-                    <li>Clicca "✅ Seleziona" su un database per lavorare con quello</li>
-                    <li>Il database attivo è evidenziato con un bordo verde</li>
+                    <li>Clicca "Seleziona" su un database per lavorare con quello</li>
+                    <li>Il database attivo è evidenziato con un badge verde "Attivo"</li>
                 </ul>
-                
-                <h4>✏️ Rinominare un Database</h4>
+
+                <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Rinominare un Database
+                </h4>
                 <ul>
-                    <li>Clicca "✏️ Rinomina" per cambiare il nome</li>
+                    <li>Clicca "Rinomina" per cambiare il nome</li>
                     <li>Il nome viene sanitizzato automaticamente</li>
                     <li>I backup vengono spostati insieme al database</li>
                 </ul>
-                
-                <h4>🗑️ Eliminare un Database</h4>
+
+                <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    Eliminare un Database
+                </h4>
                 <ul>
-                    <li>Clicca "🗑️ Elimina" per rimuovere un database</li>
+                    <li>Clicca "Elimina" per rimuovere un database</li>
                     <li>Verranno chieste due conferme per sicurezza</li>
                     <li>L'eliminazione include anche tutti i backup</li>
                 </ul>
-                
-                <h4>🔄 Aggiornamento Dinamico</h4>
+
+                <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    Aggiornamento
+                </h4>
                 <ul>
-                    <li>Clicca "🔄 Aggiorna" per scansionare nuovi database nella cartella</li>
+                    <li>Clicca "Aggiorna" per scansionare nuovi database nella cartella</li>
                     <li>Il refresh avviene anche automaticamente ogni 10 secondi</li>
                 </ul>
-                
-                <h4>📥 Download</h4>
+
+                <h4>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download
+                </h4>
                 <ul>
-                    <li>Clicca "⬇️ Download" per scaricare il database come file JSON</li>
+                    <li>Clicca "Download" per scaricare il database come file JSON</li>
                 </ul>
             </div>
         </div>
@@ -179,5 +296,6 @@
 
     <script src="/static/js/databases.js"></script>
     <script src="/static/js/theme.js"></script>
+    <script src="/static/js/immersive.js" defer></script>
 </body>
 </html>

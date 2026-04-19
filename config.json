@@ -14,5 +14,17 @@
     "max_retries": 3,
     "timeout_seconds": 30,
     "allow_prerelease": false
+  },
+  "lan_password_hash": "$2b$12$6qPlQYgDoBMjLiEuVM2EFuW8jkUtYtrw2SX/VNFk.yXsr6BFBtRjy",
+  "lan_password_enabled": true,
+  "lan_auth_realm": "QuestionLab 2447",
+  "log_failed_auth": false,
+  "search": {
+    "mode": "fuzzy",
+    "highlightEnabled": true,
+    "searchAnswers": true,
+    "searchNotes": true,
+    "searchCategories": true,
+    "minScore": 15
   }
 }

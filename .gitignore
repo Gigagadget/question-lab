@@ -7,6 +7,9 @@ database.json
 categories.json
 preferences.json
 
+# Certificati SSL
+server/certs/
+
 # Log e backup utente
 databases/
 update_log.json
@@ -86,3 +89,6 @@ docs/
 # File
 .qwen/
 .kilo/
+QuizMockup/
+statistiche_mockup.html
+PROJECT_MAP.md

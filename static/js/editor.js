@@ -2,14 +2,8 @@
 const API_BASE_URL = '/api';
 
 document.addEventListener('DOMContentLoaded', function() {
-    const btnHome = document.getElementById('btnHome');
-    if (btnHome) {
-        btnHome.addEventListener('click', () => {
-            window.location.href = '/';
-        });
-    }
-
     // Load active database name
+    document.getElementById('btnNewQuestion')?.addEventListener('click', createNewQuestion);
     fetch('/api/databases/active')
         .then(res => res.json())
         .then(data => {
@@ -54,7 +48,7 @@ let selectedQuestionIds = new Set(); // ID delle domande selezionate per azioni 
 const questionsListDiv = document.getElementById('questionsList');
 const formContentDiv = document.getElementById('formContent');
 const statusSpan = document.getElementById('statusMsg');
-const questionCountSpan = document.getElementById('questionCount');
+const questionCountSpan = document.getElementById('questionCountDisplay');
 const searchInput = document.getElementById('searchInput');
 const autoSaveIndicator = document.getElementById('autoSaveIndicator');
 const toggleDuplicatesBtn = document.getElementById('toggleDuplicatesBtn');
@@ -71,6 +65,7 @@ let subdomainFilter = null;
 let filterNoAnswers = null;
 let filterWithAnswers = null;
 let filterNoCorrect = null;
+let filterHasCorrect = null;
 let categoriesModalPrimaryContext = '';
 let normalizationToastTimeout = null;
 
@@ -184,7 +179,7 @@ function refreshFilterSubdomainOptions(preferredValue = '') {
     if (!subdomainFilter) return;
     const selectedPrimary = primaryDomainFilter?.value || '';
     const keepValue = preferredValue || subdomainFilter.value || '';
-    populateSubdomainSelect(subdomainFilter, selectedPrimary, keepValue, true, 'Tutti i Sottodomini');
+    populateSubdomainSelect(subdomainFilter, selectedPrimary, keepValue, true, 'Tutte le sottocategorie');
 }
 
 function refreshQuestionSubdomainOptions(preferredValue = '') {
@@ -234,6 +229,10 @@ async function refreshCategoriesFromServer() {
 // Helper: show status message
 let statusTimeout;
 function setStatus(msg, isError = false) {
+    if (!msg) {
+        statusSpan.textContent = '';
+        return;
+    }
     if (statusTimeout) clearTimeout(statusTimeout);
     statusSpan.textContent = msg;
     statusSpan.style.color = isError ? '#c44536' : '#2c7da0';
@@ -285,11 +284,11 @@ function notifyCategoryNormalizationWarning(warnings) {
     lastNormalizationWarningSignature = signature;
     lastNormalizationWarningAt = now;
 
-    const details = examples.length ? ` (es: ${examples.join(', ')})` : '';
-    const message = `⚠️ ${info.count} domande riallineate a categorie valide${details}`;
+    const details = examples.length ? ` (es: ${examples.map(e => escapeHtml(e)).join(', ')})` : '';
+    const message = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> ${info.count} domande riallineate a categorie valide${details}`;
 
     if (normalizationAlertEl && normalizationAlertTextEl) {
-        normalizationAlertTextEl.textContent = message;
+        normalizationAlertTextEl.innerHTML = message;
         normalizationAlertEl.style.display = 'block';
     }
 
@@ -341,11 +340,13 @@ async function loadQuestions() {
         filterNoAnswers = document.getElementById('filterNoAnswers');
         filterWithAnswers = document.getElementById('filterWithAnswers');
         filterNoCorrect = document.getElementById('filterNoCorrect');
+        filterHasCorrect = document.getElementById('filterHasCorrect');
 
         // Add event listeners for answer filters
         if (filterNoAnswers) filterNoAnswers.addEventListener('change', () => renderQuestionList());
         if (filterWithAnswers) filterWithAnswers.addEventListener('change', () => renderQuestionList());
         if (filterNoCorrect) filterNoCorrect.addEventListener('change', () => renderQuestionList());
+        if (filterHasCorrect) filterHasCorrect.addEventListener('change', () => renderQuestionList());
         
         // Flagged filter
         const filterFlaggedEl = document.getElementById('filterFlaggedOnly');
@@ -356,6 +357,12 @@ async function loadQuestions() {
                 renderQuestionList();
             });
         }
+
+        // Batch action buttons
+        document.getElementById('btnBatchSelectAll')?.addEventListener('click', selectAllVisibleQuestions);
+        document.getElementById('btnBatchDelete')?.addEventListener('click', batchDeleteQuestions);
+        document.getElementById('btnBatchCategory')?.addEventListener('click', batchChangeCategory);
+        document.getElementById('btnBatchClear')?.addEventListener('click', clearBatchSelection);
 
         renderQuestionList();
 
@@ -383,30 +390,27 @@ async function loadQuestions() {
 
 // Create filter UI with categories from server
 function createFilterUI() {
-    const searchBox = document.querySelector('.search-box');
-    if (!searchBox) return;
+    const domainsContainer = document.getElementById('filterDomains');
+    const actionsContainer = document.getElementById('filterActions');
+    if (!domainsContainer || !actionsContainer) return;
 
     // Save current filter values before recreating
     const savedPrimaryDomain = primaryDomainFilter?.value || '';
     const savedSubdomain = subdomainFilter?.value || '';
 
-    // Check if filter container already exists
-    let filterContainer = document.getElementById('filterContainer');
-    if (!filterContainer) {
-        filterContainer = document.createElement('div');
-        filterContainer.id = 'filterContainer';
-        filterContainer.style.cssText = 'margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;';
-        searchBox.appendChild(filterContainer);
-    }
-
-    filterContainer.innerHTML = `
-        <select id="primaryDomainFilter" style="flex: 1; min-width: 150px;">
-            <option value="">Tutti i Domini</option>
+    domainsContainer.innerHTML = `
+        <div class="filter-label">Categoria</div>
+        <select id="primaryDomainFilter" class="filter-select-modern" style="margin-bottom: 12px;">
+            <option value="">Tutte le Categorie</option>
             ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('')}
         </select>
-        <select id="subdomainFilter" style="flex: 1; min-width: 150px;"></select>
-        <button id="clearFiltersBtn" class="small-btn">Azzera Filtri</button>
-        <button id="refreshCategoriesBtn" class="small-btn" style="background: #5a6e7a;">🔄 Aggiorna</button>
+        <div class="filter-label">Sottocategoria</div>
+        <select id="subdomainFilter" class="filter-select-modern"></select>
+    `;
+
+    actionsContainer.innerHTML = `
+        <button id="clearFiltersBtn" class="btn-outline">↺ Azzera filtri</button>
+        <button id="refreshCategoriesBtn" class="btn-outline">⟳ Aggiorna</button>
     `;
 
     primaryDomainFilter = document.getElementById('primaryDomainFilter');
@@ -429,8 +433,17 @@ function createFilterUI() {
 
     if (clearFiltersBtn) {
         clearFiltersBtn.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
             if (primaryDomainFilter) primaryDomainFilter.value = '';
             refreshFilterSubdomainOptions('');
+            if (subdomainFilter) subdomainFilter.value = '';
+            if (filterNoAnswers) filterNoAnswers.checked = false;
+            if (filterWithAnswers) filterWithAnswers.checked = false;
+            if (filterNoCorrect) filterNoCorrect.checked = false;
+            if (filterHasCorrect) filterHasCorrect.checked = false;
+            const flaggedEl = document.getElementById('filterFlaggedOnly');
+            if (flaggedEl) { flaggedEl.checked = false; filterFlaggedOnly = false; }
+            if (showDuplicatesOnly) { showDuplicatesOnly = false; updateToggleDuplicatesBtn(); }
             renderQuestionList();
         });
     }
@@ -455,14 +468,11 @@ function createFilterUI() {
 // Filter questions
 function filterQuestions(questionsList) {
     let filtered = [...questionsList];
-    
-    // Search filter
-    const searchTerm = searchInput.value.toLowerCase();
+
+    // Search filter - use new intelligent search
+    const searchTerm = searchInput.value.trim();
     if (searchTerm) {
-        filtered = filtered.filter(q =>
-            q.id.toLowerCase().includes(searchTerm) ||
-            (q.raw_text && q.raw_text.toLowerCase().includes(searchTerm))
-        );
+        filtered = SmartSearch.filter(filtered, searchTerm);
     }
     
     // Primary domain filter
@@ -481,17 +491,23 @@ function filterQuestions(questionsList) {
     const noAnswersChecked = filterNoAnswers?.checked;
     const withAnswersChecked = filterWithAnswers?.checked;
     const noCorrectChecked = filterNoCorrect?.checked;
-    
-    if (noAnswersChecked || withAnswersChecked || noCorrectChecked) {
+    const hasCorrectChecked = filterHasCorrect?.checked;
+
+    if (noAnswersChecked || withAnswersChecked || noCorrectChecked || hasCorrectChecked) {
         filtered = filtered.filter(q => {
             const answers = q.answers || {};
-            const hasAnswers = Object.keys(answers).length > 0;
-            const hasCorrect = (q.correct || []).length > 0;
-            
+            // Count ONLY non-empty answers (match backend logic)
+            const nonEmptyAnswers = Object.values(answers).filter(v => v && v.trim()).length;
+            const hasAnswers = nonEmptyAnswers > 0;
+            // Count ONLY valid correct answers (exclude "null" and empty values - match backend logic)
+            const validCorrect = (q.correct || []).filter(c => c && c !== "null").length;
+            const hasCorrect = validCorrect > 0;
+
             if (noAnswersChecked && !hasAnswers) return true;
             if (withAnswersChecked && hasAnswers) return true;
             if (noCorrectChecked && hasAnswers && !hasCorrect) return true;
-            
+            if (hasCorrectChecked && hasCorrect) return true;
+
             return false;
         });
     }
@@ -526,21 +542,50 @@ function renderQuestionList() {
         const isDuplicate = q.duplicate_count > 0;
         const isSelected = selectedQuestionIds.has(q.id);
         const isFlagged = q.flagged || false;
+        const answerKeys = q.answers ? Object.keys(q.answers) : [];
+        const validCorrect = (q.correct || []).filter(c => c && c !== "null");
+        const hasAnswers = answerKeys.length > 0;
+        const hasCorrectAnswer = validCorrect.length > 0;
+
+        // Determine status badge
+        let statusBadge = '';
+        if (!hasCorrectAnswer) {
+            statusBadge = '<span class="status-badge status-unanswered">Senza corretta</span>';
+        } else if (!hasAnswers) {
+            statusBadge = '<span class="status-badge status-unanswered">Senza risposta</span>';
+        } else {
+            statusBadge = '<span class="status-badge status-answered">Con risposta</span>';
+        }
+
+        if (isFlagged) {
+            statusBadge += `<span class="status-badge status-flag">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                    <line x1="4" y1="22" x2="4" y2="15"></line>
+                </svg>
+            </span>`;
+        }
+
         return `
-            <div class="question-item ${selectedId === q.id ? 'selected' : ''} ${isSelected ? 'batch-selected' : ''} ${isDuplicate ? 'duplicate-item' : ''} ${isFlagged ? 'flagged-item' : ''}" data-id="${q.id}">
-                <div class="question-item-content" style="display: flex; gap: 8px; align-items: flex-start;">
-                    <input type="checkbox" class="batch-select-checkbox" data-id="${q.id}" ${isSelected ? 'checked' : ''} style="margin-top: 3px; cursor: pointer;">
-                    <div style="flex: 1; min-width: 0;">
-                        <div class="question-id">
-                            ${isFlagged ? '<span class="flag-indicator">🚩</span>' : ''}
-                            ${escapeHtml(q.id)}
-                            ${isDuplicate ? `<span class="duplicate-badge">${q.duplicate_count} duplicati</span>` : ''}
-                        </div>
-                        <div class="question-preview">${escapeHtml(q.raw_text ? q.raw_text.substring(0, 80) : 'Nessun testo disponibile')}${q.raw_text?.length > 80 ? '...' : ''}</div>
-                        <div class="question-meta" style="font-size: 0.7rem; color: #6c757d; margin-top: 4px;">
-                            ${escapeHtml(q.primary_domain || 'nessun dominio')} / ${escapeHtml(q.subdomain || 'nessun sottodominio')}
-                        </div>
+            <div class="question-card-modern ${selectedId === q.id ? 'selected' : ''} ${isSelected ? 'batch-selected' : ''} ${isDuplicate ? 'duplicate-item' : ''} ${isFlagged ? 'flagged-item' : ''}" data-id="${q.id}">
+                <div class="card-header">
+                    <span class="question-id-modern">${escapeHtml(q.id)}</span>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        ${isDuplicate ? `<span class="status-badge status-duplicate">dup</span>` : ''}
+                        ${statusBadge}
+                        <input type="checkbox" class="batch-select-checkbox" data-id="${q.id}" ${isSelected ? 'checked' : ''}>
                     </div>
+                </div>
+                <div class="question-text-modern">${SmartSearch.highlight(escapeHtml(q.raw_text ? q.raw_text.substring(0, 80) : 'Nessun testo disponibile'), searchInput.value)}${q.raw_text?.length > 80 ? '...' : ''}</div>
+                <div class="question-meta-modern">
+                    <span>
+                        <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                        ${escapeHtml(q.primary_domain || 'nessuna categoria')}
+                    </span>
+                    <span>
+                        <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                        ${escapeHtml(q.subdomain || 'nessuna sottocategoria')}
+                    </span>
                 </div>
             </div>
         `;
@@ -556,7 +601,7 @@ function renderQuestionList() {
     });
 
     // Event listener per i question-item (click sul testo carica la domanda)
-    document.querySelectorAll('.question-item').forEach(el => {
+    document.querySelectorAll('.question-card-modern').forEach(el => {
         el.addEventListener('click', (e) => {
             // Se non è un click sulla checkbox, carica la domanda
             if (!e.target.classList.contains('batch-select-checkbox')) {
@@ -570,7 +615,7 @@ function renderQuestionList() {
 function scrollToSelectedQuestion() {
     // Piccolo delay per attendere che il DOM sia aggiornato dopo il render
     setTimeout(() => {
-        const selectedElement = document.querySelector('.question-item.selected');
+        const selectedElement = document.querySelector('.question-card-modern.selected');
         if (selectedElement) {
             selectedElement.scrollIntoView({
                 block: 'nearest',
@@ -586,6 +631,11 @@ function selectQuestion(id) {
     renderQuestionList();
     renderFormForId(id);
     scrollToSelectedQuestion();
+    // On mobile, switch to detail panel when selecting a question
+    if (window.innerWidth <= 768) {
+        currentMobilePanel = 'detail';
+        setActiveMobilePanel('detail');
+    }
 }
 
 // ==================== SELEZIONE MULTIPLA E AZIONI BATCH ====================
@@ -616,47 +666,17 @@ function clearBatchSelection() {
 // Aggiorna UI per azioni batch (contatore e bottoni)
 function updateBatchActionUI() {
     const count = selectedQuestionIds.size;
-    let batchActionsDiv = document.getElementById('batchActionsDiv');
+    const batchActionsDiv = document.getElementById('batchActionsDiv');
+    if (!batchActionsDiv) return;
 
-    if (!batchActionsDiv) {
-        // Crea i bottoni se non esistono
-        const listHeader = document.querySelector('.list-header');
-        if (listHeader) {
-            const existingActions = listHeader.querySelector('#batchActionsDiv');
-            if (!existingActions) {
-                const div = document.createElement('div');
-                div.id = 'batchActionsDiv';
-                div.style.cssText = 'display: none; gap: 6px; margin-left: auto; align-items: center;';
-                div.innerHTML = `
-                    <span id="batchCountSpan" style="font-size: 0.7rem; color: #2c7da0; background: #e0f2fe; padding: 2px 8px; border-radius: 12px; white-space: nowrap;"></span>
-                    <button id="btnBatchSelectAll" class="small-btn" style="background: #2c6e2f; flex: 1;">✓ Sel. tutto</button>
-                    <button id="btnBatchDelete" class="small-btn" style="background: #c44536; flex: 1;">🗑️ Elimina</button>
-                    <button id="btnBatchCategory" class="small-btn" style="background: #2c7da0; flex: 1;">🏷️ Categoria</button>
-                    <button id="btnBatchClear" class="small-btn" style="background: #6c757d; flex: 1;">✕ Deseleziona</button>
-                `;
-                listHeader.appendChild(div);
-                batchActionsDiv = div;
-
-                // Aggiungi event listener
-                document.getElementById('btnBatchSelectAll')?.addEventListener('click', selectAllVisibleQuestions);
-                document.getElementById('btnBatchDelete')?.addEventListener('click', batchDeleteQuestions);
-                document.getElementById('btnBatchCategory')?.addEventListener('click', batchChangeCategory);
-                document.getElementById('btnBatchClear')?.addEventListener('click', clearBatchSelection);
-            }
-        }
-    }
-
-    // Mostra/nascondi e aggiorna contatore
     if (count > 0) {
-        if (batchActionsDiv) {
-            batchActionsDiv.style.display = 'flex';
-            const countSpan = document.getElementById('batchCountSpan');
-            if (countSpan) {
-                countSpan.textContent = `${count} selez.`;
-            }
+        batchActionsDiv.style.display = 'flex';
+        const countSpan = document.getElementById('batchCountSpan');
+        if (countSpan) {
+            countSpan.textContent = `${count} selez.`;
         }
     } else {
-        if (batchActionsDiv) batchActionsDiv.style.display = 'none';
+        batchActionsDiv.style.display = 'none';
     }
 }
 
@@ -714,37 +734,41 @@ async function batchChangeCategory() {
     const count = selectedQuestionIds.size;
     if (count === 0) return;
 
-    // Crea un modal per selezionare le nuove categorie
     const modal = document.createElement('div');
     modal.id = 'batchCategoryModal';
     modal.className = 'modal';
-    modal.style.display = 'block';
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
-            <span class="close" onclick="document.getElementById('batchCategoryModal').style.display='none'">&times;</span>
-            <h3>🏷️ Cambia Categoria a ${count} domande</h3>
-            <div style="margin: 20px 0;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 style="padding: 0px 20px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Cambia Categoria</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px; padding: 0px 20px;">Seleziona la nuova categoria per ${count} domande</p>
+            <div>
                 <div class="form-group">
-                    <label>Nuovo Dominio Principale</label>
-                    <select id="batchPrimaryDomain" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                    <label class="form-label">Nuova Categoria Principale</label>
+                    <select id="batchPrimaryDomain" class="form-input">
                         <option value="">-- Seleziona --</option>
                         ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('')}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Nuovo Sottodominio</label>
-                    <select id="batchSubdomain" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;" disabled>
-                        <option value="">-- Seleziona prima un dominio --</option>
+                    <label class="form-label">Nuova Sottocategoria</label>
+                    <select id="batchSubdomain" class="form-input" disabled>
+                        <option value="">-- Seleziona prima una categoria --</option>
                     </select>
                 </div>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="btnBatchCategoryCancel" class="small-btn" style="background: #6c757d; flex: 1;">Annulla</button>
-                <button id="btnBatchCategoryConfirm" class="small-btn" style="background: #2c7da0; flex: 1;">Applica</button>
+                <button id="btnBatchCategoryCancel" class="btn-outline" style="flex: 1;">Annulla</button>
+                <button id="btnBatchCategoryConfirm" class="btn-primary" style="flex: 1;">Applica</button>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
+    modal.classList.add('show');
+
+    // Close handler
+    modal.querySelector('.close-modal').addEventListener('click', () => { modal.classList.remove('show'); setTimeout(() => modal.remove(), 200); });
+    modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.remove('show'); setTimeout(() => modal.remove(), 200); } });
 
     // Event listener
     const batchPrimarySelect = document.getElementById('batchPrimaryDomain');
@@ -755,7 +779,7 @@ async function batchChangeCategory() {
         if (!selectedPrimary) {
             if (batchSubdomainSelect) {
                 batchSubdomainSelect.disabled = true;
-                batchSubdomainSelect.innerHTML = '<option value="">-- Seleziona prima un dominio --</option>';
+                batchSubdomainSelect.innerHTML = '<option value="">-- Seleziona prima una categoria --</option>';
             }
             return;
         }
@@ -782,7 +806,7 @@ async function batchChangeCategory() {
         }
 
         if (newSubdomain && !newPrimaryDomain) {
-            alert('Per cambiare sottodominio devi selezionare anche il dominio principale.');
+            alert('Per cambiare sottocategorie devi selezionare anche la categoria principale.');
             return;
         }
 
@@ -810,13 +834,17 @@ async function batchChangeCategory() {
         // Pulisci selezione
         selectedQuestionIds.clear();
 
-        // Aggiorna filtri se necessario
-        if (primaryDomainFilter && newPrimaryDomain && primaryDomainFilter.value !== newPrimaryDomain) {
+        // Aggiorna filtri per riflettere le nuove categorie
+        if (primaryDomainFilter && newPrimaryDomain) {
             primaryDomainFilter.value = newPrimaryDomain;
-            refreshFilterSubdomainOptions('');
         }
-        if (subdomainFilter && newSubdomain && subdomainFilter.value !== newSubdomain) {
-            subdomainFilter.value = newSubdomain;
+        if (subdomainFilter) {
+            if (newSubdomain) {
+                subdomainFilter.value = newSubdomain;
+            } else if (newPrimaryDomain) {
+                // Only domain changed, reset subdomain filter to "all"
+                refreshFilterSubdomainOptions('');
+            }
         }
 
         renderQuestionList();
@@ -847,52 +875,66 @@ function renderFormForId(id) {
     const currentIndex = filtered.findIndex(q => q.id === id);
     const total = filtered.length;
     
-    // Combined action and navigation buttons row
+    // Detail actions header (mockup compliant)
     const isFlagged = question.flagged || false;
-    const combinedButtonsHtml = `
-        <div class="combined-buttons-row">
-            <div class="left-buttons">
-                <button id="btnNewFromForm" class="primary small-btn">➕ Nuova</button>
-                <button id="btnDuplicate" class="warning small-btn">📑 Duplica</button>
-                <button id="btnDeleteQuestion" class="danger small-btn">🗑️ Elimina</button>
-                <button id="btnFlagQuestion" class="small-btn ${isFlagged ? 'flag-active' : 'flag-inactive'}" style="${isFlagged ? 'background: #f39c12; color: white;' : 'background: #6c757d; color: white;'}">🚩 ${isFlagged ? 'Segnata' : 'Segna'}</button>
+    const isDuplicate = question.duplicate_count > 0;
+    
+    const detailActionsHtml = `
+        <div class="detail-actions">
+            <div class="detail-title-row">
+                <button id="btnFlagQuestion" class="btn-flag" title="${isFlagged ? 'Rimuovi flag' : 'Segna'}" ${isFlagged ? 'data-flagged="true"' : ''}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFlagged ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                        <line x1="4" y1="22" x2="4" y2="15"></line>
+                    </svg>
+                </button>
+                <div class="id-group">
+                    <input type="text" class="detail-id-input" id="field_id" value="${escapeHtml(question.id)}" placeholder="es., Q1257" maxlength="50">
+                    <div id="idError" style="color: #c44536; font-size: 0.65rem; margin-top: 2px; display: none;"></div>
+                </div>
             </div>
-            <div class="right-buttons">
-                <button id="navPrevBtn" class="small-btn" ${currentIndex === 0 ? 'disabled style="opacity:0.5;"' : ''}>◀ Prec</button>
-                <span style="font-size:0.7rem; color:#6c757d;">${currentIndex + 1} / ${total}</span>
-                <button id="navNextBtn" class="small-btn" ${currentIndex === total - 1 ? 'disabled style="opacity:0.5;"' : ''}>Succ ▶</button>
+            <div class="nav-buttons-modern">
+                <button id="navPrevBtn" class="nav-btn-modern" ${currentIndex === 0 ? 'disabled' : ''}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="nav-btn-text">Prec</span>
+                </button>
+                <span class="nav-counter">${currentIndex + 1} / ${total}</span>
+                <button id="navNextBtn" class="nav-btn-modern" ${currentIndex === total - 1 ? 'disabled' : ''}>
+                    <span class="nav-btn-text">Succ</span>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
             </div>
+        </div>
+        <div class="detail-secondary-actions">
+            <button id="btnDuplicate" class="btn-secondary-action"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Duplica</button>
+            <button id="btnDeleteQuestion" class="btn-secondary-action btn-delete-action"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Elimina</button>
         </div>
     `;
 
     // Get all answer letters from question
     const answerLetters = Object.keys(question.answers || {}).sort();
-    let answersHtml = `<div class="answers-grid" id="answersGrid">`;
+    let answersHtml = `<div class="answers-list" id="answersGrid">`;
 
     answerLetters.forEach(letter => {
         const answerValue = question.answers?.[letter] || '';
         answersHtml += `
-            <div class="answer-field" data-letter="${letter}">
+            <div class="answer-row" data-letter="${letter}">
+                <input type="checkbox" class="answer-check-modern" data-letter="${letter}" ${question.correct?.includes(letter) ? 'checked' : ''}>
                 <span class="answer-letter">${letter}</span>
-                <input type="text" class="answer-input" data-letter="${letter}" value="${escapeHtml(answerValue)}" placeholder="Testo risposta">
-                <div class="answer-actions">
-                    <button type="button" class="remove-answer" data-letter="${letter}">✖</button>
-                </div>
+                <input type="text" class="answer-input answer-text-modern" data-letter="${letter}" value="${escapeHtml(answerValue)}" placeholder="Testo risposta">
+                <button type="button" class="remove-answer" data-letter="${letter}" title="Elimina risposta">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
         `;
     });
     answersHtml += `</div>`;
 
-    let correctHtml = `<div class="correct-answers-header"><label>Risposte corrette</label></div><div class="correct-options" id="correctOptions">`;
-    answerLetters.forEach(letter => {
-        const isChecked = Array.isArray(question.correct) && question.correct.includes(letter);
-        correctHtml += `
-            <label class="correct-check">
-                <input type="checkbox" class="correct-checkbox" value="${letter}" ${isChecked ? 'checked' : ''}> ${letter}
-            </label>
-        `;
-    });
-    correctHtml += `</div>`;
+    // No separate correct checkboxes section - now integrated directly in answer rows
+    let correctHtml = '';
 
     // Duplicate info - combined ID and text
     let duplicateHtml = '';
@@ -908,40 +950,35 @@ function renderFormForId(id) {
         duplicateHtml = `
             <div class="accordion">
                 <div class="accordion-header" onclick="window.toggleAccordion(this)">
-                    <span>📋 Duplicati (${question.duplicate_count})</span>
-                    <span class="arrow">▶</span>
+                    <span>Duplicati (${question.duplicate_count})</span>
+                    <svg class="accordion-arrow" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 4L10 8L6 12"/>
+                    </svg>
                 </div>
                 <div class="accordion-content">
-                    <div class="duplicate-info">
-                        ${duplicatesList.map(d => `
-                            <div class="duplicate-item-detail">
-                                <strong>${escapeHtml(d.id)}</strong><br>
-                                ${escapeHtml(d.text)}
-                            </div>
-                        `).join('')}
-                    </div>
+                    ${duplicatesList.map(d => `
+                        <div class="duplicate-item-detail">
+                            <span class="duplicate-id">${escapeHtml(d.id)}</span>
+                            <span class="duplicate-text">${escapeHtml(d.text)}</span>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
         `;
     }
 
-    // Top bar with ID and categories
-    const topBarHtml = `
-        <div class="form-top-bar">
+    // Form fields
+    const fieldsHtml = `
+        <div class="form-row">
             <div class="form-group">
-                <label>ID</label>
-                <input type="text" id="field_id" value="${escapeHtml(question.id)}" placeholder="es., Q1257">
-                <div id="idError" style="color: #c44536; font-size: 0.7rem; margin-top: 2px; display: none;"></div>
-            </div>
-            <div class="form-group">
-                <label>Dominio</label>
-                <select id="field_primary_domain">
+                <label class="form-label">Categoria</label>
+                <select class="form-input" id="field_primary_domain">
                     ${categories.primary_domains.map(d => `<option value="${escapeHtml(d)}" ${question.primary_domain === d ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('')}
                 </select>
             </div>
             <div class="form-group">
-                <label>Sottodominio</label>
-                <select id="field_subdomain"></select>
+                <label class="form-label">Sottocategoria</label>
+                <select class="form-input" id="field_subdomain"></select>
             </div>
         </div>
     `;
@@ -949,28 +986,30 @@ function renderFormForId(id) {
     // Answers section with header
     const answersSectionHtml = `
         <div class="answers-header">
-            <label>Risposte</label>
-            <button type="button" id="addAnswerBtn" class="small-btn">+ Aggiungi</button>
+            <label class="form-label">Risposte (seleziona quelle corrette)</label>
+            <button type="button" id="addAnswerBtn" class="btn-icon-modern">+ Aggiungi risposta</button>
         </div>
         ${answersHtml}
     `;
 
     const formHtml = `
-        ${combinedButtonsHtml}
-        ${topBarHtml}
-        <div class="form-group">
-            <label>Domanda</label>
-            <textarea id="field_raw_text" placeholder="Testo della domanda...">${escapeHtml(question.raw_text || '')}</textarea>
+        <div class="detail-card">
+            ${detailActionsHtml}
+            ${fieldsHtml}
+            <div class="form-group">
+                <label class="form-label">Domanda</label>
+                <textarea class="form-input" id="field_raw_text" placeholder="Testo della domanda...">${escapeHtml(question.raw_text || '')}</textarea>
+            </div>
+            ${answersSectionHtml}
+            <div class="form-group">
+                ${correctHtml}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Note</label>
+                <textarea class="form-input" id="field_notes" placeholder="Aggiungi note...">${escapeHtml(question.notes || '')}</textarea>
+            </div>
+            ${duplicateHtml}
         </div>
-        ${answersSectionHtml}
-        <div class="form-group">
-            ${correctHtml}
-        </div>
-        <div class="form-group">
-            <label>Note</label>
-            <textarea id="field_notes" placeholder="Aggiungi note...">${escapeHtml(question.notes || '')}</textarea>
-        </div>
-        ${duplicateHtml}
     `;
     
     formContentDiv.innerHTML = formHtml;
@@ -996,9 +1035,35 @@ function renderFormForId(id) {
         });
     });
     
+    // Add handler for answer checkboxes (correct answers)
+    document.querySelectorAll('.answer-check-modern').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const letter = checkbox.getAttribute('data-letter');
+            const answerInput = document.querySelector(`.answer-input[data-letter="${letter}"]`);
+            
+            // Prevent marking empty answer as correct
+            if (checkbox.checked && answerInput && !answerInput.value.trim()) {
+                checkbox.checked = false;
+                setStatus('Non puoi segnare come corretta una risposta vuota', true);
+                return;
+            }
+            
+            if (!Array.isArray(question.correct)) question.correct = [];
+            
+            if (checkbox.checked) {
+                if (!question.correct.includes(letter)) {
+                    question.correct.push(letter);
+                }
+            } else {
+                question.correct = question.correct.filter(l => l !== letter);
+            }
+            
+            markDirty();
+        });
+    });
+
     document.getElementById('btnDeleteQuestion')?.addEventListener('click', () => deleteQuestionById(id));
     document.getElementById('btnDuplicate')?.addEventListener('click', () => duplicateQuestion(id));
-    document.getElementById('btnNewFromForm')?.addEventListener('click', createNewQuestion);
     document.getElementById('btnFlagQuestion')?.addEventListener('click', () => toggleQuestionFlag(id));
     document.getElementById('field_id')?.addEventListener('change', () => {
         validateId(id);
@@ -1026,7 +1091,7 @@ function renderFormForId(id) {
 // Add new answer
 function addNewAnswer() {
     const answersGrid = document.getElementById('answersGrid');
-    const currentLetters = Array.from(answersGrid.querySelectorAll('.answer-field')).map(f => f.getAttribute('data-letter'));
+    const currentLetters = Array.from(answersGrid.querySelectorAll('.answer-row')).map(f => f.getAttribute('data-letter'));
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let newLetter = '';
     
@@ -1043,50 +1108,66 @@ function addNewAnswer() {
     }
     
     const newAnswerHtml = `
-        <div class="answer-field" data-letter="${newLetter}">
+        <div class="answer-row" data-letter="${newLetter}">
+            <input type="checkbox" class="answer-check-modern" data-letter="${newLetter}">
             <span class="answer-letter">${newLetter}</span>
-            <input type="text" class="answer-input" data-letter="${newLetter}" value="" placeholder="Testo risposta">
-            <div class="answer-actions">
-                <button type="button" class="remove-answer" data-letter="${newLetter}">✖</button>
-            </div>
+            <input type="text" class="answer-input answer-text-modern" data-letter="${newLetter}" value="" placeholder="Testo risposta">
+            <button type="button" class="remove-answer" data-letter="${newLetter}" title="Elimina risposta">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
         </div>
     `;
     
     answersGrid.insertAdjacentHTML('beforeend', newAnswerHtml);
     
+    // Add remove handler
     const removeBtn = answersGrid.querySelector(`.remove-answer[data-letter="${newLetter}"]`);
     if (removeBtn) {
         removeBtn.addEventListener('click', () => removeAnswer(newLetter));
     }
     
+    // Add input handlers
     const newInput = answersGrid.querySelector(`.answer-input[data-letter="${newLetter}"]`);
     if (newInput) {
         newInput.addEventListener('input', () => markDirty());
         newInput.addEventListener('change', () => markDirty());
+        newInput.focus();
     }
     
-    const correctOptions = document.getElementById('correctOptions');
-    const newCheckbox = `
-        <label class="correct-check">
-            <input type="checkbox" class="correct-checkbox" value="${newLetter}"> ${newLetter}
-        </label>
-    `;
-    correctOptions.insertAdjacentHTML('beforeend', newCheckbox);
-    
-    const newCb = correctOptions.querySelector(`.correct-checkbox[value="${newLetter}"]`);
-    if (newCb) {
-        newCb.addEventListener('change', () => markDirty());
+    // Add checkbox handler
+    const newCheckbox = answersGrid.querySelector(`.answer-check-modern[data-letter="${newLetter}"]`);
+    if (newCheckbox) {
+        newCheckbox.addEventListener('change', (e) => {
+            const answerInput = document.querySelector(`.answer-input[data-letter="${newLetter}"]`);
+            
+            // Prevent marking empty answer as correct
+            if (newCheckbox.checked && answerInput && !answerInput.value.trim()) {
+                newCheckbox.checked = false;
+                setStatus('Non puoi segnare come corretta una risposta vuota', true);
+                return;
+            }
+            
+            if (!Array.isArray(question.correct)) question.correct = [];
+            
+            if (newCheckbox.checked) {
+                if (!question.correct.includes(newLetter)) {
+                    question.correct.push(newLetter);
+                }
+            } else {
+                question.correct = question.correct.filter(l => l !== newLetter);
+            }
+            
+            markDirty();
+        });
     }
-    
-    markDirty();
 }
 
 function removeAnswer(letter) {
-    const answerField = document.querySelector(`.answer-field[data-letter="${letter}"]`);
-    if (answerField) answerField.remove();
-    
-    const checkbox = document.querySelector(`.correct-checkbox[value="${letter}"]`);
-    if (checkbox) checkbox.closest('.correct-check')?.remove();
+    const answerRow = document.querySelector(`.answer-row[data-letter="${letter}"]`);
+    if (answerRow) answerRow.remove();
     
     markDirty();
 }
@@ -1134,11 +1215,16 @@ function collectFormData(originalId = null) {
         if (letter) answers[letter] = inp.value;
     });
     
-    // Collect correct
+    // Collect correct from modern answer checkboxes
     const correct = [];
-    const checkboxes = document.querySelectorAll('.correct-checkbox');
+    const checkboxes = document.querySelectorAll('.answer-check-modern');
     checkboxes.forEach(cb => {
-        if (cb.checked) correct.push(cb.value);
+        const letter = cb.getAttribute('data-letter');
+        const answerInput = document.querySelector(`.answer-input[data-letter="${letter}"]`);
+        // Only add to correct if checkbox is checked AND answer is not empty
+        if (cb.checked && letter && answerInput && answerInput.value.trim()) {
+            correct.push(letter);
+        }
     });
     if (correct.length === 0) correct.push("null");
     
@@ -1410,64 +1496,112 @@ async function showStats() {
         const primaryDomainsSorted = Object.entries(stats.primary_domain_count).sort((a, b) => b[1] - a[1]);
         const subdomainsSorted = Object.entries(stats.subdomain_count).sort((a, b) => b[1] - a[1]);
         
+        // Calculate percentages for progress bars
+        const total = stats.total_questions || 1;
+        const percentageOneAnswer = total > 0 ? ((stats.questions_with_one_answer / total) * 100).toFixed(1) : 0;
+        const percentageNoAnswers = total > 0 ? ((stats.questions_with_no_answers / total) * 100).toFixed(1) : 0;
+        const percentageNoCorrect = total > 0 ? ((stats.questions_with_no_correct / total) * 100).toFixed(1) : 0;
+        const percentageDuplicates = total > 0 ? ((stats.total_duplicates / total) * 100).toFixed(1) : 0;
+        const percentageFlagged = total > 0 ? ((stats.questions_flagged / total) * 100).toFixed(1) : 0;
+        
+        // Generate random colors for categories (consistent for each domain)
+        const categoryColors = [
+            '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', 
+            '#ef4444', '#ec489a', '#06b6d4', '#84cc16'
+        ];
+        
         content.innerHTML = `
-            <div class="stats-section">
-                <h4>📊 Panoramica Generale</h4>
-                <div class="stats-total">
-                    <span>Totale Domande:</span>
-                    <strong>${stats.total_questions}</strong>
+            <!-- Card Panoramica -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                    <div class="stat-value">${stats.total_questions}</div>
+                    <div class="stat-label">Totale Domande</div>
                 </div>
-                <div class="stats-total" style="background: #fff3e0; margin-top: 5px;">
-                    <span>Domande con Duplicati:</span>
-                    <strong>${stats.total_duplicates}</strong>
+                <div class="stat-card">
+                    <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>
+                    <div class="stat-value">${stats.questions_flagged}</div>
+                    <div class="stat-label">
+                        Domande Flaggate
+                        ${percentageFlagged > 0 ? `<span class="warning-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>${percentageFlagged}%</span>` : ''}
+                    </div>
                 </div>
-            </div>
-            
-            <div class="stats-section">
-                <h4>📝 Statistiche Risposte</h4>
-                <div class="stats-grid">
-                    <div class="stats-item">
-                        <span class="category-name">Domande con una sola risposta:</span>
-                        <span class="category-count">${stats.questions_with_one_answer}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="category-name">Domande senza risposte:</span>
-                        <span class="category-count">${stats.questions_with_no_answers}</span>
-                    </div>
-                    <div class="stats-item">
-                        <span class="category-name">Domande senza risposte corrette:</span>
-                        <span class="category-count">${stats.questions_with_no_correct}</span>
+                <div class="stat-card">
+                    <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></div>
+                    <div class="stat-value">${stats.total_duplicates}</div>
+                    <div class="stat-label">
+                        Domande con Duplicati
+                        ${percentageDuplicates > 0 ? `<span class="warning-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:2px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>${percentageDuplicates}%</span>` : ''}
                     </div>
                 </div>
             </div>
-            
+
+            <!-- Statistiche Risposte -->
             <div class="stats-section">
-                <h4>🏷️ Distribuzione per Dominio Principale</h4>
+                <h3 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Statistiche Risposte</h3>
                 <div class="stats-grid">
-                    ${primaryDomainsSorted.map(([domain, count]) => `
-                        <div class="stats-item">
-                            <span class="category-name">${escapeHtml(domain)}</span>
+                    <div class="stat-card">
+                        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+                        <div class="stat-value">${stats.questions_with_one_answer}</div>
+                        <div class="stat-label">Una sola risposta</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${percentageOneAnswer}%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+                        <div class="stat-value">${stats.questions_with_no_answers}</div>
+                        <div class="stat-label">Senza risposte</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${percentageNoAnswers}%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                        <div class="stat-value">${stats.questions_with_no_correct}</div>
+                        <div class="stat-label">Senza risposta corretta</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${percentageNoCorrect}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribuzione per Categoria -->
+            <div class="stats-section">
+                <h3 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Distribuzione per Categoria Principale</h3>
+                <div class="distribution-list">
+                    ${primaryDomainsSorted.map(([domain, count], index) => `
+                        <div class="distribution-item">
+                            <span class="category-name">
+                                <span class="category-badge" style="background: ${categoryColors[index % categoryColors.length]};"></span>
+                                ${escapeHtml(domain)}
+                            </span>
                             <span class="category-count">${count}</span>
                         </div>
                     `).join('')}
                 </div>
-                ${primaryDomainsSorted.length === 0 ? '<p style="color:#94a3b8; text-align:center;">Nessun dato disponibile</p>' : ''}
+                ${primaryDomainsSorted.length === 0 ? '<p style="color:#94a3b8; text-align:center; padding: 20px;">Nessun dato disponibile</p>' : ''}
             </div>
-            
+
+            <!-- Distribuzione per Sottocategorie -->
             <div class="stats-section">
-                <h4>📂 Distribuzione per Sottodominio</h4>
-                <div class="stats-grid">
-                    ${subdomainsSorted.map(([sub, count]) => `
-                        <div class="stats-item">
-                            <span class="category-name">${escapeHtml(sub)}</span>
+                <h3 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Distribuzione per Sottocategoria</h3>
+                <div class="distribution-list">
+                    ${subdomainsSorted.map(([sub, count], index) => `
+                        <div class="distribution-item">
+                            <span class="category-name">
+                                <span class="category-badge" style="background: ${categoryColors[(index + 3) % categoryColors.length]};"></span>
+                                ${escapeHtml(sub)}
+                            </span>
                             <span class="category-count">${count}</span>
                         </div>
                     `).join('')}
                 </div>
-                ${subdomainsSorted.length === 0 ? '<p style="color:#94a3b8; text-align:center;">Nessun dato disponibile</p>' : ''}
+                ${subdomainsSorted.length === 0 ? '<p style="color:#94a3b8; text-align:center; padding: 20px;">Nessun dato disponibile</p>' : ''}
             </div>
         `;
-        modal.style.display = 'block';
+        modal.classList.add('show');
     } catch (err) {
         console.error(err);
         setStatus('Errore nel caricamento statistiche', true);
@@ -1482,47 +1616,103 @@ async function showBackups() {
         const response = await fetch(`${API_BASE_URL}/backups`);
         if (!response.ok) throw new Error('Recupero backup fallito');
         const data = await response.json();
-        
+
         const modal = document.getElementById('backupModal');
         const content = document.getElementById('backupContent');
         const actionsDiv = document.getElementById('backupActions');
 
-        // Reset selection
         selectedBackups.clear();
         updateBackupSelectionUI();
 
         if (data.backups.length === 0) {
-            content.innerHTML = '<p>Nessun backup disponibile.</p>';
+            content.innerHTML = '<p style="color: var(--text-secondary); padding: 20px 0; text-align: center;">Nessun backup disponibile.</p>';
             actionsDiv.style.display = 'none';
         } else {
             content.innerHTML = `
-                <ul style="list-style: none; padding: 0;">
+                <ul style="list-style: none; padding: 0; margin: 0;">
                     ${data.backups.map(backup => `
-                        <li style="padding: 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" class="backup-checkbox" data-name="${backup.name}" style="cursor: pointer;">
-                            <div style="flex: 1;">
-                                <strong>${backup.name}</strong><br>
-                                <small>Dimensione: ${(backup.size / 1024).toFixed(2)} KB | Modificato: ${new Date(backup.modified).toLocaleString()}</small>
+                        <li style="padding: 12px 0; border-bottom: 1px solid var(--border-light, #e2e8f0); display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" class="backup-checkbox" data-name="${backup.name}" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-blue);">
+                            <div style="flex: 1; min-width: 0;">
+                                <strong style="font-size: 13px;">${backup.name}</strong><br>
+                                <small style="color: var(--text-secondary); font-size: 0.8rem;">${(backup.size / 1024).toFixed(1)} KB · ${new Date(backup.modified).toLocaleString()}</small>
                             </div>
-                            <button onclick="window.restoreBackup('${backup.name}')" style="padding: 4px 12px;">Ripristina</button>
+                            <button class="btn-restore" data-name="${backup.name}" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: transparent; cursor: pointer; font-size: 12px; font-family: inherit; color: var(--accent-blue); transition: all 0.2s; white-space: nowrap;">Ripristina</button>
+                            <button class="btn-delete-backup" data-name="${backup.name}" style="padding: 6px 12px; border: 1px solid rgba(220,38,38,0.3); border-radius: 8px; background: transparent; cursor: pointer; font-size: 12px; font-family: inherit; color: #dc2626; transition: all 0.2s; white-space: nowrap;">Elimina</button>
                         </li>
                     `).join('')}
                 </ul>
             `;
-            actionsDiv.style.display = 'block';
+            actionsDiv.style.display = 'flex';
 
-            // Add event listeners for checkboxes
             document.querySelectorAll('.backup-checkbox').forEach(cb => {
                 cb.addEventListener('change', (e) => {
                     const name = e.target.getAttribute('data-name');
                     toggleBackupSelection(name);
                 });
             });
+
+            document.querySelectorAll('.btn-restore').forEach(btn => {
+                btn.addEventListener('click', () => window.restoreBackup(btn.getAttribute('data-name')));
+                btn.addEventListener('mouseenter', () => { btn.style.background = 'var(--bg-tertiary)'; });
+                btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; });
+            });
+
+            document.querySelectorAll('.btn-delete-backup').forEach(btn => {
+                btn.addEventListener('click', () => deleteSingleBackup(btn.getAttribute('data-name')));
+                btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(220,38,38,0.08)'; });
+                btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; });
+            });
+
+            // Select all button handler
+            const selectAllBtn = document.getElementById('btnSelectAllBackups');
+            if (selectAllBtn) {
+                selectAllBtn.addEventListener('click', () => {
+                    const allCheckboxes = document.querySelectorAll('.backup-checkbox');
+                    const allSelected = selectedBackups.size === allCheckboxes.length;
+
+                    if (allSelected) {
+                        selectedBackups.clear();
+                        allCheckboxes.forEach(cb => { cb.checked = false; });
+                    } else {
+                        allCheckboxes.forEach(cb => {
+                            cb.checked = true;
+                            selectedBackups.add(cb.getAttribute('data-name'));
+                        });
+                    }
+                    updateBackupSelectionUI();
+                });
+
+                selectAllBtn.addEventListener('mouseenter', () => {
+                    selectAllBtn.style.background = 'var(--bg-tertiary, #f1f5f9)';
+                });
+                selectAllBtn.addEventListener('mouseleave', () => {
+                    selectAllBtn.style.background = 'transparent';
+                });
+            }
         }
-        modal.style.display = 'block';
+        modal.classList.add('show');
     } catch (err) {
         console.error(err);
         setStatus('Errore nel caricamento dei backup', true);
+    }
+}
+
+async function deleteSingleBackup(backupName) {
+    if (!confirm(`Eliminare il backup "${backupName}"?`)) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/backups`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ backups: [backupName] })
+        });
+        if (!response.ok) throw new Error('Cancellazione backup fallita');
+        const result = await response.json();
+        setStatus(result.message);
+        showBackups();
+    } catch (err) {
+        console.error(err);
+        setStatus('Errore nella cancellazione del backup', true);
     }
 }
 
@@ -1539,18 +1729,19 @@ function updateBackupSelectionUI() {
     const count = selectedBackups.size;
     const countSpan = document.getElementById('selectedBackupsCount');
     const deleteBtn = document.getElementById('btnDeleteSelectedBackups');
-    const selectAllCb = document.getElementById('selectAllBackups');
-    
+    const selectAllBtn = document.getElementById('btnSelectAllBackups');
+
     if (countSpan) {
         countSpan.textContent = `${count} selezionati`;
     }
     if (deleteBtn) {
         deleteBtn.disabled = count === 0;
+        deleteBtn.style.opacity = count === 0 ? '0.5' : '1';
     }
-    if (selectAllCb) {
-        // Check if all backups are selected
+    if (selectAllBtn) {
         const allCheckboxes = document.querySelectorAll('.backup-checkbox');
-        selectAllCb.checked = allCheckboxes.length > 0 && allCheckboxes.length === count;
+        const allSelected = allCheckboxes.length > 0 && allCheckboxes.length === count;
+        selectAllBtn.textContent = allSelected ? 'Deseleziona tutti' : 'Seleziona tutti';
     }
 }
 
@@ -1655,7 +1846,7 @@ async function showCategoriesModal() {
     content.innerHTML = treeHtml;
 
     // Show modal AFTER inserting content
-    modal.style.display = 'block';
+    modal.classList.add('show');
 
     // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
@@ -1702,7 +1893,7 @@ async function showCategoriesModal() {
         healthContent.innerHTML = `<p style="color: #c44536; text-align: center;">Errore nel caricamento health: ${escapeHtml(err.message)}</p>`;
     }
 
-    modal.style.display = 'block';
+    modal.classList.add('show');
 }
 
 // Tab switching
@@ -1864,7 +2055,7 @@ async function removeCategory(type, value, primaryDomain = '') {
 }
 
 async function renameCategory(type, oldValue, primaryDomain = '') {
-    const typeName = type === 'primary_domain' ? 'dominio principale' : 'sottodominio';
+    const typeName = type === 'primary_domain' ? 'categoria principale' : 'sottocategoria';
     const newValue = prompt(`Inserisci il nuovo nome per "${oldValue}":`, oldValue);
     
     if (!newValue || newValue.trim() === '') return;
@@ -1911,18 +2102,26 @@ async function renameCategory(type, oldValue, primaryDomain = '') {
     }
 }
 
-function toggleShowDuplicates() {
-    showDuplicatesOnly = !showDuplicatesOnly;
+function updateToggleDuplicatesBtn() {
     if (toggleDuplicatesBtn) {
         if (showDuplicatesOnly) {
             toggleDuplicatesBtn.classList.add('active');
-            toggleDuplicatesBtn.style.background = '#e67e22';
-            toggleDuplicatesBtn.textContent = '🔍 Mostra Tutto';
+            toggleDuplicatesBtn.textContent = 'Mostra tutti';
         } else {
             toggleDuplicatesBtn.classList.remove('active');
-            toggleDuplicatesBtn.style.background = '';
-            toggleDuplicatesBtn.textContent = '🔍 Mostra Duplicati';
+            toggleDuplicatesBtn.textContent = 'Mostra duplicati';
         }
+    }
+}
+
+function toggleShowDuplicates() {
+    showDuplicatesOnly = !showDuplicatesOnly;
+    if (showDuplicatesOnly) {
+        toggleDuplicatesBtn?.classList.add('active');
+        toggleDuplicatesBtn.textContent = 'Mostra tutti';
+    } else {
+        toggleDuplicatesBtn?.classList.remove('active');
+        toggleDuplicatesBtn.textContent = 'Mostra duplicati';
     }
     renderQuestionList();
 }
@@ -1964,23 +2163,28 @@ function navigateToNext() {
 // Make functions global for modal buttons
 window.toggleAccordion = toggleAccordion;
 window.restoreBackup = restoreBackup;
+window.deleteSingleBackup = deleteSingleBackup;
 window.addCategory = addCategory;
 window.removeCategory = removeCategory;
 window.renameCategory = renameCategory;
 
 // Event listeners
-searchInput.addEventListener('input', () => renderQuestionList());
-
-document.getElementById('btnCategories').addEventListener('click', showCategoriesModal);
-document.getElementById('btnReload').addEventListener('click', async () => {
-    if (isDirty) {
-        const confirmed = confirm('Ci sono modifiche non salvate. Procedere con la ricarica?');
-        if (!confirmed) return;
-    }
-    await loadQuestions();
-});
-document.getElementById('btnStats').addEventListener('click', showStats);
-document.getElementById('btnBackup').addEventListener('click', showBackups);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        searchInput.addEventListener('input', () => renderQuestionList());
+        document.getElementById('btnCategories').addEventListener('click', showCategoriesModal);
+        document.getElementById('btnReload').addEventListener('click', async () => {
+            if (isDirty) {
+                const confirmed = confirm('Ci sono modifiche non salvate. Procedere con la ricarica?');
+                if (!confirmed) return;
+            }
+            await loadQuestions();
+        });
+        document.getElementById('btnStats').addEventListener('click', showStats);
+        document.getElementById('btnBackup')?.addEventListener('click', showBackups);
+        document.getElementById('btnBackupSidebar')?.addEventListener('click', showBackups);
+    });
+}
 
 // Settings dropdown toggle
 const btnSettings = document.getElementById('btnSettings');
@@ -2013,35 +2217,51 @@ if (toggleDuplicatesBtn) {
 
 // Backup actions
 document.getElementById('btnDeleteSelectedBackups')?.addEventListener('click', deleteSelectedBackups);
-document.getElementById('selectAllBackups')?.addEventListener('change', selectAllBackups);
+
+// Panel collapse toggles
+document.getElementById('toggleFilters')?.addEventListener('click', () => {
+    const panel = document.getElementById('filtersPanel');
+    panel?.classList.toggle('collapsed');
+});
+
+document.getElementById('toggleQuestions')?.addEventListener('click', () => {
+    const panel = document.getElementById('questionsPanel');
+    panel?.classList.toggle('collapsed');
+});
 
 // Help button functionality
-const btnHelp = document.getElementById('btnHelp');
 const helpModal = document.getElementById('helpModal');
-const helpClose = helpModal?.querySelector('.close');
+const helpClose = helpModal?.querySelector('.close-modal');
 
-if (btnHelp && helpModal) {
-    btnHelp.addEventListener('click', function() {
-        helpModal.style.display = 'block';
-    });
-}
+['btnHelp', 'btnHelpSidebar'].forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (btn && helpModal) {
+        btn.addEventListener('click', function() {
+            helpModal.classList.add('show');
+        });
+    }
+});
 
 if (helpClose) {
     helpClose.addEventListener('click', function() {
-        helpModal.style.display = 'none';
+        helpModal.classList.remove('show');
     });
 }
 
 // Modal close handlers
-document.querySelectorAll('.modal .close').forEach(close => {
-    close.addEventListener('click', function() {
-        this.closest('.modal').style.display = 'none';
+function setupModalCloseHandlers() {
+    document.querySelectorAll('.modal .close, .modal .close-modal').forEach(close => {
+        close.addEventListener('click', function() {
+            this.closest('.modal').classList.remove('show');
+        });
     });
-});
+}
+
+setupModalCloseHandlers();
 
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
+        event.target.classList.remove('show');
     }
 };
 
@@ -2086,5 +2306,103 @@ function checkUrlParameter() {
 }
 
 // Initial load
-loadQuestions();
-checkUrlParameter();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        loadQuestions();
+        checkUrlParameter();
+        // Update theme icons on initial load
+        updateThemeIcons();
+    });
+} else {
+    loadQuestions();
+    checkUrlParameter();
+    updateThemeIcons();
+}
+
+function updateThemeIcons() {
+    const moonIcon = document.querySelector('.theme-icon-moon');
+    const sunIcon = document.querySelector('.theme-icon-sun');
+    if (moonIcon && sunIcon) {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        moonIcon.style.display = isDark ? 'block' : 'none';
+        sunIcon.style.display = isDark ? 'none' : 'block';
+    }
+}
+
+// Listen for theme changes to update icons
+document.addEventListener('themeChanged', updateThemeIcons);
+
+// Track current mobile panel to preserve it across resize events (especially keyboard appearance)
+let currentMobilePanel = 'detail';
+
+function setActiveMobilePanel(panelName) {
+    const filtersPanel = document.getElementById('filtersPanel');
+    const questionsPanel = document.getElementById('questionsPanel');
+    const detailPanel = document.getElementById('formPanel');
+
+    document.querySelectorAll('.mobile-panel-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.mobile-panel-tab[data-panel="${panelName}"]`)?.classList.add('active');
+
+    filtersPanel.classList.remove('mobile-active');
+    questionsPanel.classList.remove('mobile-active');
+    detailPanel.classList.remove('mobile-active');
+
+    if (panelName === 'filters') {
+        filtersPanel.classList.add('mobile-active');
+    } else if (panelName === 'questions') {
+        questionsPanel.classList.add('mobile-active');
+    } else {
+        detailPanel.classList.add('mobile-active');
+    }
+}
+
+// Mobile panel tabs
+document.querySelectorAll('.mobile-panel-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        const panel = tab.getAttribute('data-panel');
+        currentMobilePanel = panel;
+        setActiveMobilePanel(panel);
+    });
+});
+
+// Set default mobile panel on load
+function setDefaultMobilePanel() {
+    const filtersPanel = document.getElementById('filtersPanel');
+    const questionsPanel = document.getElementById('questionsPanel');
+    const detailPanel = document.getElementById('formPanel');
+
+    if (window.innerWidth <= 768) {
+        // Remove all mobile-active classes first
+        filtersPanel.classList.remove('mobile-active');
+        questionsPanel.classList.remove('mobile-active');
+        detailPanel.classList.remove('mobile-active');
+
+        // Preserve current panel instead of always switching to detail
+        setActiveMobilePanel(currentMobilePanel);
+    } else {
+        // Remove mobile classes on desktop - show all panels normally
+        filtersPanel.classList.remove('mobile-active');
+        questionsPanel.classList.remove('mobile-active');
+        detailPanel.classList.remove('mobile-active');
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setDefaultMobilePanel);
+} else {
+    setDefaultMobilePanel();
+}
+
+// Also update on resize
+window.addEventListener('resize', () => {
+    if (window.innerWidth <= 768) {
+        // Switching to mobile: set default mobile panel
+        setDefaultMobilePanel();
+    } else {
+        // Switching to desktop: remove mobile classes, show all panels
+        document.getElementById('filtersPanel')?.classList.remove('mobile-active');
+        document.getElementById('questionsPanel')?.classList.remove('mobile-active');
+        document.getElementById('formPanel')?.classList.remove('mobile-active');
+        document.querySelectorAll('.mobile-panel-tab').forEach(t => t.classList.remove('active'));
+    }
+});

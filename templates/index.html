@@ -1,252 +1,306 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=1">
     <link rel="apple-touch-icon" href="/static/favicon.svg?v=1">
     <title>QuestionLab - Home</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/modern.css">
     <link rel="stylesheet" href="/static/css/theme.css">
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        
-        .header-small {
-            background: linear-gradient(135deg, var(--header-gradient-start, #1e3c72) 0%, var(--header-gradient-end, #2a5298) 100%);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-        }
-        
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .header-small h1 {
-            margin: 0;
-            font-size: 1.4rem;
-        }
-        
-        .active-db-badge {
-            background: rgba(255,255,255,0.2);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-        
-        .server-info {
-            background: linear-gradient(135deg, var(--server-info-bg-start, #2c7da0) 0%, var(--server-info-bg-end, #1e3c72) 100%);
-            color: white;
-            padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        
-        .server-info p {
-            margin: 0;
-        }
-        
-        .server-info p:first-child {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .server-info p:nth-child(2) {
-            margin: 0.3rem 0 0;
-            font-size: 1.1rem;
-            font-weight: bold;
-        }
-        
-        .server-info p:last-child {
-            margin: 0.5rem 0 0;
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
-        
-        .home-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex: 1;
-            padding: 20px 0;
-        }
-        
-        .cards-container {
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .card {
-            background: var(--bg-secondary);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px var(--shadow-color);
-            padding: 30px;
-            width: 280px;
-            text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px var(--shadow-hover);
-        }
-        
-        .card-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-        
-        .card h2 {
-            margin: 0 0 10px 0;
-            color: var(--accent-primary);
-            font-size: 1.5rem;
-        }
-
-        .card p {
-            color: var(--text-muted);
-            margin: 0;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .card.editor {
-            border-top: 4px solid var(--card-editor-border, #2c7da0);
-        }
-
-        .card.quiz {
-            border-top: 4px solid var(--card-quiz-border, #e67e22);
-        }
-
-        .card.view {
-            border-top: 4px solid var(--card-view-border, #2c6e2f);
-        }
-
-        .card.databases {
-            border-top: 4px solid var(--card-databases-border, #8b5cf6);
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: auto;
-            color: var(--footer-text, #94a3b8);
-            font-size: 0.8rem;
-            padding-top: 1rem;
-            flex-shrink: 0;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/immersive.css">
 </head>
-<body>
-    <div class="app-container">
-        <div class="header-small">
-            <div class="header-left">
-                <h1>📋 Lista domande</h1>
-                <span class="active-db-badge" id="activeDbBadge">--</span>
-            </div>
-            <button class="theme-toggle" onclick="toggleTheme()">
-                <span class="theme-toggle-icon" id="themeIcon">🌙</span>
-            </button>
-        </div>
-
-        <div class="server-info">
-            <p>🌐 Accesso da mobile/tablet:</p>
-            <p>http://{{ server_ip }}:5015</p>
-            <p>(stessa rete Wi-Fi del PC)</p>
-        </div>
-        
-        <div class="home-container">
-            <div class="cards-container">
-                <a href="/editor" class="card editor" id="cardEditor">
-                    <div class="card-icon">✏️</div>
-                    <h2>Editor</h2>
-                    <p>Modifica, aggiungi e gestisci le domande del database. Visualizza statistiche e gestisci backup.</p>
+<body class="page-home">
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-items">
+                <a href="/" class="nav-item active">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span>Home</span>
                 </a>
-
-                <a href="/quiz" class="card quiz" id="cardQuiz">
-                    <div class="card-icon">🎯</div>
-                    <h2>Modalità Quiz</h2>
-                    <p>Metti alla prova le tue conoscenze. Rispondi alle domande e verifica le tue risposte.</p>
+                <a href="/editor" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Editor</span>
                 </a>
-
-                <a href="/view" class="card view" id="cardView">
-                    <div class="card-icon">👁️</div>
-                    <h2>Modalità Visualizzazione</h2>
-                    <p>Visualizza e naviga tra le domande in una modalità ottimizzata per la lettura.</p>
+                <a href="/quiz" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    <span>Quiz</span>
                 </a>
-
-                <a href="/databases" class="card databases">
-                    <div class="card-icon">🗃️</div>
-                    <h2>Gestione Database</h2>
-                    <p>Seleziona, crea e gestisci i tuoi database di domande.</p>
+                <a href="/view" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>View</span>
+                </a>
+                <a href="/databases" class="nav-item">
+                    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    <span>Database</span>
                 </a>
             </div>
-        </div>
+            <div class="nav-item" id="btnHelpSidebar">
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Aiuto</span>
+            </div>
+            <div class="nav-item" id="themeToggleNav" onclick="toggleTheme()">
+                <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <span>Tema</span>
+            </div>
+<div class="nav-item" id="settingsNavItem">
+<div class="nav-icon">
+<svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+</div>
+<span>Impostazioni</span>
+</div>
+<div class="settings-backdrop" id="settingsBackdrop"></div>
+<div class="settings-panel collapsed" id="searchSettingsPanel">
+<div class="settings-group">
+<div class="setting-row">
+<span>Modalità Ricerca</span>
+<select id="searchModeSelect">
+<option value="strict"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Stretta</option>
+<option value="normal" selected><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Normale</option>
+<option value="fuzzy"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Fuzzy</option>
+</select>
+</div>
+                    <div class="setting-row">
+                        <span>Evidenzia risultati</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="highlightEnabled" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <span>Cerca nelle risposte</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="searchAnswers" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <span>Cerca nelle note</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="searchNotes" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <span>Cerca nelle categorie</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="searchCategories" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-item" id="btnImmersiveSidebar">
+                <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                <span>Immersiva</span>
+            </div>
+        </aside>
 
-        <div class="footer">
-            <p>Database: <strong id="activeDbName">--</strong> | Domande totali: <span id="totalQuestions">--</span> | versione: <strong>{{ app_version }}</strong></p>
-        </div>
+        <!-- Main content -->
+        <main class="main-content">
+            <!-- Top bar -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <h1 class="page-title">QuestionLab</h1>
+                    <span id="activeDbBadge" class="title-db-name">--</span>
+                </div>
+                <div class="header-actions">
+                </div>
+            </header>
+
+            <!-- Workspace -->
+            <div class="workspace home-workspace">
+                <!-- Welcome section -->
+                <section class="welcome-section">
+                    <h1 class="welcome-title">Benvenuto su QuestionLab</h1>
+                    <p class="welcome-subtitle">Gestisci, studia e mettiti alla prova con le tue domande</p>
+                </section>
+
+                <!-- Feature cards grid -->
+                <div class="cards-grid">
+                    <!-- Editor Card -->
+                    <a href="/editor" class="feature-card card-editor" id="cardEditor">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </div>
+                        <div class="card-title">
+                            Editor Domande
+                        </div>
+                        <p class="card-description">
+                            Modifica, aggiungi e gestisci le domande del database.
+                            Visualizza statistiche, gestisci backup e mantieni ordinato il tuo archivio.
+                        </p>
+                        <div class="card-meta">
+                            <span id="editorMetaQuestions">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                -- domande
+                            </span>
+                            <span id="editorMetaCategories">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                                -- categorie
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- Quiz Card -->
+                    <a href="/quiz" class="feature-card card-quiz" id="cardQuiz">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                        </div>
+                        <div class="card-title">Modalità Quiz</div>
+                        <p class="card-description">
+                            Metti alla prova le tue conoscenze. Rispondi alle domande,
+                            verifica le tue risposte e monitora i tuoi progressi nel tempo.
+                        </p>
+                        <div class="card-meta">
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                Statistiche
+                            </span>
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                Progressi
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- View Card -->
+                    <a href="/view" class="feature-card card-view" id="cardView">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
+                        <div class="card-title">Modalità Visualizzazione</div>
+                        <p class="card-description">
+                            Visualizza e naviga tra le domande in una modalità ottimizzata
+                            per la lettura e lo studio passivo.
+                        </p>
+                        <div class="card-meta">
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                Lettura fluida
+                            </span>
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                Ricerca rapida
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- Database Card (always active, no ID for disable) -->
+                    <a href="/databases" class="feature-card card-database">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                        </div>
+                        <div class="card-title">Gestione Database</div>
+                        <p class="card-description">
+                            Seleziona, crea, importa ed esporta i tuoi database di domande.
+                            Gestisci backup e mantieni i tuoi dati al sicuro.
+                        </p>
+                        <div class="card-meta">
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                Import/Esporta
+                            </span>
+                            <span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                Backup
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- Settings/LAN Access Card -->
+                    <div class="feature-card card-settings" id="cardSettings">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <div class="card-title">Accesso LAN</div>
+                        <div class="card-content">
+                            <p class="card-description">
+                                Controlla l'accesso da dispositivi in rete locale.
+                            </p>
+                            <div class="lan-ip-info">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                <!-- <span>Server:</span> -->
+                                <code id="lanServerIP">https://{{ server_ip }}:5015</code>
+                            </div>
+                             <div class="lan-toggle-wrapper">
+                                 <label class="lan-toggle-label" for="lanToggle">Accesso LAN:</label>
+                                 <label class="toggle-switch">
+                                     <input type="checkbox" id="lanToggle">
+                                     <span class="toggle-slider"></span>
+                                 </label>
+                                 <span class="lan-toggle-status inactive" id="lanStatus">Solo locale</span>
+                             </div>
+                             
+                             <!-- Password LAN Section -->
+                             <div id="lanPasswordSection" class="lan-password-section">
+                              <div class="lan-password-controls">
+                                      <button id="btnSetPassword" class="btn btn-primary">Imposta pwd</button>
+                                      <button id="btnRemovePassword" class="btn btn-danger" style="display: none;">Rimuovi pwd</button>
+                                      <span id="passwordStatus" class="password-status">Caricamento...</span>
+                                  </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+
+                <!-- Database info bar - structured like mockup -->
+                <div class="database-bar">
+                    <div class="db-info">
+                        <div class="db-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                            <span>Database attivo:</span>
+                            <strong id="activeDbName">--</strong>
+                            <span class="db-badge" id="dbTotalBadge">-- domande totali</span>
+                        </div>
+                        <div class="db-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <span>Domande totali:</span>
+                            <strong id="totalQuestions">--</strong>
+                        </div>
+                        <div class="db-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <span>Ultimo backup:</span>
+                            <strong id="lastBackup">--</strong>
+                        </div>
+                    </div>
+                    <div class="quick-stats" id="quickStats">
+                        <span class="stat-pill" id="statAnswered">-- con risposta</span>
+                        <span class="stat-pill" id="statUnanswered">-- senza risposta</span>
+                        <span class="stat-pill" id="statDuplicates">-- duplicati</span>
+                    </div>
+                    <div class="version">versione {{ app_version }}</div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <style>
-        .card.disabled {
-            opacity: 0.5;
-            pointer-events: none;
-            cursor: not-allowed;
-            filter: grayscale(50%);
-        }
-        .card.disabled::after {
-            content: '🔒 Nessun database selezionato';
-            display: block;
-            margin-top: 10px;
-            font-size: 0.8rem;
-            color: #e74c3c;
-            font-weight: bold;
-        }
-    </style>
-
     <script>
-        // Fetch total questions count for footer
+        // Fetch total questions count for editor card meta + db badge + totalQuestions
         fetch('/api/questions')
             .then(res => res.json())
             .then(data => {
                 if (data.questions !== undefined) {
-                    document.getElementById('totalQuestions').textContent = data.questions.length;
-                } else {
-                    document.getElementById('totalQuestions').textContent = '--';
+                    const count = data.questions.length;
+                    document.getElementById('totalQuestions').textContent = count;
+                    document.getElementById('editorMetaQuestions').innerHTML =
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ' + count + ' domande';
+                    document.getElementById('dbTotalBadge').textContent = count + ' domande totali';
+
+                    // Count categories
+                    const cats = new Set();
+                    data.questions.forEach(function(q) {
+                        if (q.primary_domain) cats.add(q.primary_domain);
+                    });
+                    document.getElementById('editorMetaCategories').innerHTML =
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> ' + cats.size + ' categorie';
                 }
             })
             .catch(err => {
-                console.error('Error loading stats:', err);
-                document.getElementById('totalQuestions').textContent = '--';
+                console.error('Error loading questions:', err);
             });
 
         // Fetch active database name for footer and badge
@@ -265,12 +319,263 @@
             })
             .catch(err => {
                 console.error('Error loading active database:', err);
-                // Disable cards on error
                 document.getElementById('cardEditor').classList.add('disabled');
                 document.getElementById('cardQuiz').classList.add('disabled');
                 document.getElementById('cardView').classList.add('disabled');
             });
+
+        // Fetch stats for quick-stats pills
+        fetch('/api/stats')
+            .then(res => res.json())
+            .then(data => {
+                const totalQuestions = data.total_questions || 0;
+                const noAnswers = data.questions_with_no_answers || 0;
+                const noCorrect = data.questions_with_no_correct || 0;
+                const duplicates = data.total_duplicates || 0;
+
+                const answered = totalQuestions - noAnswers - noCorrect;
+                const unanswered = noAnswers + noCorrect;
+
+                document.getElementById('statAnswered').textContent = answered + ' con risposta';
+                document.getElementById('statUnanswered').textContent = unanswered + ' senza risposta';
+                document.getElementById('statDuplicates').textContent = duplicates + ' duplicati';
+            })
+            .catch(err => {
+                console.error('Error loading stats:', err);
+            });
+            
+        // Fetch last backup info
+        fetch('/api/backups')
+            .then(res => res.json())
+            .then(data => {
+                if (data.backups && data.backups.length > 0) {
+                    const lastBackup = data.backups[0];
+                    const date = new Date(lastBackup.modified);
+                    const formattedDate = date.toLocaleString('it-IT', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    document.getElementById('lastBackup').textContent = formattedDate;
+                } else {
+                    document.getElementById('lastBackup').textContent = 'Nessuno';
+                }
+            })
+            .catch(err => {
+                console.error('Error loading backups:', err);
+                document.getElementById('lastBackup').textContent = 'Errore';
+            });
+            
+        // Fetch total databases count for database card
+        fetch('/api/databases')
+            .then(res => res.json())
+            .then(data => {
+                if (data.databases) {
+                    const count = data.databases.length;
+                    // Aggiorna la card database
+                    const dbCard = document.querySelector('.card-database .card-meta');
+                    const firstSpan = dbCard.querySelector('span:first-child');
+                    firstSpan.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> ${count} database`;
+                }
+            })
+            .catch(err => {
+                console.error('Error loading databases:', err);
+            });
+            
+        // Fetch quiz statistics for quiz card
+        fetch('/api/quiz/statistics')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.error) {
+                    const quizCard = document.querySelector('.card-quiz .card-meta');
+                    const spans = quizCard.querySelectorAll('span');
+                    
+                    // Aggiorna numero di tentativi
+                    spans[0].innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> ${data.total_attempts} tentativi`;
+                    
+                    // Aggiorna media punteggio
+                    spans[1].innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${data.average_score}% media`;
+                }
+            })
+            .catch(err => {
+                console.error('Error loading quiz stats:', err);
+            });
+
+        // ==================== LAN ACCESS TOGGLE ====================
+        const lanToggle = document.getElementById('lanToggle');
+        const lanStatusText = document.getElementById('lanStatus');
+
+        // Fetch LAN status on load
+        fetch('/api/lan-status')
+            .then(res => res.json())
+            .then(data => {
+                lanToggle.checked = data.lan_access || false;
+                updateLanStatusText(data.lan_access);
+            })
+            .catch(err => console.error('Error loading LAN status:', err));
+
+        function updateLanStatusText(enabled) {
+            if (enabled) {
+                lanStatusText.textContent = 'Accesso rete';
+                lanStatusText.className = 'lan-toggle-status active';
+            } else {
+                lanStatusText.textContent = 'Solo locale';
+                lanStatusText.className = 'lan-toggle-status inactive';
+            }
+        }
+
+        // Toggle click with confirmation modal
+        lanToggle.addEventListener('change', function() {
+            if (this.disabled) {
+                this.checked = false;
+                alert('Impossibile abilitare LAN: devi prima impostare una password.');
+                return;
+            }
+            
+            const newVal = this.checked;
+            this.checked = !newVal; // Revert immediately, will set back after confirm
+
+            const action = newVal ? 'abilitare' : 'disabilitare';
+            const warning = newVal
+                ? 'Attenzione: tutti i dispositivi in rete locale potranno accedere all\'applicazione.'
+                : 'Attenzione: perderai l\'accesso remoto all\'applicazione da altri dispositivi.';
+
+            if (confirm(`Sei sicuro di voler ${action} l'accesso LAN?\n\n${warning}`)) {
+                fetch('/api/lan-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lan_access: newVal })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    this.checked = data.lan_access;
+                    updateLanStatusText(data.lan_access);
+                })
+                .catch(err => {
+                    console.error('Error updating LAN status:', err);
+                    alert('Errore nell\'aggiornamento dello stato LAN.');
+                    this.checked = !newVal;
+                    updateLanStatusText(!newVal);
+                });
+            } else {
+                updateLanStatusText(!newVal);
+            }
+        });
+
+        // ==================== LAN PASSWORD ====================
+        const passwordSection = document.getElementById('lanPasswordSection');
+        const btnSetPassword = document.getElementById('btnSetPassword');
+        const btnRemovePassword = document.getElementById('btnRemovePassword');
+        const passwordStatus = document.getElementById('passwordStatus');
+        
+        // Verifica se siamo su localhost
+        const isLocalhost = window.location.hostname === 'localhost' 
+                         || window.location.hostname === '127.0.0.1'
+                         || window.location.hostname === '::1';
+
+        // Se non siamo su localhost: nascondi completamente i controlli password
+        if (!isLocalhost) {
+            passwordSection.style.display = 'none';
+        }
+        
+        let passwordIsSet = false;
+        
+        // Fetch stato password
+        fetch('/api/lan-password-status')
+            .then(res => res.json())
+            .then(data => {
+                passwordIsSet = data.is_set;
+                updatePasswordUI();
+            })
+            .catch(err => console.error('Error loading password status:', err));
+            
+         function updatePasswordUI() {
+             if (passwordIsSet) {
+                 btnSetPassword.textContent = 'Cambia pwd';
+                 btnRemovePassword.style.display = 'inline-block';
+                 passwordStatus.textContent = '✓ Password impostata';
+                 passwordStatus.className = 'password-status ok';
+                 lanToggle.disabled = false;
+             } else {
+                 btnSetPassword.textContent = 'Imposta pwd';
+                 btnRemovePassword.style.display = 'none';
+                 passwordStatus.textContent = '⚠ Imposta password per abilitare LAN';
+                 passwordStatus.className = 'password-status warning';
+                 lanToggle.disabled = true;
+                 lanToggle.checked = false;
+                 updateLanStatusText(false);
+             }
+         }
+         
+         // Note for users: explains Basic Auth behavior
+         passwordStatus.title = '💡 Nota: Nel popup di autenticazione puoi lasciare il NOME UTENTE vuoto o inserire qualsiasi cosa, è richiesto solo la password.';
+        
+        // Imposta password
+        btnSetPassword.addEventListener('click', function() {
+            const password = prompt('Inserisci la nuova password LAN (minimo 4 caratteri):');
+            if (!password) return;
+            
+            const confirmPassword = prompt('Conferma la password:');
+            if (password !== confirmPassword) {
+                alert('Le password non corrispondono');
+                return;
+            }
+            
+            fetch('/api/lan-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Password impostata con successo! Ora puoi abilitare l\'accesso LAN.');
+                    passwordIsSet = true;
+                    updatePasswordUI();
+                } else {
+                    alert('Errore: ' + data.error);
+                }
+            })
+            .catch(err => {
+                console.error('Error setting password:', err);
+                alert('Errore nell\'impostazione della password');
+            });
+        });
+        
+        // Rimuovi password
+        btnRemovePassword.addEventListener('click', function() {
+            if (!confirm('Sei sicuro di voler rimuovere la password LAN? L\'accesso LAN verrà automaticamente disabilitato.')) {
+                return;
+            }
+            
+            fetch('/api/lan-password-remove', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Password rimossa con successo. Accesso LAN disabilitato.');
+                    passwordIsSet = false;
+                    updatePasswordUI();
+                } else {
+                    alert('Errore: ' + data.error);
+                }
+            })
+            .catch(err => {
+                console.error('Error removing password:', err);
+                alert('Errore nella rimozione della password');
+            });
+        });
     </script>
+    <script src="/static/js/search-utils.js"></script>
+    <script src="/static/js/fuzzy-matcher.js"></script>
+    <script src="/static/js/query-parser.js"></script>
+    <script src="/static/js/search-engine.js"></script>
+    <script src="/static/js/search-settings.js"></script>
     <script src="/static/js/theme.js"></script>
+    <script src="/static/js/immersive.js" defer></script>
 </body>
 </html>

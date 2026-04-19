@@ -17,6 +17,10 @@ class QuizManagerFrontend {
         this.usedCount = 0;
         this.quizInProgress = false;
 
+        // Review filter state
+        this.currentReviewFilters = { all: true, correct: false, partial: false, wrong: false };
+        this.logReviewFilters = { all: true, correct: false, partial: false, wrong: false };
+
         // Check for active database before initializing
         this.checkDatabaseAndInit();
     }
@@ -25,6 +29,13 @@ class QuizManagerFrontend {
         fetch('/api/databases/active')
             .then(res => res.json())
             .then(data => {
+                // Update active database name in topbar
+                const dbName = data.active_database || 'Nessuno';
+                const activeDbNameEl = document.getElementById('activeDbName');
+                if (activeDbNameEl) {
+                    activeDbNameEl.textContent = dbName;
+                }
+
                 // Show/hide blocker based on active database
                 const blocker = document.getElementById('noDbBlocker');
                 if (blocker) {
@@ -47,15 +58,18 @@ class QuizManagerFrontend {
 
     initializeEventListeners() {
         // Help button
-        const btnHelp = document.getElementById('btnHelp');
         const helpModal = document.getElementById('helpModal');
-        const helpClose = helpModal?.querySelector('.close');
+        const helpClose = helpModal?.querySelector('.close-modal') || helpModal?.querySelector('.close');
 
-        if (btnHelp && helpModal) {
-            btnHelp.addEventListener('click', () => {
-                helpModal.style.display = 'block';
-            });
-        }
+        // Support both old and new button for backwards compatibility
+        ['btnHelp', 'btnHelpSidebar'].forEach(btnId => {
+            const btn = document.getElementById(btnId);
+            if (btn && helpModal) {
+                btn.addEventListener('click', () => {
+                    helpModal.style.display = 'block';
+                });
+            }
+        });
 
         if (helpClose) {
             helpClose.addEventListener('click', () => {
@@ -71,18 +85,21 @@ class QuizManagerFrontend {
         });
 
         // Navigation
-        document.getElementById('btnHome').addEventListener('click', () => {
-            if (this.quizInProgress) {
-                if (confirm('Sei sicuro di voler tornare alla home? Il quiz in corso verrà perso e salvato nel log.')) {
-                    this.finishQuiz(true);
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 1000);
+        const btnHome = document.getElementById('btnHome');
+        if (btnHome) {
+            btnHome.addEventListener('click', () => {
+                if (this.quizInProgress) {
+                    if (confirm('Sei sicuro di voler tornare alla home? Il quiz in corso verrà perso e salvato nel log.')) {
+                        this.finishQuiz(true);
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    }
+                } else {
+                    window.location.href = '/';
                 }
-            } else {
-                window.location.href = '/';
-            }
-        });
+            });
+        }
 
         document.getElementById('btnLogs').addEventListener('click', () => {
             if (this.quizInProgress) {
@@ -163,6 +180,12 @@ class QuizManagerFrontend {
             window.location.href = '/';
         });
 
+        document.getElementById('btnEndQuiz').addEventListener('click', () => {
+            if (confirm('Sei sicuro di voler terminare il quiz? Il progresso attuale verrà salvato.')) {
+                this.finishQuiz();
+            }
+        });
+
         document.getElementById('btnBackToResults').addEventListener('click', () => {
             this.showResults();
         });
@@ -175,6 +198,102 @@ class QuizManagerFrontend {
         document.getElementById('btnDeleteAllLogs').addEventListener('click', () => {
             this.deleteAllLogs();
         });
+
+        // Review filter pills
+        this.initializeReviewFilterPills();
+    }
+
+    // ==================== REVIEW FILTERS ====================
+
+    initializeReviewFilterPills() {
+        // Current review filter pills
+        document.querySelectorAll('#reviewFilterBar .filter-pill').forEach(pill => {
+            pill.addEventListener('click', (e) => {
+                this.toggleReviewFilter(e.currentTarget, 'current');
+            });
+        });
+
+        // Log review filter pills
+        document.querySelectorAll('#logReviewFilterBar .filter-pill').forEach(pill => {
+            pill.addEventListener('click', (e) => {
+                this.toggleReviewFilter(e.currentTarget, 'log');
+            });
+        });
+    }
+
+    toggleReviewFilter(pill, reviewType) {
+        const filterType = pill.dataset.filter;
+        const filters = reviewType === 'current' ? this.currentReviewFilters : this.logReviewFilters;
+        const barId = reviewType === 'current' ? '#reviewFilterBar' : '#logReviewFilterBar';
+
+        if (filterType === 'all') {
+            // Toggle "all": if not active, activate it and deactivate others
+            if (!filters.all) {
+                filters.all = true;
+                filters.correct = false;
+                filters.partial = false;
+                filters.wrong = false;
+            }
+            // If already active, do nothing (keep at least one filter active)
+        } else {
+            // Toggle specific filter
+            filters[filterType] = !filters[filterType];
+
+            // If all non-"all" filters are off, turn "all" on
+            if (!filters.correct && !filters.partial && !filters.wrong) {
+                filters.all = true;
+            } else {
+                filters.all = false;
+            }
+        }
+
+        // Update pill UI
+        document.querySelectorAll(`${barId} .filter-pill`).forEach(p => {
+            p.classList.toggle('active', filters[p.dataset.filter]);
+        });
+
+        // Apply filters
+        this.applyReviewFilters(reviewType);
+    }
+
+    applyReviewFilters(reviewType) {
+        const filters = reviewType === 'current' ? this.currentReviewFilters : this.logReviewFilters;
+        const containerId = reviewType === 'current' ? 'reviewContainer' : 'logReviewContainer';
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const questionElements = container.querySelectorAll('.review-question');
+        let visibleCount = 0;
+
+        questionElements.forEach(el => {
+            if (filters.all) {
+                el.style.display = '';
+                visibleCount++;
+                return;
+            }
+
+            const isCorrect = el.classList.contains('correct');
+            const isPartial = el.classList.contains('partial');
+            const isWrong = el.classList.contains('wrong') || el.classList.contains('unanswered');
+
+            const show = (filters.correct && isCorrect) || (filters.partial && isPartial) || (filters.wrong && isWrong);
+            el.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+        });
+
+        // Show "no results" message if nothing visible
+        let noResultsMsg = container.querySelector('.review-no-results');
+        if (visibleCount === 0) {
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('div');
+                noResultsMsg.className = 'review-no-results';
+                noResultsMsg.textContent = 'Nessuna domanda corrisponde ai filtri selezionati.';
+                container.appendChild(noResultsMsg);
+            }
+            noResultsMsg.style.display = 'block';
+        } else if (noResultsMsg) {
+            noResultsMsg.style.display = 'none';
+        }
     }
 
     // ==================== CATEGORIES ====================
@@ -236,16 +355,6 @@ class QuizManagerFrontend {
             container.insertAdjacentElement('afterend', subdomainsContainer);
         }
 
-        let subdomainsInfo = document.getElementById('selectedSubdomainsInfo');
-        if (!subdomainsInfo) {
-            subdomainsInfo = document.createElement('div');
-            subdomainsInfo.id = 'selectedSubdomainsInfo';
-            subdomainsInfo.className = 'category-info';
-            subdomainsInfo.style.display = 'none';
-            subdomainsInfo.innerHTML = '<span id="selectedSubdomainsCount">0</span> sottodomini selezionati';
-            subdomainsContainer.insertAdjacentElement('afterend', subdomainsInfo);
-        }
-
         this.renderSubdomains();
     }
 
@@ -283,7 +392,7 @@ class QuizManagerFrontend {
             const selectedSubs = this.selectedSubdomainsByPrimary[primary] || [];
 
             html += `
-                <div style="grid-column: 1 / -1; margin-top: 6px; font-size: 0.85rem; color: #334155;"><strong>${primary}</strong></div>
+                <div class="category-group-label" data-primary="${primary}"><strong>${primary}</strong></div>
             `;
             allSubs.forEach(sub => {
                 const checked = selectedSubs.includes(sub) ? 'selected' : '';
@@ -323,18 +432,32 @@ class QuizManagerFrontend {
         this.selectedSubdomainsByPrimary[primary] = list;
 
         this.renderSubdomains();
+        this.updateSubdomainCount();
         this.updateAvailableQuestions();
     }
 
     updateSubdomainCount() {
-        const el = document.getElementById('selectedSubdomainsCount');
-        if (!el) return;
         let count = 0;
-        this.selectedCategories.filter(c => c !== 'all').forEach(primary => {
-            const list = this.selectedSubdomainsByPrimary[primary] || [];
-            count += list.length;
-        });
-        el.textContent = count;
+        if (this.selectedCategories.includes('all')) {
+            // Count all subdomains across all categories
+            for (const primary of Object.keys(this.categoriesData || {})) {
+                const list = this.selectedSubdomainsByPrimary[primary] || this.getSubdomainsForPrimary(primary);
+                count += list.length;
+            }
+        } else {
+            this.selectedCategories.forEach(primary => {
+                const list = this.selectedSubdomainsByPrimary[primary] || [];
+                count += list.length;
+            });
+        }
+        const countEl = document.getElementById('selectedSubdomainsCount');
+        const badgeEl = document.querySelector('.info-badge.info-subdomains');
+        const labelEl = document.getElementById('selectedSubdomainsLabel');
+        if (countEl) countEl.textContent = count;
+        if (labelEl) labelEl.textContent = count === 1 ? 'sottocategoria' : 'sottocategorie';
+        if (badgeEl) {
+            badgeEl.style.display = count > 0 ? 'inline-flex' : 'none';
+        }
     }
 
     toggleCategory(category) {
@@ -400,9 +523,15 @@ class QuizManagerFrontend {
     }
 
     updateCategoryCount() {
-        const count = this.selectedCategories.length;
-        document.getElementById('selectedCategoriesCount').textContent = count;
-        
+        let count = this.selectedCategories.length;
+        if (this.selectedCategories.includes('all')) {
+            count = Object.keys(this.categoriesData || {}).length;
+        }
+        const el = document.getElementById('selectedCategoriesCount');
+        if (el) el.textContent = count;
+        const labelEl = document.getElementById('selectedCategoriesLabel');
+        if (labelEl) labelEl.textContent = count === 1 ? 'categoria' : 'categorie';
+
         // Enable/disable start button
         const startBtn = document.getElementById('btnStartQuiz');
         startBtn.disabled = count === 0;
@@ -425,7 +554,7 @@ class QuizManagerFrontend {
         } else {
             this.selectedCount = parseInt(count);
         }
-        
+
         this.updateCountDisplay();
         this.updateAvailableQuestions();
     }
@@ -456,8 +585,15 @@ class QuizManagerFrontend {
     }
 
     updateCountDisplay() {
-        const display = this.selectedCount === -1 ? 'Tutte' : this.selectedCount;
-        document.getElementById('selectedCount').textContent = display;
+        const countEl = document.getElementById('selectedCount');
+        const labelEl = document.getElementById('selectedCountLabel');
+        if (this.selectedCount === -1) {
+            if (countEl) countEl.textContent = '';
+            if (labelEl) labelEl.textContent = 'Tutte le domande';
+        } else {
+            if (countEl) countEl.textContent = this.selectedCount;
+            if (labelEl) labelEl.textContent = this.selectedCount === 1 ? 'domanda' : 'domande';
+        }
     }
 
     async updateAvailableQuestions() {
@@ -546,7 +682,13 @@ class QuizManagerFrontend {
             this.startTime = Date.now();
             this.elapsedTime = 0;
             this.startTimer();
-            
+
+            // Show end quiz button, hide logs button during quiz
+            const btnEndQuiz = document.getElementById('btnEndQuiz');
+            if (btnEndQuiz) btnEndQuiz.style.display = '';
+            const btnLogs = document.getElementById('btnLogs');
+            if (btnLogs) btnLogs.style.display = 'none';
+
             // Show quiz screen
             this.showQuiz();
             this.displayQuestion();
@@ -568,15 +710,25 @@ class QuizManagerFrontend {
         
         // Update question text
         document.getElementById('questionText').textContent = question.raw_text;
-        document.getElementById('questionCategory').textContent = question.primary_domain;
-        
+
         // Render answers
         this.renderAnswers(question);
-        
+
         // Reset UI
-        document.getElementById('btnSubmitAnswer').disabled = true;
-        document.getElementById('btnNextQuestion').style.display = 'none';
-        document.getElementById('feedbackContainer').style.display = 'none';
+        const submitBtn = document.getElementById('btnSubmitAnswer');
+        const nextBtn = document.getElementById('btnNextQuestion');
+        const feedbackContainer = document.getElementById('feedbackContainer');
+        
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.display = 'block';
+        }
+        if (nextBtn) {
+            nextBtn.style.display = 'none';
+        }
+        if (feedbackContainer) {
+            feedbackContainer.style.display = 'none';
+        }
         
         // Update score display
         this.updateScoreDisplay();
@@ -593,32 +745,26 @@ class QuizManagerFrontend {
             const answerDiv = document.createElement('div');
             answerDiv.className = 'answer-option';
             answerDiv.dataset.letter = letter;
-            
+
             answerDiv.innerHTML = `
-                <div class="answer-checkbox">
-                    <input type="checkbox" id="answer_${letter}" name="answer" value="${letter}">
-                </div>
-                <div class="answer-content">
-                    <span class="answer-letter">${letter}.</span>
-                    <span class="answer-text">${answers[letter]}</span>
-                </div>
+                <input type="checkbox" value="${letter}" style="position: absolute; opacity: 0; pointer-events: none;">
+                <span class="answer-letter">${letter}</span>
+                <span class="answer-text">${answers[letter]}</span>
             `;
-            
+
             // Add click handler
             answerDiv.addEventListener('click', (e) => {
                 // Check if answers are disabled (during feedback)
                 if (answerDiv.classList.contains('disabled')) {
                     return;
                 }
-                
-                if (e.target.type !== 'checkbox') {
-                    const checkbox = answerDiv.querySelector('input[type="checkbox"]');
-                    checkbox.checked = !checkbox.checked;
-                }
+
+                const checkbox = answerDiv.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
                 this.toggleAnswerSelection(answerDiv);
                 this.updateSubmitButton();
             });
-            
+
             container.appendChild(answerDiv);
         });
     }
@@ -634,9 +780,8 @@ class QuizManagerFrontend {
     }
 
     updateSubmitButton() {
-        const selectedAnswers = this.getSelectedAnswers();
         const submitBtn = document.getElementById('btnSubmitAnswer');
-        submitBtn.disabled = selectedAnswers.length === 0;
+        submitBtn.disabled = false;
     }
 
     getSelectedAnswers() {
@@ -647,11 +792,9 @@ class QuizManagerFrontend {
     async submitAnswer() {
         const selectedAnswers = this.getSelectedAnswers();
         const question = this.questions[this.currentQuestionIndex];
-        
-        if (selectedAnswers.length === 0) {
-            this.showStatus('Seleziona almeno una risposta', 'warning');
-            return;
-        }
+
+        // Allow proceeding without answers (marks as wrong)
+        const isEmpty = selectedAnswers.length === 0;
 
         try {
             const response = await fetch('/api/quiz/validate', {
@@ -670,6 +813,15 @@ class QuizManagerFrontend {
             }
 
             const result = await response.json();
+
+            // If no answers were selected, force wrong result
+            if (isEmpty) {
+                result.is_correct = false;
+                result.is_partial = false;
+                result.feedback = 'Nessuna risposta selezionata';
+                result.correct_answers = result.correct_answers || [];
+                result.score = 0.0;
+            }
             
             // Store user answer and result
             this.userAnswers[this.currentQuestionIndex] = selectedAnswers;
@@ -691,7 +843,7 @@ class QuizManagerFrontend {
             // Update next button text
             const nextBtn = document.getElementById('btnNextQuestion');
             if (this.currentQuestionIndex === this.questions.length - 1) {
-                nextBtn.textContent = '🏁 Termina Quiz';
+                nextBtn.textContent = 'Termina Quiz';
             } else {
                 nextBtn.textContent = 'Prossima Domanda →';
             }
@@ -714,13 +866,13 @@ class QuizManagerFrontend {
         
         if (result.is_correct) {
             feedbackContainer.classList.add('correct');
-            feedbackMessage.innerHTML = '✅ <strong>Risposta Corretta!</strong>';
+            feedbackMessage.innerHTML = '<strong>Risposta Corretta</strong>';
         } else if (result.is_partial) {
             feedbackContainer.classList.add('partial');
-            feedbackMessage.innerHTML = '⚠️ <strong>Risposta Parziale</strong>';
+            feedbackMessage.innerHTML = '<strong>Risposta Parziale</strong>';
         } else {
             feedbackContainer.classList.add('wrong');
-            feedbackMessage.innerHTML = '❌ <strong>Risposta Sbagliata</strong>';
+            feedbackMessage.innerHTML = '<strong>Risposta Sbagliata</strong>';
         }
         
         // Show correct answers
@@ -733,7 +885,7 @@ class QuizManagerFrontend {
         const question = this.questions[this.currentQuestionIndex];
         if (question.notes && question.notes.trim()) {
             if (feedbackContent) feedbackContent += '<br><br>';
-            feedbackContent += `<strong>📝 Note:</strong> ${question.notes}`;
+            feedbackContent += `<strong>Note:</strong> ${question.notes}`;
         }
         
         correctAnswers.innerHTML = feedbackContent;
@@ -771,6 +923,11 @@ class QuizManagerFrontend {
         const partial = this.quizResults.filter(r => r && r.is_partial).length;
         const wrong = this.quizResults.filter(r => r && !r.is_correct && !r.is_partial).length;
         
+        // Calcola punteggio totale con pesi proporzionali
+        const totalScore = this.quizResults.reduce((sum, r) => {
+            return sum + (r && r.score !== undefined ? r.score : 0);
+        }, 0);
+        
         document.getElementById('correctCount').textContent = correct;
         document.getElementById('partialCount').textContent = partial;
         document.getElementById('wrongCount').textContent = wrong;
@@ -799,11 +956,22 @@ class QuizManagerFrontend {
         const wrongAnswers = this.quizResults.filter(r => r && !r.is_correct && !r.is_partial).length;
         const unansweredQuestions = totalQuestions - answeredQuestions;
         
-        const scorePercentage = answeredQuestions > 0 ? Math.round((correctAnswers / answeredQuestions) * 100) : 0;
+        // Calcola punteggio totale con pesi proporzionali
+        const totalScore = this.quizResults.reduce((sum, r) => {
+            return sum + (r && r.score !== undefined ? r.score : 0);
+        }, 0);
         
+        const scorePercentage = answeredQuestions > 0 ? Math.round((totalScore / answeredQuestions) * 100) : 0;
+
+        // Expand "all" to actual categories for the log
+        let actualCategories = [...this.selectedCategories];
+        if (actualCategories.includes('all')) {
+            actualCategories = Object.keys(this.categoriesData || {});
+        }
+
         // Prepare quiz log data
         return {
-            categories_selected: this.selectedCategories,
+            categories_selected: actualCategories,
             subdomains_by_primary_selected: this.selectedSubdomainsByPrimary,
             total_questions_requested: this.selectedCount,
             total_questions_available: this.availableCount,
@@ -816,7 +984,7 @@ class QuizManagerFrontend {
             total_time_seconds: Math.floor(this.elapsedTime / 1000),
             average_time_per_question: answeredQuestions > 0 ? Math.round((this.elapsedTime / 1000) / answeredQuestions) : 0,
             interrupted: interrupted,
-            questions: this.questions.map((q, index) => ({
+             questions: this.questions.map((q, index) => ({
                 id: q.id,
                 text: q.raw_text,
                 all_answers: q.answers,
@@ -825,6 +993,7 @@ class QuizManagerFrontend {
                 is_correct: this.quizResults[index]?.is_correct || false,
                 is_partial: this.quizResults[index]?.is_partial || false,
                 is_unanswered: this.quizResults[index] === null,
+                score: this.quizResults[index]?.score || 0,
                 time_spent_seconds: this.quizResults[index] ? Math.round((this.elapsedTime / 1000) / answeredQuestions) : 0,
                 feedback: this.quizResults[index]?.feedback || 'no_answer'
             }))
@@ -866,6 +1035,11 @@ class QuizManagerFrontend {
         const answeredQuestions = correct + partial + wrong;
         const avgTime = answeredQuestions > 0 ? totalTime / answeredQuestions : 0;
         
+        // Calcola punteggio dettagliato
+        const totalScore = this.quizResults.reduce((sum, r) => {
+            return sum + (r && r.score !== undefined ? r.score : 0);
+        }, 0);
+        
         document.getElementById('finalScore').textContent = `${score}%`;
         document.getElementById('finalCorrect').textContent = correct;
         document.getElementById('finalPartial').textContent = partial;
@@ -876,8 +1050,7 @@ class QuizManagerFrontend {
         // Add interrupted message if quiz was interrupted
         if (interrupted) {
             const resultsCard = document.querySelector('.results-card h2');
-            resultsCard.textContent = '⚠️ Quiz Interrotto!';
-            resultsCard.style.color = '#e67e22';
+            resultsCard.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:6px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Quiz Interrotto!';
         }
         
         this.quizInProgress = false;
@@ -910,6 +1083,12 @@ class QuizManagerFrontend {
     // ==================== REVIEW ====================
 
     showReview() {
+        // Reset filters to "all"
+        this.currentReviewFilters = { all: true, correct: false, partial: false, wrong: false };
+        document.querySelectorAll('#reviewFilterBar .filter-pill').forEach(p => {
+            p.classList.toggle('active', p.dataset.filter === 'all');
+        });
+
         const container = document.getElementById('reviewContainer');
         container.innerHTML = '';
         
@@ -927,15 +1106,25 @@ class QuizManagerFrontend {
                 else if (result.is_partial) statusClass = 'partial';
                 else statusClass = 'wrong';
             }
-            
+
             reviewDiv.classList.add(statusClass);
+
+            const statusLabel = result?.is_correct ? 'Corretta' : result?.is_partial ? 'Parziale' : result ? 'Sbagliata' : 'Non risposta';
+            const statusSvg = result?.is_correct
+                ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+                : result?.is_partial
+                ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+                : result
+                ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+                : '';
+
+            // Calcola punteggio per questa domanda
+            const questionScore = result?.score !== undefined ? Math.round(result.score * 100) : 0;
             
             reviewDiv.innerHTML = `
                 <div class="review-header">
                     <span class="review-number">Domanda ${index + 1}</span>
-                    <span class="review-status ${statusClass}">
-                        ${result?.is_correct ? '✅ Corretta' : result?.is_partial ? '⚠️ Parziale' : '❌ Sbagliata'}
-                    </span>
+                    <span class="review-status ${statusClass}">${statusSvg} ${statusLabel} (${questionScore}%)</span>
                 </div>
                 <div class="review-question-text">${question.raw_text}</div>
                 <div class="review-answers">
@@ -946,13 +1135,13 @@ class QuizManagerFrontend {
                         if (isCorrect) className += ' correct';
                         if (isUserSelected && !isCorrect) className += ' wrong';
                         if (isUserSelected) className += ' selected';
-                        
+
                         return `
                             <div class="${className}">
                                 <span class="review-answer-letter">${letter}.</span>
                                 <span class="review-answer-text">${text}</span>
-                                ${isCorrect ? '<span class="correct-marker">✓</span>' : ''}
-                                ${isUserSelected ? '<span class="user-marker">👤</span>' : ''}
+                                ${isCorrect ? '<span class="correct-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
+                                ${isUserSelected ? '<span class="user-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span>' : ''}
                             </div>
                         `;
                     }).join('')}
@@ -1005,32 +1194,26 @@ class QuizManagerFrontend {
                 minute: '2-digit'
             });
             
+            let scoreClass = '';
+            if (log.score_percentage < 40) scoreClass = 'low';
+            else if (log.score_percentage < 70) scoreClass = 'medium';
+            else scoreClass = 'high';
+            
             logDiv.innerHTML = `
                 <div class="log-header">
                     <span class="log-date">${formattedDate}</span>
-                    <span class="log-score">${log.score_percentage}%</span>
+                    <span class="score-badge ${scoreClass}">${log.score_percentage}%</span>
                 </div>
                 <div class="log-details">
-                    <div class="log-detail">
-                        <span class="log-detail-label">Categorie:</span>
-                        <span class="log-detail-value">${log.categories.join(', ')}</span>
-                    </div>
-                    <div class="log-detail">
-                        <span class="log-detail-label">Domande:</span>
-                        <span class="log-detail-value">${log.total_questions}</span>
-                    </div>
-                    <div class="log-detail">
-                        <span class="log-detail-label">Corrette:</span>
-                        <span class="log-detail-value">${log.correct_answers}</span>
-                    </div>
-                    <div class="log-detail">
-                        <span class="log-detail-label">Tempo:</span>
-                        <span class="log-detail-value">${this.formatTime(log.total_time_seconds * 1000)}</span>
+                    <span>Categorie: ${log.categories.join(', ')}</span>
+                    <span>Domande: ${log.total_questions}</span>
+                    <span>Corrette: ${log.correct_answers}</span>
+                    <span>Tempo: ${this.formatTime(log.total_time_seconds * 1000)}</span>
                     </div>
                 </div>
                 <div class="log-actions">
-                    <button class="log-btn view" data-log-id="${log.id}">👁️ Visualizza</button>
-                    <button class="log-btn delete" data-log-id="${log.id}">🗑️ Cancella</button>
+                    <button class="log-btn view" data-log-id="${log.id}">Visualizza</button>
+                    <button class="log-btn delete" data-log-id="${log.id}">Elimina</button>
                 </div>
             `;
             
@@ -1068,6 +1251,12 @@ class QuizManagerFrontend {
     }
 
     showLogReview(logData) {
+        // Reset filters to "all"
+        this.logReviewFilters = { all: true, correct: false, partial: false, wrong: false };
+        document.querySelectorAll('#logReviewFilterBar .filter-pill').forEach(p => {
+            p.classList.toggle('active', p.dataset.filter === 'all');
+        });
+
         const container = document.getElementById('logReviewContainer');
         container.innerHTML = '';
         
@@ -1084,11 +1273,26 @@ class QuizManagerFrontend {
                     minute: '2-digit'
                 })}</h3>
                 <div class="log-review-stats">
-                    <span class="stat-item">📊 Punteggio: <strong>${logData.score_percentage}%</strong></span>
-                    <span class="stat-item">✅ Corrette: <strong>${logData.correct_answers}</strong></span>
-                    <span class="stat-item">⚠️ Parziali: <strong>${logData.partial_answers}</strong></span>
-                    <span class="stat-item">❌ Sbagliate: <strong>${logData.wrong_answers}</strong></span>
-                    <span class="stat-item">⏱️ Tempo: <strong>${this.formatTime(logData.total_time_seconds * 1000)}</strong></span>
+                    <span class="stat-item stat-score">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+                        Punteggio: <strong>${logData.score_percentage}%</strong>
+                    </span>
+                    <span class="stat-item stat-correct">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Corrette: <strong>${logData.correct_answers}</strong>
+                    </span>
+                    <span class="stat-item stat-partial">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Parziali: <strong>${logData.partial_answers}</strong>
+                    </span>
+                    <span class="stat-item stat-wrong">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        Sbagliate: <strong>${logData.wrong_answers}</strong>
+                    </span>
+                    <span class="stat-item stat-time">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Tempo: <strong>${this.formatTime(logData.total_time_seconds * 1000)}</strong>
+                    </span>
                 </div>
             </div>
         `;
@@ -1107,11 +1311,18 @@ class QuizManagerFrontend {
             
             reviewDiv.classList.add(statusClass);
             
+            // Calcola punteggio per questa domanda
+            const questionScore = question.score !== undefined ? Math.round(question.score * 100) : 0;
+            
             reviewDiv.innerHTML = `
                 <div class="review-header">
                     <span class="review-number">Domanda ${index + 1}</span>
                     <span class="review-status ${statusClass}">
-                        ${question.is_correct ? '✅ Corretta' : question.is_partial ? '⚠️ Parziale' : '❌ Sbagliata'}
+                        ${question.is_correct
+                            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Corretta'
+                            : question.is_partial
+                            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg> Parziale'
+                            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Sbagliata'} (${questionScore}%)
                     </span>
                 </div>
                 <div class="review-question-text">${question.text}</div>
@@ -1123,13 +1334,13 @@ class QuizManagerFrontend {
                         if (isCorrect) className += ' correct';
                         if (isUserSelected && !isCorrect) className += ' wrong';
                         if (isUserSelected) className += ' selected';
-                        
+
                         return `
                             <div class="${className}">
                                 <span class="review-answer-letter">${letter}.</span>
                                 <span class="review-answer-text">${text}</span>
-                                ${isCorrect ? '<span class="correct-marker">✓</span>' : ''}
-                                ${isUserSelected ? '<span class="user-marker">👤</span>' : ''}
+                                ${isCorrect ? '<span class="correct-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
+                                ${isUserSelected ? '<span class="user-marker"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span>' : ''}
                             </div>
                         `;
                     }).join('')}
@@ -1206,13 +1417,27 @@ class QuizManagerFrontend {
 
     showQuiz() {
         this.hideAllScreens();
-        document.getElementById('quizGame').style.display = 'block';
+        const quizScreen = document.getElementById('quizGame');
+        if (quizScreen) {
+            quizScreen.style.display = 'block';
+        }
+        // Ensure submit button is visible (with null check)
+        const submitBtn = document.getElementById('btnSubmitAnswer');
+        if (submitBtn) {
+            submitBtn.style.display = 'block';
+            submitBtn.disabled = false;
+        }
     }
 
     showResults() {
         this.hideAllScreens();
         document.getElementById('quizResults').style.display = 'block';
         this.stopTimer();
+        // Show log button after quiz, hide end quiz button
+        const btnLogs = document.getElementById('btnLogs');
+        if (btnLogs) btnLogs.style.display = '';
+        const btnEndQuiz = document.getElementById('btnEndQuiz');
+        if (btnEndQuiz) btnEndQuiz.style.display = 'none';
     }
 
     showReviewScreen() {
@@ -1252,4 +1477,20 @@ class QuizManagerFrontend {
 // Initialize the quiz manager when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     new QuizManagerFrontend();
+
+    // Update theme icons on initial load
+    updateQuizThemeIcons();
 });
+
+function updateQuizThemeIcons() {
+    const moonIcon = document.querySelector('.theme-icon-moon');
+    const sunIcon = document.querySelector('.theme-icon-sun');
+    if (moonIcon && sunIcon) {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        moonIcon.style.display = isDark ? 'block' : 'none';
+        sunIcon.style.display = isDark ? 'none' : 'block';
+    }
+}
+
+// Listen for theme changes to update icons
+document.addEventListener('themeChanged', updateQuizThemeIcons);

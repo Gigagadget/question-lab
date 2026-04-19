@@ -1,0 +1,327 @@
+/* ============================================
+   IMMERSIVE MODE - Mobile Only
+   ============================================ */
+
+/* Hide immersive button on desktop */
+#btnImmersiveSidebar {
+    display: none;
+}
+
+/* Show immersive button only on mobile */
+@media (max-width: 768px) {
+    #btnImmersiveSidebar {
+        display: flex;
+    }
+}
+
+/* Sidebar hidden state */
+body.immersive-active .sidebar {
+    display: none;
+}
+
+body.immersive-active .main-content {
+    margin-left: 0;
+}
+
+/* View mobile nav: full width in immersive mode (sidebar is hidden) */
+body.immersive-active .view-mobile-nav {
+    left: 0;
+}
+
+/* ============================================
+   FLOATING ACTION BUTTON (FAB)
+   ============================================ */
+
+.immersive-fab {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 12px var(--shadow-color), 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9998;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.immersive-fab:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px var(--shadow-color), 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.immersive-fab:active {
+    transform: scale(0.95);
+}
+
+.immersive-fab svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+}
+
+/* FAB dragging state */
+.immersive-fab.dragging {
+    transition: none;
+    opacity: 0.85;
+    cursor: grabbing;
+}
+
+/* ============================================
+   IMMERSIVE NAVIGATION MODAL
+   ============================================ */
+
+.immersive-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    animation: immersiveFadeIn 0.2s ease;
+}
+
+.immersive-modal-backdrop.show {
+    display: flex;
+}
+
+.immersive-modal {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 360px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px var(--shadow-color);
+    position: relative;
+    animation: immersiveSlideUp 0.25s ease;
+}
+
+.immersive-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.immersive-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.immersive-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+.immersive-modal-close:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.immersive-modal-close svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Navigation grid */
+.immersive-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.immersive-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 8px;
+    border-radius: 12px;
+    background: var(--bg-tertiary, var(--bg-hover));
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.immersive-nav-item:hover {
+    background: var(--bg-hover);
+}
+
+.immersive-nav-item.active {
+    border-color: var(--accent-primary);
+    background: var(--status-info-bg);
+}
+
+.immersive-nav-item svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+}
+
+/* Active nav item colors matching sidebar */
+body.page-editor .immersive-nav-item[href="/editor"].active {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+body.page-quiz .immersive-nav-item[href="/quiz"].active {
+    color: #27ae60;
+    border-color: #27ae60;
+}
+
+body.page-view .immersive-nav-item[href="/view"].active {
+    color: #e67e22;
+    border-color: #e67e22;
+}
+
+body.page-database .immersive-nav-item[href="/databases"].active {
+    color: #8e44ad;
+    border-color: #8e44ad;
+}
+
+body.page-home .immersive-nav-item[href="/"].active {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+/* Bottom actions */
+.immersive-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-light);
+}
+
+.immersive-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    width: 100%;
+    text-align: left;
+}
+
+.immersive-action:hover {
+    background: var(--bg-hover);
+}
+
+.immersive-action svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.immersive-action.help-action {
+    color: var(--accent-red);
+}
+
+.immersive-action.help-action svg {
+    color: var(--accent-red);
+}
+
+.immersive-action.exit-immersive {
+    color: var(--accent-red);
+    font-weight: 600;
+}
+
+.immersive-action.exit-immersive svg {
+    color: var(--accent-red);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes immersiveFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes immersiveSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ============================================
+   DARK THEME ADJUSTMENTS
+   ============================================ */
+
+html[data-theme="dark"] .immersive-modal {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="dark"] .immersive-fab {
+    background: var(--accent-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   VERY SMALL SCREENS
+   ============================================ */
+
+@media (max-width: 360px) {
+    .immersive-modal {
+        padding: 16px;
+        width: 95%;
+    }
+
+    .immersive-nav-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .immersive-fab {
+        width: 48px;
+        height: 48px;
+        bottom: 16px;
+        left: 16px;
+    }
+
+    .immersive-fab svg {
+        width: 20px;
+        height: 20px;
+    }
+}
