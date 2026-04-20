@@ -116,6 +116,15 @@ async loadSettings() {
         // Save to localStorage
         localStorage.setItem('questionlab_search_settings', JSON.stringify(currentConfig));
 
+        // Emit event to notify pages that search config has changed
+        document.dispatchEvent(new CustomEvent('search-config-changed', {
+            detail: {
+                key: key,
+                value: value,
+                config: currentConfig
+            }
+        }));
+
         // Try to save to server if API exists
         try {
             await fetch('/api/config/save', {

@@ -569,14 +569,47 @@ function renderQuestionList() {
         return `
             <div class="question-card-modern ${selectedId === q.id ? 'selected' : ''} ${isSelected ? 'batch-selected' : ''} ${isDuplicate ? 'duplicate-item' : ''} ${isFlagged ? 'flagged-item' : ''}" data-id="${q.id}">
                 <div class="card-header">
-                    <span class="question-id-modern">${escapeHtml(q.id)}</span>
+                    <span class="question-id-modern">${escapeHtml(q.id)}${(() => {
+                        if (window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(q.id) && searchInput.value) {
+                            const matches = window.SEARCH_MATCHES.get(q.id);
+                            const matchFields = new Set();
+                            matches.forEach(match => {
+                                if (match.field !== 'raw_text') {
+                                    matchFields.add(match.field);
+                                }
+                            });
+                            const searchIcon = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+                            const fieldLabels = {
+                                'id': searchIcon + ' ID',
+                                'answers': searchIcon + ' Risposte',
+                                'notes': searchIcon + ' Note',
+                                'primary_domain': searchIcon + ' Categoria',
+                                'subdomain': searchIcon + ' Sottocategoria'
+                            };
+                            let badges = '';
+                            matchFields.forEach(field => {
+                                const label = fieldLabels[field] || '🔍 ' + field;
+                                badges += '<span class="search-match-badge ' + field.replace('_', '-') + '">' + label + '</span>';
+                            });
+                            return badges;
+                        }
+                        return '';
+                    })()}</span>
                     <div style="display: flex; gap: 6px; align-items: center;">
                         ${isDuplicate ? `<span class="status-badge status-duplicate">dup</span>` : ''}
                         ${statusBadge}
                         <input type="checkbox" class="batch-select-checkbox" data-id="${q.id}" ${isSelected ? 'checked' : ''}>
                     </div>
                 </div>
-                <div class="question-text-modern">${SmartSearch.highlight(escapeHtml(q.raw_text ? q.raw_text.substring(0, 80) : 'Nessun testo disponibile'), searchInput.value)}${q.raw_text?.length > 80 ? '...' : ''}</div>
+                <div class="question-text-modern">${(() => {
+                    if (window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(q.id) && searchInput.value) {
+                        const matches = window.SEARCH_MATCHES.get(q.id);
+                        return SearchUtils.getSmartHighlightedPreview(q.raw_text || 'Nessun testo disponibile', matches, 80);
+                    } else {
+                        const preview = SearchUtils.getSmartPreview(q.raw_text || 'Nessun testo disponibile', searchInput.value, 80);
+                        return SmartSearch.highlight(escapeHtml(preview), searchInput.value);
+                    }
+                })()}</div>
                 <div class="question-meta-modern">
                     <span>
                         <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
@@ -2172,6 +2205,14 @@ window.renameCategory = renameCategory;
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         searchInput.addEventListener('input', () => renderQuestionList());
+        
+        // Auto-refresh search when settings change
+        document.addEventListener('search-config-changed', function() {
+            if (searchInput && searchInput.value.trim()) {
+                renderQuestionList();
+            }
+        });
+        
         document.getElementById('btnCategories').addEventListener('click', showCategoriesModal);
         document.getElementById('btnReload').addEventListener('click', async () => {
             if (isDirty) {

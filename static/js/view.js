@@ -512,8 +512,16 @@ function renderQuestionList() {
     var html = '';
     filteredQuestions.forEach(function(q) {
         var isSelected = selectedId === q.id;
-        var preview = q.raw_text ? q.raw_text.substring(0, 80) : 'Nessun testo';
-        var moreText = q.raw_text && q.raw_text.length > 80 ? '...' : '';
+        // Use combined smart preview + highlight function
+        var highlightedPreview = '';
+        if (window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(q.id) && searchInput.value) {
+            const matches = window.SEARCH_MATCHES.get(q.id);
+            highlightedPreview = SearchUtils.getSmartHighlightedPreview(q.raw_text || '', matches, 80);
+        } else {
+            // Fallback to old behavior
+            const preview = SearchUtils.getSmartPreview(q.raw_text || '', searchInput.value, 80);
+            highlightedPreview = SmartSearch.highlight(escapeHtml(preview), searchInput.value);
+        }
 
         // Determine status badge
         let statusBadge = '';
@@ -529,12 +537,41 @@ function renderQuestionList() {
             statusBadge = '<span class="status-badge status-answered">Con risposta</span>';
         }
 
+        // Generate search match badges if needed
+        let matchBadges = '';
+        if (window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(q.id) && searchInput.value) {
+            const matches = window.SEARCH_MATCHES.get(q.id);
+            const matchFields = new Set();
+            
+            // Check if there are matches in fields other than raw_text
+            matches.forEach(match => {
+                if (match.field !== 'raw_text') {
+                    matchFields.add(match.field);
+                }
+            });
+            
+            // Generate badges for each unique field
+            const searchIcon = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+            const fieldLabels = {
+                'id': `${searchIcon} ID`,
+                'answers': `${searchIcon} Risposte`,
+                'notes': `${searchIcon} Note`,
+                'primary_domain': `${searchIcon} Categoria`,
+                'subdomain': `${searchIcon} Sottocategoria`
+            };
+            
+            matchFields.forEach(field => {
+                const label = fieldLabels[field] || `🔍 ${field}`;
+                matchBadges += `<span class="search-match-badge ${field.replace('_', '-')}">${label}</span>`;
+            });
+        }
+
         html += `<div class="question-card-modern ${isSelected ? 'selected' : ''}" data-id="${q.id}">
             <div class="card-header">
-                <span class="question-id-modern">${escapeHtml(q.id)}</span>
+                <span class="question-id-modern">${escapeHtml(q.id)}${matchBadges}</span>
                 ${statusBadge}
             </div>
-            <div class="question-text-modern">${SmartSearch.highlight(escapeHtml(preview), searchInput.value)}${moreText}</div>
+            <div class="question-text-modern">${highlightedPreview}</div>
             <div class="question-meta-modern">
                 <span>
                     <svg class="meta-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
@@ -649,9 +686,15 @@ function renderDetailView(id) {
 
         if (answerText) hasAnyAnswers = true;
 
+        // Highlight answer text if there are matches
+        let highlightedAnswer = escapeHtml(answerText);
+        if (window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(question.id) && searchInput.value) {
+            highlightedAnswer = SmartSearch.highlight(escapeHtml(answerText), searchInput.value, question.id, 'answers');
+        }
+
         answersHtml += '<div class="view-answer ' + (showCorrect ? 'correct' : '') + '">' +
             '<span class="view-answer-letter">' + letter + '</span>' +
-            '<span class="view-answer-text">' + escapeHtml(answerText) + '</span>' +
+            '<span class="view-answer-text">' + highlightedAnswer + '</span>' +
             (showCorrect ? '<span class="view-correct-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Corretta</span>' : '') +
             '</div>';
     });
@@ -669,9 +712,15 @@ function renderDetailView(id) {
     // Notes section
     var notesHtml = '';
     if (question.notes && question.notes.trim()) {
+        // Highlight notes text if there are matches
+        let highlightedNotes = escapeHtml(question.notes);
+        if (window.SEARCH_MATCHES && window.SEARCH_MATCHES.has(question.id) && searchInput.value) {
+            highlightedNotes = SmartSearch.highlight(escapeHtml(question.notes), searchInput.value, question.id, 'notes');
+        }
+        
         notesHtml = '<div class="view-notes">' +
-            '<div class="view-notes-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Note</div>' +
-            '<div class="view-notes-text">' + escapeHtml(question.notes) + '</div>' +
+            '<div class="view-notes-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 0 0 0-2 2v16a2 0 0 0 2 2h12a2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Note</div>' +
+            '<div class="view-notes-text">' + highlightedNotes + '</div>' +
             '</div>';
     }
 
@@ -687,7 +736,7 @@ function renderDetailView(id) {
                 editButtonHtml +
             '</div>' +
             '<div class="view-question-text">' +
-                SmartSearch.highlight(escapeHtml(question.raw_text || 'Nessun testo disponibile'), searchInput.value) +
+                SmartSearch.highlight(escapeHtml(question.raw_text || 'Nessun testo disponibile'), searchInput.value, question.id, 'raw_text') +
             '</div>' +
             '<div class="view-answers-section">' +
                 (answersHtml || noAnswersMsg) +
@@ -915,6 +964,13 @@ if (clearAllFiltersBtn) {
 if (searchInput) {
     searchInput.addEventListener('input', function() { applyFilters(); });
 }
+
+// Auto-refresh search when settings change
+document.addEventListener('search-config-changed', function() {
+    if (searchInput && searchInput.value.trim()) {
+        applyFilters();
+    }
+});
 
 // Sort select
 if (sortSelect) {

@@ -18,7 +18,7 @@
   "lan_password_enabled": true,
   "log_failed_auth": false,
   "search": {
-    "mode": "fuzzy",
+    "mode": "normal",
     "highlightEnabled": true,
     "searchAnswers": true,
     "searchNotes": true,
