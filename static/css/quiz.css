@@ -1444,8 +1444,337 @@ button.danger:hover {
         font-size: 10px;
     }
 
-    .header-actions .btn-end-quiz svg {
-        width: 12px;
-        height: 12px;
+     .header-actions .btn-end-quiz svg {
+         width: 12px;
+         height: 12px;
+     }
+ }
+
+/* ==================== NUOVI STILI: MODALITÀ SELEZIONE E TIMER ==================== */
+
+.section-header-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.section-header-with-icon svg {
+    color: var(--accent-blue);
+    flex-shrink: 0;
+}
+
+.section-header-with-icon h3 {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.selection-mode-options,
+.timer-mode-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.mode-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--bg-tertiary);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.mode-card:hover {
+    border-color: var(--accent-blue);
+    background: var(--accent-blue-soft);
+}
+
+.mode-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.mode-card:has(input:checked) {
+    border-color: var(--accent-blue);
+    background: var(--accent-blue-soft);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+.mode-card-indicator {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.mode-card:has(input:checked) .mode-card-indicator {
+    border-color: var(--accent-blue);
+    background: var(--accent-blue);
+}
+
+.mode-card:has(input:checked) .mode-card-indicator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
+}
+
+.mode-card-icon {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+}
+
+.mode-card:has(input:checked) .mode-card-icon {
+    color: var(--accent-blue);
+}
+
+.mode-card-content {
+    flex: 1;
+}
+
+.mode-card-title {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.mode-card-description {
+    display: block;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.3;
+}
+
+.global-timer-settings {
+    margin-top: 12px;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.time-presets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.time-preset-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.time-preset-card:hover {
+    border-color: var(--accent-blue);
+    background: var(--accent-blue-soft);
+}
+
+.time-preset-card.selected {
+    border-color: var(--accent-blue);
+    background: var(--accent-blue);
+    color: white;
+}
+
+.custom-time-input {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.custom-time-input .input-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    padding: 0 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+}
+
+.custom-time-input .input-with-icon svg {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.custom-time-input input {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.custom-time-input input:focus {
+    outline: none;
+}
+
+.quiz-timers {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.quiz-timer .timer-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.global-timer {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.global-timer .timer-icon {
+    color: #f59e0b;
+}
+
+.global-timer span:not(.timer-label) {
+    color: #f59e0b;
+}
+
+.global-timer.warning {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: #f59e0b;
+    animation: pulse-warning 1s ease-in-out infinite;
+}
+
+.global-timer.critical {
+    background: rgba(220, 38, 38, 0.15);
+    border-color: #dc2626;
+    animation: pulse-critical 0.5s ease-in-out infinite;
+}
+
+.global-timer.critical .timer-icon,
+.global-timer.critical span:not(.timer-label) {
+    color: #dc2626;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes pulse-critical {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Tema scuro */
+[data-theme="dark"] .mode-card {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .mode-card:hover,
+[data-theme="dark"] .mode-card:has(input:checked) {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+[data-theme="dark"] .global-timer-settings {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .time-preset-card {
+    background: var(--bg-tertiary);
+}
+
+/* Responsive mobile */
+@media (max-width: 768px) {
+    .selection-mode-options,
+    .timer-mode-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .mode-card {
+        padding: 12px;
+    }
+    
+    .mode-card-icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .mode-card-title {
+        font-size: 13px;
+    }
+    
+    .mode-card-description {
+        font-size: 11px;
+    }
+    
+    .time-presets-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .custom-time-input {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .custom-time-input button {
+        width: 100%;
+    }
+    
+    .quiz-timers {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .quiz-timer {
+        padding: 4px 10px;
+        font-size: 14px;
+    }
+    
+    .quiz-timer .timer-label {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .time-presets-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .time-preset-card {
+        padding: 8px 8px;
+        font-size: 12px;
+    }
+    
+    .time-preset-card svg {
+        display: none;
     }
 }

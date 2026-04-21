@@ -52,6 +52,7 @@ def start_quiz():
         categories = data.get('categories', ['all'])
         num_questions = data.get('num_questions', 10)
         subdomains_by_primary = data.get('subdomains_by_primary', {})
+        smart_review = data.get('smart_review', False)
 
         # Gestisci il caso "Tutte"
         if num_questions == -1 or num_questions == 'all':
@@ -60,7 +61,8 @@ def start_quiz():
         questions, available_count, used_count = quiz_manager.get_questions_for_quiz(
             categories,
             num_questions,
-            subdomains_by_primary=subdomains_by_primary
+            subdomains_by_primary=subdomains_by_primary,
+            smart_review=smart_review
         )
 
         if not questions:

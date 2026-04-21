@@ -16,6 +16,13 @@ class QuizManagerFrontend {
         this.availableCount = 0;
         this.usedCount = 0;
         this.quizInProgress = false;
+        
+        // Nuovi parametri per modalità selezione e timer globale
+        this.selectionMode = 'random';        // 'random' o 'smart'
+        this.timerMode = 'per_question';      // 'per_question' o 'global'
+        this.globalTimer = null;
+        this.globalTimeLimit = null;
+        this.globalTimeRemaining = null;
 
         // Review filter state
         this.currentReviewFilters = { all: true, correct: false, partial: false, wrong: false };
@@ -145,6 +152,32 @@ class QuizManagerFrontend {
 
         document.getElementById('applyCustomCount').addEventListener('click', () => {
             this.applyCustomCount();
+        });
+        
+        // Toggle impostazioni timer globale
+        document.querySelectorAll('input[name="timerMode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const settings = document.getElementById('globalTimerSettings');
+                settings.style.display = e.target.value === 'global' ? 'block' : 'none';
+            });
+        });
+
+        // Preset tempo
+        document.querySelectorAll('.time-preset-card').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.time-preset-card').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('customMinutes').value = '';
+            });
+        });
+
+        // Applica tempo personalizzato
+        document.getElementById('applyCustomTime').addEventListener('click', () => {
+            const input = document.getElementById('customMinutes');
+            const minutes = parseInt(input.value);
+            if (minutes && minutes > 0 && minutes <= 480) {
+                document.querySelectorAll('.time-preset-card').forEach(b => b.classList.remove('selected'));
+            }
         });
 
         // Handle Enter key for custom count input
@@ -604,6 +637,7 @@ class QuizManagerFrontend {
         }
 
         try {
+            const selectionMode = document.querySelector('input[name="selectionMode"]:checked')?.value || 'random';
             const response = await fetch('/api/quiz/start', {
                 method: 'POST',
                 headers: {
@@ -612,7 +646,8 @@ class QuizManagerFrontend {
                 body: JSON.stringify({
                     categories: this.selectedCategories,
                     num_questions: this.selectedCount,
-                    subdomains_by_primary: this.selectedSubdomainsByPrimary
+                    subdomains_by_primary: this.selectedSubdomainsByPrimary,
+                    smart_review: selectionMode === 'smart'
                 })
             });
 
@@ -648,6 +683,21 @@ class QuizManagerFrontend {
         try {
             this.showStatus('Caricamento quiz...', 'info');
             
+            const selectionMode = document.querySelector('input[name="selectionMode"]:checked').value;
+            const timerMode = document.querySelector('input[name="timerMode"]:checked').value;
+            this.selectionMode = selectionMode;
+            this.timerMode = timerMode;
+            
+            let timeLimitMinutes = null;
+            if (timerMode === 'global') {
+                const selectedPreset = document.querySelector('.time-preset-card.selected');
+                timeLimitMinutes = selectedPreset ? parseInt(selectedPreset.dataset.minutes) : 60;
+                const customInput = document.getElementById('customMinutes');
+                if (customInput.value) {
+                    timeLimitMinutes = parseInt(customInput.value) || 60;
+                }
+            }
+            
             const response = await fetch('/api/quiz/start', {
                 method: 'POST',
                 headers: {
@@ -656,7 +706,8 @@ class QuizManagerFrontend {
                 body: JSON.stringify({
                     categories: this.selectedCategories,
                     num_questions: this.selectedCount,
-                    subdomains_by_primary: this.selectedSubdomainsByPrimary
+                    subdomains_by_primary: this.selectedSubdomainsByPrimary,
+                    smart_review: selectionMode === 'smart'
                 })
             });
 
@@ -678,10 +729,16 @@ class QuizManagerFrontend {
             this.currentQuestionIndex = 0;
             this.quizInProgress = true;
             
-            // Initialize timer
+            // Initialize timers
             this.startTime = Date.now();
             this.elapsedTime = 0;
             this.startTimer();
+
+            // Avvia timer globale se necessario
+            if (this.timerMode === 'global' && timeLimitMinutes) {
+                document.getElementById('globalTimerContainer').style.display = 'flex';
+                this.startGlobalTimer(timeLimitMinutes * 60);
+            }
 
             // Show end quiz button, hide logs button during quiz
             const btnEndQuiz = document.getElementById('btnEndQuiz');
@@ -790,6 +847,9 @@ class QuizManagerFrontend {
     }
 
     async submitAnswer() {
+        // Metti in pausa il timer globale mentre si mostra il feedback
+        this.pauseGlobalTimer();
+        
         const selectedAnswers = this.getSelectedAnswers();
         const question = this.questions[this.currentQuestionIndex];
 
@@ -941,6 +1001,9 @@ class QuizManagerFrontend {
             // Reset submit button
             document.getElementById('btnSubmitAnswer').style.display = 'block';
             document.getElementById('btnNextQuestion').style.display = 'none';
+            
+            // Riprendi timer globale se necessario
+            this.resumeGlobalTimer();
         } else {
             // Quiz completed
             this.finishQuiz();
@@ -1000,12 +1063,25 @@ class QuizManagerFrontend {
         };
     }
 
-    async finishQuiz(interrupted = false) {
-        // Stop timer
+    async finishQuiz(interrupted = false, timeExpired = false) {
+        // Stop timers
         this.stopTimer();
+        if (this.globalTimer) {
+            clearInterval(this.globalTimer);
+            this.globalTimer = null;
+        }
         
         // Prepare quiz log data
         const quizLog = this.prepareQuizLog(interrupted);
+        
+        // Aggiungi informazioni timer e modalità selezione
+        quizLog.selection_mode = this.selectionMode;
+        quizLog.timer_mode = this.timerMode;
+        if (this.timerMode === 'global') {
+            quizLog.time_limit_seconds = this.globalTimeLimit;
+            quizLog.time_remaining_at_end = this.globalTimeRemaining;
+            quizLog.time_expired = timeExpired;
+        }
         
         // Save quiz log
         try {
@@ -1078,6 +1154,60 @@ class QuizManagerFrontend {
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    startGlobalTimer(timeLimitSeconds) {
+        this.globalTimeLimit = timeLimitSeconds;
+        this.globalTimeRemaining = timeLimitSeconds;
+        this.updateGlobalTimerDisplay();
+        
+        this.globalTimer = setInterval(() => {
+            this.globalTimeRemaining--;
+            this.updateGlobalTimerDisplay();
+            
+            if (this.globalTimeRemaining <= 0) {
+                this.handleTimeExpired();
+            }
+        }, 1000);
+    }
+
+    handleTimeExpired() {
+        clearInterval(this.globalTimer);
+        this.globalTimer = null;
+        this.showStatus('Tempo scaduto. Quiz terminato automaticamente.', 'warning');
+        // Salva risposte pendenti e termina
+        this.finishQuiz(false, true); // interrupted=false, timeExpired=true
+    }
+
+    updateGlobalTimerDisplay() {
+        const timerEl = document.getElementById('globalTimer');
+        if (!timerEl) return;
+        const mins = Math.floor(this.globalTimeRemaining / 60);
+        const secs = this.globalTimeRemaining % 60;
+        timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        
+        const container = document.getElementById('globalTimerContainer');
+        if (this.globalTimeRemaining <= 300) {
+            container.classList.add('warning');
+            container.classList.remove('critical');
+        }
+        if (this.globalTimeRemaining <= 60) {
+            container.classList.remove('warning');
+            container.classList.add('critical');
+        }
+    }
+
+    pauseGlobalTimer() {
+        if (this.globalTimer) {
+            clearInterval(this.globalTimer);
+            this.globalTimer = null;
+        }
+    }
+
+    resumeGlobalTimer() {
+        if (this.timerMode === 'global' && this.globalTimeRemaining > 0) {
+            this.startGlobalTimer(this.globalTimeRemaining);
+        }
     }
 
     // ==================== REVIEW ====================

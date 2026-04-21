@@ -114,9 +114,121 @@
                                 <input type="text" id="customCount" inputmode="numeric" pattern="[0-9]*" min="1" max="1000" placeholder="N. domande">
                                 <button id="applyCustomCount" class="btn-outline">Applica</button>
                             </div>
-                        </div>
+                         </div>
 
-                        <div class="setup-info-bar">
+                         <!-- Modalità di Selezione -->
+                         <div class="setup-section">
+                             <div class="section-header-with-icon">
+                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                     <path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10z"/>
+                                     <path d="M12 6v6l4 2"/>
+                                 </svg>
+                                 <h3>Modalità di Selezione</h3>
+                             </div>
+                             <div class="selection-mode-options">
+                                 <label class="mode-card">
+                                     <input type="radio" name="selectionMode" value="random" checked>
+                                     <span class="mode-card-indicator"></span>
+                                     <div class="mode-card-icon">
+                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                             <polyline points="6 9 12 4 18 9"/>
+                                             <polyline points="6 15 12 20 18 15"/>
+                                             <line x1="4" y1="9" x2="20" y2="9"/>
+                                             <line x1="4" y1="15" x2="20" y2="15"/>
+                                         </svg>
+                                     </div>
+                                     <div class="mode-card-content">
+                                         <span class="mode-card-title">Selezione Casuale</span>
+                                         <span class="mode-card-description">Tutte le domande hanno la stessa probabilità di apparire</span>
+                                     </div>
+                                 </label>
+                                 <label class="mode-card">
+                                     <input type="radio" name="selectionMode" value="smart">
+                                     <span class="mode-card-indicator"></span>
+                                     <div class="mode-card-icon">
+                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                             <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                             <circle cx="12" cy="12" r="10"/>
+                                             <path d="M12 2v4"/>
+                                             <path d="M12 18v4"/>
+                                             <path d="M4.93 4.93l2.83 2.83"/>
+                                             <path d="M16.24 16.24l2.83 2.83"/>
+                                         </svg>
+                                     </div>
+                                     <div class="mode-card-content">
+                                         <span class="mode-card-title">Ripasso Intelligente</span>
+                                         <span class="mode-card-description">Le domande più difficili per te appaiono più frequentemente</span>
+                                     </div>
+                                 </label>
+                             </div>
+                         </div>
+
+                         <!-- Opzioni di Tempo -->
+                         <div class="setup-section">
+                             <div class="section-header-with-icon">
+                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                     <circle cx="12" cy="12" r="10"/>
+                                     <polyline points="12 6 12 12 16 14"/>
+                                 </svg>
+                                 <h3>Opzioni di Tempo</h3>
+                             </div>
+                             <div class="timer-mode-options">
+                                 <label class="mode-card">
+                                     <input type="radio" name="timerMode" value="per_question" checked>
+                                     <span class="mode-card-indicator"></span>
+                                     <div class="mode-card-icon">
+                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                             <circle cx="12" cy="12" r="10"/>
+                                             <polyline points="12 6 12 12 16 14"/>
+                                         </svg>
+                                     </div>
+                                     <div class="mode-card-content">
+                                         <span class="mode-card-title">Timer per Domanda</span>
+                                         <span class="mode-card-description">Nessun limite di tempo complessivo</span>
+                                     </div>
+                                 </label>
+                                 <label class="mode-card">
+                                     <input type="radio" name="timerMode" value="global">
+                                     <span class="mode-card-indicator"></span>
+                                     <div class="mode-card-icon">
+                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                             <circle cx="12" cy="12" r="10"/>
+                                             <path d="M12 2v4"/>
+                                             <path d="M12 18v4"/>
+                                             <path d="M4.93 4.93l2.83 2.83"/>
+                                             <path d="M16.24 16.24l2.83 2.83"/>
+                                             <path d="M2 12h4"/>
+                                             <path d="M18 12h4"/>
+                                             <polyline points="12 6 12 12 16 14"/>
+                                         </svg>
+                                     </div>
+                                     <div class="mode-card-content">
+                                         <span class="mode-card-title">Timer Globale</span>
+                                         <span class="mode-card-description">Simula un esame con tempo limite complessivo</span>
+                                     </div>
+                                 </label>
+                             </div>
+                             <div id="globalTimerSettings" class="global-timer-settings" style="display: none;">
+                                 <div class="time-presets-grid">
+                                     <button class="time-preset-card" data-minutes="15"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>15 min</span></button>
+                                     <button class="time-preset-card" data-minutes="30"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>30 min</span></button>
+                                     <button class="time-preset-card" data-minutes="45"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>45 min</span></button>
+                                     <button class="time-preset-card" data-minutes="60"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>60 min</span></button>
+                                     <button class="time-preset-card" data-minutes="90"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>90 min</span></button>
+                                     <button class="time-preset-card" data-minutes="120"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>120 min</span></button>
+                                 </div>
+                                 <div class="custom-time-input">
+                                     <div class="input-with-icon">
+                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                         <input type="number" id="customMinutes" min="1" max="480" placeholder="Minuti personalizzati...">
+                                     </div>
+                                     <button id="applyCustomTime" class="btn-outline">Applica</button>
+                                 </div>
+                             </div>
+                         </div>
+
+                         <div class="setup-info-bar">
                             <div class="info-badge info-categories">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                                 <span><span id="selectedCategoriesCount">0</span> <span id="selectedCategoriesLabel">categorie</span></span>
@@ -155,10 +267,28 @@
                             <div class="quiz-progress">
                                 <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span>
                             </div>
-                            <div class="quiz-timer">
-                                <svg class="timer-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                <span id="timer">00:00</span>
-                            </div>
+                             <div class="quiz-timers">
+                                 <div class="quiz-timer" id="questionTimerContainer">
+                                     <svg class="timer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                         <circle cx="12" cy="12" r="10"/>
+                                         <polyline points="12 6 12 12 16 14"/>
+                                     </svg>
+                                     <span id="timer">00:00</span>
+                                     <span class="timer-label">per domanda</span>
+                                 </div>
+                                 <div class="quiz-timer global-timer" id="globalTimerContainer" style="display: none;">
+                                     <svg class="timer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                                         <circle cx="12" cy="12" r="10"/>
+                                         <path d="M12 2v4"/>
+                                         <path d="M12 18v4"/>
+                                         <path d="M4.93 4.93l2.83 2.83"/>
+                                         <path d="M16.24 16.24l2.83 2.83"/>
+                                         <polyline points="12 6 12 12 16 14"/>
+                                     </svg>
+                                     <span id="globalTimer">--:--</span>
+                                     <span class="timer-label">rimanente</span>
+                                 </div>
+                             </div>
                             <div class="quiz-score">
                                 <span class="score-correct">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>

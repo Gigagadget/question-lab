@@ -5,6 +5,8 @@ from datetime import datetime
 from typing import List, Dict, Tuple, Optional
 from pathlib import Path
 
+from modules.spaced_repetition import calculate_question_weight, update_question_review_stats
+
 class QuizManager:
     """Gestore della logica del quiz"""
 
@@ -64,7 +66,8 @@ class QuizManager:
         self,
         categories: List[str],
         num_questions: int,
-        subdomains_by_primary: Optional[Dict[str, List[str]]] = None
+        subdomains_by_primary: Optional[Dict[str, List[str]]] = None,
+        smart_review: bool = False
     ) -> Tuple[List[Dict], int, int]:
         """
         Ottiene le domande per il quiz
@@ -125,12 +128,26 @@ class QuizManager:
             return [], 0, 0
         
         # Determina quante domande usare
-        if num_questions == -1:  # "Tutte"
-            questions_to_use = valid_questions
-            used_count = available_count
+        if smart_review and valid_questions:
+            weights = [calculate_question_weight(q) for q in valid_questions]
+            if num_questions == -1:
+                questions_to_use = valid_questions
+                used_count = available_count
+            else:
+                used_count = min(num_questions, available_count)
+                questions_to_use = random.choices(
+                    valid_questions,
+                    weights=weights,
+                    k=used_count
+                )
         else:
-            used_count = min(num_questions, available_count)
-            questions_to_use = random.sample(valid_questions, used_count)
+            # Comportamento originale
+            if num_questions == -1:  # "Tutte"
+                questions_to_use = valid_questions
+                used_count = available_count
+            else:
+                used_count = min(num_questions, available_count)
+                questions_to_use = random.sample(valid_questions, used_count)
         
         # Arricchisci le domande con risposte aggiuntive se necessario
         enriched_questions = []
@@ -226,7 +243,7 @@ class QuizManager:
         # Calcola il risultato
         if not correct_answers_set:
             # Nessuna risposta corretta definita
-            return {
+            result = {
                 'is_correct': False,
                 'is_partial': False,
                 'correct_answers': list(correct_answers_set),
@@ -234,9 +251,9 @@ class QuizManager:
                 'score': 0.0
             }
         
-        if not user_answers_set:
+        elif not user_answers_set:
             # L'utente non ha selezionato nulla
-            return {
+            result = {
                 'is_correct': False,
                 'is_partial': False,
                 'correct_answers': list(correct_answers_set),
@@ -244,9 +261,8 @@ class QuizManager:
                 'score': 0.0
             }
         
-        # Verifica correttezza
-        if user_answers_set == correct_answers_set:
-            return {
+        elif user_answers_set == correct_answers_set:
+            result = {
                 'is_correct': True,
                 'is_partial': False,
                 'correct_answers': list(correct_answers_set),
@@ -254,40 +270,50 @@ class QuizManager:
                 'score': 1.0
             }
         
-        # Verifica parziale
-        correct_selected = user_answers_set.intersection(correct_answers_set)
-        wrong_selected = user_answers_set - correct_answers_set
-        correct_selected_count = len(correct_selected)
-        
-        if correct_selected and not wrong_selected:
-            # Ha selezionato solo alcune risposte corrette - Punteggio proporzionale
-            score = correct_selected_count / total_correct
-            return {
-                'is_correct': False,
-                'is_partial': True,
-                'correct_answers': list(correct_answers_set),
-                'feedback': 'parziale_mancanti',
-                'score': score
-            }
-        
-        if correct_selected and wrong_selected:
-            # Ha selezionato alcune corrette e alcune sbagliate - 0 punti
-            return {
-                'is_correct': False,
-                'is_partial': True,
-                'correct_answers': list(correct_answers_set),
-                'feedback': 'parziale_errate',
-                'score': 0.0
-            }
-        
-        # Ha selezionato solo risposte sbagliate
-        return {
-            'is_correct': False,
-            'is_partial': False,
-            'correct_answers': list(correct_answers_set),
-            'feedback': 'errato',
-            'score': 0.0
-        }
+        else:
+            # Verifica parziale
+            correct_selected = user_answers_set.intersection(correct_answers_set)
+            wrong_selected = user_answers_set - correct_answers_set
+            correct_selected_count = len(correct_selected)
+            
+            if correct_selected and not wrong_selected:
+                # Ha selezionato solo alcune risposte corrette - Punteggio proporzionale
+                score = correct_selected_count / total_correct
+                result = {
+                    'is_correct': False,
+                    'is_partial': True,
+                    'correct_answers': list(correct_answers_set),
+                    'feedback': 'parziale_mancanti',
+                    'score': score
+                }
+            
+            elif correct_selected and wrong_selected:
+                # Ha selezionato alcune corrette e alcune sbagliate - 0 punti
+                result = {
+                    'is_correct': False,
+                    'is_partial': True,
+                    'correct_answers': list(correct_answers_set),
+                    'feedback': 'parziale_errate',
+                    'score': 0.0
+                }
+            
+            else:
+                # Ha selezionato solo risposte sbagliate
+                result = {
+                    'is_correct': False,
+                    'is_partial': False,
+                    'correct_answers': list(correct_answers_set),
+                    'feedback': 'errato',
+                    'score': 0.0
+                }
+
+        # Aggiorna statistiche di ripasso se lo score è definito
+        if 'score' in result and result['score'] is not None:
+            update_question_review_stats(question, result['score'])
+            # Salva il database per persistere le statistiche
+            self._save_questions(questions)
+
+        return result
         
         correct_answers = question.get('correct', [])
         valid_correct = [c for c in correct_answers if c and c != 'null' and c.strip()]
@@ -462,6 +488,11 @@ class QuizManager:
                 print(f"Errore nel cancellare il log {file}: {e}")
         
         return deleted_count
+    
+    def _save_questions(self, questions: List[Dict]) -> None:
+        """Salva il database delle domande."""
+        with open(self.database_file, 'w', encoding='utf-8') as f:
+            json.dump(questions, f, indent=2, ensure_ascii=False)
     
     def get_quiz_statistics(self) -> Dict:
         """
