@@ -974,9 +974,17 @@ function renderFormForId(id) {
     if (question.duplicate_count > 0 && question.duplicate_ids && question.duplicate_texts) {
         const duplicatesList = [];
         for (let i = 0; i < question.duplicate_ids.length; i++) {
+            const dupId = question.duplicate_ids[i];
+            const dupText = question.duplicate_texts[i];
+            const dupSimilarity = question.duplicate_similarities ? question.duplicate_similarities[i] : 1.0;
+            const dupData = question.all_answers_versions ? 
+                question.all_answers_versions.find(v => v.id === dupId && !v.is_master) : null;
+            
             duplicatesList.push({
-                id: question.duplicate_ids[i],
-                text: question.duplicate_texts[i]
+                id: dupId,
+                text: dupText,
+                similarity: dupSimilarity,
+                data: dupData
             });
         }
 
@@ -990,9 +998,130 @@ function renderFormForId(id) {
                 </div>
                 <div class="accordion-content">
                     ${duplicatesList.map(d => `
-                        <div class="duplicate-item-detail">
-                            <span class="duplicate-id">${escapeHtml(d.id)}</span>
-                            <span class="duplicate-text">${escapeHtml(d.text)}</span>
+                        <div class="duplicate-item-detail" data-duplicate-id="${escapeHtml(d.id)}" data-master-id="${escapeHtml(question.id)}">
+                            <div class="duplicate-item-main">
+                                <span class="duplicate-id">${escapeHtml(d.id)}</span>
+                                <span class="duplicate-similarity">${Math.round(d.similarity * 100)}%</span>
+                                <span class="duplicate-preview-text">${escapeHtml(d.text.substring(0, 60))}${d.text.length > 60 ? '...' : ''}</span>
+                            </div>
+                            <div class="duplicate-item-actions">
+                                <button class="duplicate-action" data-action="restore" title="Ripristina come domanda indipendente">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                        <path d="M21 3v5h-5"/>
+                                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                        <path d="M3 21v-5h5"/>
+                                    </svg>
+                                </button>
+                                <button class="duplicate-action" data-action="unlink" title="Rimuovi dai duplicati">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                                <button class="duplicate-action" data-action="preview" title="Clicca per visualizzare dettaglio">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <!-- Preview Card -->
+                            <div class="duplicate-preview-card" data-duplicate-id="${escapeHtml(d.id)}" data-master-id="${escapeHtml(question.id)}" data-duplicate-text="${escapeHtml(d.text)}">
+                                <div class="preview-header">
+                                    <strong>Confronto domande</strong>
+                                    <button class="preview-close-btn" data-action="close-preview">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                                <!-- Mobile Tab Bar -->
+                                <div class="preview-tab-bar">
+                                    <button class="preview-tab" data-tab="master">✅ Master</button>
+                                    <button class="preview-tab active" data-tab="duplicate">🔄 Duplicato</button>
+                                </div>
+                                
+                                <div class="duplicate-preview-container">
+                                    <!-- Master Column -->
+                                    <div class="duplicate-preview-column master" data-column="master">
+                                        <div class="preview-column-header">
+                                            <strong>${escapeHtml(question.id)}</strong>
+                                            <span class="master-badge">MASTER</span>
+                                        </div>
+                                        <div class="preview-meta">
+                                            <span class="preview-category">${escapeHtml(question.primary_domain || 'indefinito')} / ${escapeHtml(question.subdomain || 'indefinito')}</span>
+                                        </div>
+                                        <div class="preview-text" data-compare="master">${escapeHtml(question.raw_text)}</div>
+                                        ${question.answers ? `
+                                            <div class="preview-answers">
+                                                <div class="preview-label">Risposte:</div>
+                                                ${Object.entries(question.answers).map(([letter, text]) => `
+                                                    <div class="preview-answer ${question.correct?.includes(letter) ? 'correct' : ''}">
+                                                        <span class="answer-letter">${letter}</span>
+                                                        <span class="answer-text">${escapeHtml(text || '')}</span>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        ` : ''}
+                                        ${question.notes ? `
+                                            <div class="preview-notes">
+                                                <div class="preview-label">Note:</div>
+                                                <div class="notes-text">${escapeHtml(question.notes)}</div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    
+                                    <!-- Duplicate Column -->
+                                    <div class="duplicate-preview-column duplicate active" data-column="duplicate">
+                                        <div class="preview-column-header">
+                                            <strong>${escapeHtml(d.id)}</strong>
+                                            <span class="duplicate-badge">DUPLICATO</span>
+                                            <span class="similarity-badge">${(d.similarity * 100).toFixed(2)}%</span>
+                                        </div>
+                                        <div class="preview-meta">
+                                            <span class="preview-category">${escapeHtml(d.data?.primary_domain || question.primary_domain || 'indefinito')} / ${escapeHtml(d.data?.subdomain || question.subdomain || 'indefinito')}</span>
+                                        </div>
+                                        <div class="preview-text" data-compare="duplicate">${escapeHtml(d.text)}</div>
+                                        ${d.data && d.data.answers ? `
+                                            <div class="preview-answers">
+                                                <div class="preview-label">Risposte:</div>
+                                                ${Object.entries(d.data.answers).map(([letter, text]) => `
+                                                    <div class="preview-answer ${d.data.correct?.includes(letter) ? 'correct' : ''}">
+                                                        <span class="answer-letter">${letter}</span>
+                                                        <span class="answer-text">${escapeHtml(text || '')}</span>
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        ` : ''}
+                                        ${d.data?.notes ? `
+                                            <div class="preview-notes">
+                                                <div class="preview-label">Note:</div>
+                                                <div class="notes-text">${escapeHtml(d.data.notes)}</div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                
+                                <div class="preview-actions">
+                                    <button class="preview-btn preview-btn-restore" data-action="restore" data-duplicate-id="${escapeHtml(d.id)}" data-master-id="${escapeHtml(question.id)}">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                            <path d="M21 3v5h-5"/>
+                                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                            <path d="M3 21v-5h5"/>
+                                        </svg> Ripristina
+                                    </button>
+                                    <button class="preview-btn preview-btn-unlink" data-action="unlink" data-duplicate-id="${escapeHtml(d.id)}" data-master-id="${escapeHtml(question.id)}">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg> Rimuovi
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -2397,6 +2526,353 @@ function setActiveMobilePanel(panelName) {
     }
 }
 
+// ==================== GESTIONE DUPLICATI ====================
+
+let duplicateActionsCooldown = false;
+
+function closeAllDuplicatePreviews() {
+    document.querySelectorAll('.duplicate-preview-card').forEach(card => {
+        card.classList.remove('active');
+        // Reset tutti gli stili aggiunti dinamicamente
+        card.style.display = '';
+        card.style.opacity = '';
+        card.style.left = '';
+        card.style.top = '';
+        card.style.width = '';
+        card.style.maxHeight = '';
+        card.style.overflowY = '';
+        card.style.visibility = '';
+        card.style.position = '';
+    });
+    
+    // Rimuovi backdrop
+    const backdrop = document.getElementById('duplicate-preview-backdrop');
+    if (backdrop) {
+        backdrop.classList.remove('active');
+        backdrop.remove();
+    }
+}
+
+// Helper per separare parola e punteggiatura finale
+function splitWordAndPunctuation(word) {
+    const match = word.match(/^(.*?)([.,!?;:\[\](){}'"`]*)$/);
+    return {
+        text: match ? match[1] : word,
+        punctuation: match ? match[2] : ''
+    };
+}
+
+// Helper per normalizzare parole rimuovendo punteggiatura finale
+function normalizeWord(word) {
+    return word.toLowerCase().replace(/[.,!?;:\[\](){}'"`]+$/, '');
+}
+
+// Helper per evidenziare PARTI COMUNI tra testi usando LCS
+function highlightDifferences(text1, text2) {
+    const words1 = text1.split(/\s+/);
+    const words2 = text2.split(/\s+/);
+    
+    // Pre-calcola versioni normalizzate
+    const norm1 = words1.map(normalizeWord);
+    const norm2 = words2.map(normalizeWord);
+    
+    // Matrice per Longest Common Subsequence
+    const dp = Array(words1.length + 1).fill(null).map(() => 
+        Array(words2.length + 1).fill(0)
+    );
+    
+    // Calcola LCS usando parole normalizzate
+    for (let i = 1; i <= words1.length; i++) {
+        for (let j = 1; j <= words2.length; j++) {
+            if (norm1[i-1] === norm2[j-1]) {
+                dp[i][j] = dp[i-1][j-1] + 1;
+            } else {
+                dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+            }
+        }
+    }
+    
+    // Backtrack per trovare quali parole sono comuni
+    const common1 = Array(words1.length).fill(false);
+    const common2 = Array(words2.length).fill(false);
+    
+    let i = words1.length, j = words2.length;
+    while (i > 0 && j > 0) {
+        if (norm1[i-1] === norm2[j-1]) {
+            common1[i-1] = true;
+            common2[j-1] = true;
+            i--;
+            j--;
+        } else if (dp[i-1][j] > dp[i][j-1]) {
+            i--;
+        } else {
+            j--;
+        }
+    }
+    
+    // Costruisci risultato evidenziando SOLO il testo, non la punteggiatura
+    function formatWord(word, isCommon) {
+        if (!isCommon) return word;
+        const { text, punctuation } = splitWordAndPunctuation(word);
+        return `<span class="common-highlight">${text}</span>${punctuation}`;
+    }
+    
+    const result1 = words1.map((word, idx) => formatWord(word, common1[idx])).join(' ');
+    const result2 = words2.map((word, idx) => formatWord(word, common2[idx])).join(' ');
+    
+    return {
+        master: result1,
+        duplicate: result2
+    };
+}
+
+// Gestione tab su mobile
+function initPreviewTabs(card) {
+    const tabs = card.querySelectorAll('.preview-tab');
+    const columns = card.querySelectorAll('.duplicate-preview-column');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.getAttribute('data-tab');
+            
+            // Rimuovi active da tutti
+            tabs.forEach(t => t.classList.remove('active'));
+            columns.forEach(c => c.classList.remove('active'));
+            
+            // Aggiungi active al selezionato
+            tab.classList.add('active');
+            card.querySelector(`[data-column="${targetTab}"]`).classList.add('active');
+        });
+    });
+}
+
+function toggleDuplicatePreview(duplicateId) {
+    const card = document.querySelector(`.duplicate-preview-card[data-duplicate-id="${duplicateId}"]`);
+    const item = document.querySelector(`.duplicate-item-detail[data-duplicate-id="${duplicateId}"]`);
+    const masterId = card.getAttribute('data-master-id');
+    
+    if (card && item) {
+        const isActive = card.classList.contains('active');
+        closeAllDuplicatePreviews();
+        
+        if (!isActive) {
+            // Crea backdrop per mobile
+            let backdrop = document.getElementById('duplicate-preview-backdrop');
+            if (!backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.id = 'duplicate-preview-backdrop';
+                backdrop.className = 'duplicate-preview-backdrop';
+                backdrop.addEventListener('click', closeAllDuplicatePreviews);
+                document.body.appendChild(backdrop);
+            }
+            
+            backdrop.classList.add('active');
+            
+            // Inizializza tab su mobile
+            if (window.innerWidth <= 768) {
+                initPreviewTabs(card);
+            }
+            
+            // Evidenzia differenze
+            const masterQuestion = questions.find(q => q.id === masterId);
+            const duplicateIndex = masterQuestion?.duplicate_ids?.indexOf(duplicateId);
+            
+            if (masterQuestion && duplicateIndex !== -1 && duplicateIndex !== undefined) {
+                const duplicateText = masterQuestion.duplicate_texts[duplicateIndex];
+                const highlighted = highlightDifferences(masterQuestion.raw_text, duplicateText);
+                card.querySelector('[data-compare="master"]').innerHTML = highlighted.master;
+                card.querySelector('[data-compare="duplicate"]').innerHTML = highlighted.duplicate;
+            }
+            
+            // Forza il rendering prima di calcolare le dimensioni
+            card.style.display = 'block';
+            card.style.opacity = '0';
+            
+            // Usa setTimeout per assicurare che il DOM sia aggiornato
+            setTimeout(() => {
+                card.classList.add('active');
+                positionPreviewCard(item, card);
+                card.style.opacity = '1';
+            }, 10);
+        }
+    }
+}
+
+async function restoreDuplicate(masterId, duplicateId) {
+    if (!confirm(`Ripristinare ${duplicateId} come domanda indipendente?`)) return;
+
+    try {
+        setStatus(`Ripristino ${duplicateId}...`);
+        
+        const response = await fetch(`${API_BASE_URL}/questions/${masterId}/duplicates/${duplicateId}/restore`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Ripristino fallito');
+        }
+
+        const result = await response.json();
+        setStatus(`Domanda ${duplicateId} ripristinata con successo`);
+        
+        // Ricarica domande e riseleziona la master
+        await loadQuestions();
+        if (questions.find(q => q.id === masterId)) {
+            selectQuestion(masterId);
+        }
+
+    } catch (err) {
+        console.error(err);
+        setStatus(err.message || 'Errore nel ripristino del duplicato', true);
+    }
+}
+
+async function unlinkDuplicate(masterId, duplicateId) {
+    if (!confirm(`Rimuovere ${duplicateId} dai duplicati? I dati andranno persi definitivamente.`)) return;
+
+    try {
+        setStatus(`Rimozione ${duplicateId}...`);
+        
+        const response = await fetch(`${API_BASE_URL}/questions/${masterId}/duplicates/${duplicateId}/unlink`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Rimozione fallita');
+        }
+
+        const result = await response.json();
+        setStatus(`${duplicateId} rimosso dai duplicati`);
+        
+        // Ricarica domande e riseleziona la master
+        await loadQuestions();
+        if (questions.find(q => q.id === masterId)) {
+            selectQuestion(masterId);
+        }
+
+    } catch (err) {
+        console.error(err);
+        setStatus(err.message || 'Errore nella rimozione del duplicato', true);
+    }
+}
+
+// Event delegation per interazioni duplicati
+document.addEventListener('click', (e) => {
+    // Gestione pulsanti azioni duplicati
+    const actionBtn = e.target.closest('.duplicate-action');
+    if (actionBtn) {
+        e.stopPropagation();
+        const item = actionBtn.closest('.duplicate-item-detail');
+        const duplicateId = item.getAttribute('data-duplicate-id');
+        const masterId = item.getAttribute('data-master-id');
+        const action = actionBtn.getAttribute('data-action');
+
+        if (action === 'restore') {
+            restoreDuplicate(masterId, duplicateId);
+        } else if (action === 'unlink') {
+            unlinkDuplicate(masterId, duplicateId);
+        } else if (action === 'preview') {
+            toggleDuplicatePreview(duplicateId);
+        }
+    }
+
+    // Gestione pulsanti nella preview card
+    const previewBtn = e.target.closest('.preview-btn');
+    if (previewBtn) {
+        e.stopPropagation();
+        const duplicateId = previewBtn.getAttribute('data-duplicate-id');
+        const masterId = previewBtn.getAttribute('data-master-id');
+        const action = previewBtn.getAttribute('data-action');
+
+        if (action === 'restore') {
+            closeAllDuplicatePreviews();
+            restoreDuplicate(masterId, duplicateId);
+        } else if (action === 'unlink') {
+            closeAllDuplicatePreviews();
+            unlinkDuplicate(masterId, duplicateId);
+        }
+    }
+
+    // Gestione pulsante chiusura preview
+    const closeBtn = e.target.closest('.preview-close-btn');
+    if (closeBtn) {
+        e.stopPropagation();
+        closeAllDuplicatePreviews();
+    }
+
+    // Chiudi preview cliccando fuori
+    if (!e.target.closest('.duplicate-preview-card') && 
+        !e.target.closest('.duplicate-action[data-action="preview"]') && 
+        !e.target.closest('.duplicate-item-detail')) {
+        closeAllDuplicatePreviews();
+    }
+});
+
+function positionPreviewCard(item, card) {
+    const rect = item.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Reset stili
+    card.style.left = '';
+    card.style.right = '';
+    card.style.top = '';
+    card.style.bottom = '';
+    card.style.transform = '';
+    card.style.width = '';
+    
+    // Forza il calcolo delle dimensioni reali
+    card.style.position = 'fixed';
+    card.style.visibility = 'hidden';
+    card.style.display = 'block';
+    
+    // Leggi le dimensioni reali dopo il rendering
+    const cardWidth = card.offsetWidth || 340;
+    const cardHeight = card.offsetHeight || 400;
+    
+    // Ripristina visibilità
+    card.style.visibility = 'visible';
+    
+    // Per mobile usa modal centrato a tutto schermo
+    if (window.innerWidth <= 768) {
+        card.style.width = 'calc(100vw - 40px)';
+        card.style.left = '20px';
+        card.style.top = '20px';
+        card.style.maxHeight = 'calc(100vh - 40px)';
+        card.style.overflowY = 'auto';
+        return;
+    }
+    
+    // Per desktop: posizionamento intelligente
+    // Prova a posizionare a destra
+    let leftPos = rect.right + 12;
+    let topPos = rect.top;
+    
+    // Se va fuori dallo schermo a destra, posiziona a sinistra
+    if (leftPos + cardWidth > viewportWidth - 20) {
+        leftPos = rect.left - cardWidth - 12;
+    }
+    
+    // Se va fuori in basso, posiziona verso l'alto
+    if (topPos + cardHeight > viewportHeight - 20) {
+        topPos = viewportHeight - cardHeight - 20;
+    }
+    
+    // Se va fuori in alto, posiziona in basso
+    if (topPos < 20) {
+        topPos = 20;
+    }
+    
+    card.style.left = `${leftPos}px`;
+    card.style.top = `${topPos}px`;
+}
+
+// ==================== FINE GESTIONE DUPLICATI ====================
+
 // Mobile panel tabs
 document.querySelectorAll('.mobile-panel-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -2447,3 +2923,7 @@ window.addEventListener('resize', () => {
         document.querySelectorAll('.mobile-panel-tab').forEach(t => t.classList.remove('active'));
     }
 });
+
+
+
+// ==================== FINE GESTIONE DUPLICATI ====================

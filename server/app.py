@@ -721,6 +721,171 @@ def get_stats():
         logger.error(f"Errore in GET /api/stats: {e}")
         return jsonify({"error": str(e)}), 500
 
+
+@app.route('/api/questions/<master_id>/duplicates/<duplicate_id>/restore', methods=['POST'])
+def restore_duplicate(master_id, duplicate_id):
+    """Ripristina un duplicato come domanda indipendente"""
+    try:
+        questions = load_database()
+        if questions is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
+
+        # Trova la domanda master
+        master = next((q for q in questions if q.get('id') == master_id), None)
+        if not master:
+            return jsonify({"error": "Domanda master non trovata"}), 404
+        
+        if not master.get('is_master', False):
+            return jsonify({"error": "La domanda specificata non è una master"}), 400
+
+        # Trova l'indice del duplicato
+        duplicate_ids = master.get('duplicate_ids', [])
+        if duplicate_id not in duplicate_ids:
+            return jsonify({"error": "Duplicato non trovato nella master"}), 404
+        
+        idx = duplicate_ids.index(duplicate_id)
+
+        # Estrai i dati del duplicato da all_answers_versions
+        all_versions = master.get('all_answers_versions', [])
+        duplicate_data = next((v for v in all_versions if v.get('id') == duplicate_id and not v.get('is_master', True)), None)
+        
+        if not duplicate_data:
+            # Fallback: usa i dati base se non trovato in all_answers_versions
+            duplicate_data = {
+                "id": duplicate_id,
+                "raw_text": master.get('duplicate_texts', [])[idx] if idx < len(master.get('duplicate_texts', [])) else "",
+                "answers": {},
+                "correct": [],
+                "notes": "",
+                "primary_domain": master.get('primary_domain', 'indefinito'),
+                "subdomain": master.get('subdomain', 'indefinito')
+            }
+
+        # Crea nuova domanda
+        new_question = {
+            "id": duplicate_id,
+            "raw_text": duplicate_data.get('raw_text') or (master.get('duplicate_texts', [])[idx] if idx < len(master.get('duplicate_texts', [])) else ""),
+            "primary_domain": duplicate_data.get('primary_domain') or master.get('primary_domain', 'indefinito'),
+            "subdomain": duplicate_data.get('subdomain') or master.get('subdomain', 'indefinito'),
+            "answers": duplicate_data.get('answers', {}),
+            "correct": duplicate_data.get('correct', []),
+            "notes": duplicate_data.get('notes', ""),
+            "question_type": duplicate_data.get('question_type', ""),
+            "normalized_text": "",
+            "embedding_vector": "",
+            "cluster_id": "",
+            "cluster_label": "",
+            "confidence_score": "",
+            "classification_validated": False,
+            "status": "active",
+            "is_master": False,
+            "is_active": True,
+            "duplicate_count": 0,
+            "duplicate_ids": [],
+            "duplicate_texts": [],
+            "duplicate_similarities": [],
+            "duplicate_reasons": [],
+            "all_answers_versions": [],
+            "merge_metadata": {}
+        }
+
+        # Aggiungi la nuova domanda all'array
+        questions.append(new_question)
+
+        # Rimuovi il duplicato dalla master
+        # Aggiorna tutti gli array paralleli
+        if idx < len(master.get('duplicate_ids', [])):
+            master['duplicate_ids'].pop(idx)
+        if idx < len(master.get('duplicate_texts', [])):
+            master['duplicate_texts'].pop(idx)
+        if idx < len(master.get('duplicate_similarities', [])):
+            master['duplicate_similarities'].pop(idx)
+        if idx < len(master.get('duplicate_reasons', [])):
+            master['duplicate_reasons'].pop(idx)
+        
+        # Aggiorna all_answers_versions
+        master['all_answers_versions'] = [v for v in master.get('all_answers_versions', []) if v.get('id') != duplicate_id]
+        
+        # Aggiorna conteggio
+        master['duplicate_count'] = len(master.get('duplicate_ids', []))
+        
+        # Se non ci sono più duplicati, rimuovi lo stato di master
+        if master['duplicate_count'] == 0:
+            master['is_master'] = False
+
+        # Salva il database
+        if save_database(questions):
+            return jsonify({
+                "success": True,
+                "message": f"Duplicato {duplicate_id} ripristinato con successo",
+                "new_question_id": duplicate_id,
+                "master_updated": master
+            }), 200
+        else:
+            return jsonify({"error": "Salvataggio del database fallito"}), 500
+
+    except Exception as e:
+        logger.error(f"Errore in POST /api/questions/{master_id}/duplicates/{duplicate_id}/restore: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/questions/<master_id>/duplicates/<duplicate_id>/unlink', methods=['POST'])
+def unlink_duplicate(master_id, duplicate_id):
+    """Rimuove un duplicato dal cluster senza creare una nuova domanda"""
+    try:
+        questions = load_database()
+        if questions is None:
+            return jsonify({"error": "Nessun database selezionato"}), 400
+
+        # Trova la domanda master
+        master = next((q for q in questions if q.get('id') == master_id), None)
+        if not master:
+            return jsonify({"error": "Domanda master non trovata"}), 404
+        
+        if not master.get('is_master', False):
+            return jsonify({"error": "La domanda specificata non è una master"}), 400
+
+        # Trova l'indice del duplicato
+        duplicate_ids = master.get('duplicate_ids', [])
+        if duplicate_id not in duplicate_ids:
+            return jsonify({"error": "Duplicato non trovato nella master"}), 404
+        
+        idx = duplicate_ids.index(duplicate_id)
+
+        # Rimuovi il duplicato dalla master
+        if idx < len(master.get('duplicate_ids', [])):
+            master['duplicate_ids'].pop(idx)
+        if idx < len(master.get('duplicate_texts', [])):
+            master['duplicate_texts'].pop(idx)
+        if idx < len(master.get('duplicate_similarities', [])):
+            master['duplicate_similarities'].pop(idx)
+        if idx < len(master.get('duplicate_reasons', [])):
+            master['duplicate_reasons'].pop(idx)
+        
+        # Aggiorna all_answers_versions
+        master['all_answers_versions'] = [v for v in master.get('all_answers_versions', []) if v.get('id') != duplicate_id]
+        
+        # Aggiorna conteggio
+        master['duplicate_count'] = len(master.get('duplicate_ids', []))
+        
+        # Se non ci sono più duplicati, rimuovi lo stato di master
+        if master['duplicate_count'] == 0:
+            master['is_master'] = False
+
+        # Salva il database
+        if save_database(questions):
+            return jsonify({
+                "success": True,
+                "message": f"Duplicato {duplicate_id} rimosso dal cluster",
+                "master_updated": master
+            }), 200
+        else:
+            return jsonify({"error": "Salvataggio del database fallito"}), 500
+
+    except Exception as e:
+        logger.error(f"Errore in POST /api/questions/{master_id}/duplicates/{duplicate_id}/unlink: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/export/doc', methods=['POST'])
 def export_doc():
     """Esporta le domande in formato DOC (usa database attivo se disponibile)"""

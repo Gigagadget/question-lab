@@ -175,7 +175,6 @@ button.small-btn {
 }
 
 .duplicate-badge {
-    background: #e67e22;
     color: white;
     font-size: 0.6rem;
     padding: 1px 4px;
@@ -527,11 +526,6 @@ textarea {
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     font-size: 0.7rem;
-}
-
-
-button.active {
-    background: #e67e22;
 }
 
 .duplicate-id-tag {

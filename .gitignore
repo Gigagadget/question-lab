@@ -89,6 +89,7 @@ docs/
 # File
 .qwen/
 .kilo/
+PLANS/
 QuizMockup/
 statistiche_mockup.html
 PROJECT_MAP.md

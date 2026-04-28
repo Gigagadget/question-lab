@@ -472,6 +472,7 @@ select:focus {
 .answer-text,
 .review-answer-text {
     color: var(--text-primary);
+    align-self: center;
 }
 
 /* Feedback */
