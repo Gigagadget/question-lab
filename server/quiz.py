@@ -53,6 +53,24 @@ def start_quiz():
         num_questions = data.get('num_questions', 10)
         subdomains_by_primary = data.get('subdomains_by_primary', {})
         smart_review = data.get('smart_review', False)
+        time_limit_minutes = data.get('time_limit_minutes', None)
+
+        # Validazione del limite di tempo (se fornito)
+        if time_limit_minutes is not None:
+            try:
+                time_limit_minutes = int(time_limit_minutes)
+                if time_limit_minutes <= 0 or time_limit_minutes > 480:
+                    return jsonify({
+                        "error": "Il limite di tempo deve essere un valore intero tra 1 e 480 minuti",
+                        "available_count": 0,
+                        "used_count": 0
+                    }), 400
+            except (ValueError, TypeError):
+                return jsonify({
+                    "error": "Il limite di tempo deve essere un valore intero valido",
+                    "available_count": 0,
+                    "used_count": 0
+                }), 400
 
         # Gestisci il caso "Tutte"
         if num_questions == -1 or num_questions == 'all':
@@ -90,7 +108,8 @@ def start_quiz():
             "available_count": available_count,
             "used_count": used_count,
             "categories_selected": categories,
-            "subdomains_by_primary_selected": subdomains_by_primary
+            "subdomains_by_primary_selected": subdomains_by_primary,
+            "time_limit_minutes": time_limit_minutes
         }), 200
 
     except Exception as e:

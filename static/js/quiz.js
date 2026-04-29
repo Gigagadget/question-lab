@@ -162,6 +162,13 @@ class QuizManagerFrontend {
             });
         });
 
+        // Inizializza visibilità impostazioni timer globale in base alla selezione corrente
+        const currentTimerMode = document.querySelector('input[name="timerMode"]:checked');
+        const settings = document.getElementById('globalTimerSettings');
+        if (settings && currentTimerMode) {
+            settings.style.display = currentTimerMode.value === 'global' ? 'block' : 'none';
+        }
+
         // Preset tempo
         document.querySelectorAll('.time-preset-card').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -175,11 +182,51 @@ class QuizManagerFrontend {
         document.getElementById('applyCustomTime').addEventListener('click', () => {
             const input = document.getElementById('customMinutes');
             const minutes = parseInt(input.value);
-            if (minutes && minutes > 0 && minutes <= 480) {
+            const isValid = input.value !== '' && !isNaN(minutes) && minutes > 0 && minutes <= 480 && Number.isInteger(minutes);
+            
+            if (isValid) {
                 document.querySelectorAll('.time-preset-card').forEach(b => b.classList.remove('selected'));
+                input.style.borderColor = '';
+                input.style.boxShadow = '';
+            } else {
+                input.style.borderColor = '#dc3545';
+                input.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.15)';
+                this.showStatus('Inserisci un valore intero tra 1 e 480 minuti', 'warning');
             }
         });
 
+        // Validazione in tempo reale per input minuti personalizzati
+        document.getElementById('customMinutes').addEventListener('input', (e) => {
+            const input = e.target;
+            let value = input.value;
+            
+            // Rimuove zeri iniziali
+            value = value.replace(/^0+/, '');
+            if (value === '') {
+                input.value = '';
+                input.style.borderColor = '';
+                input.style.boxShadow = '';
+                return;
+            }
+            
+            // Mantiene solo numeri interi
+            value = value.replace(/[^0-9]/g, '');
+            
+            const num = parseInt(value);
+            if (!isNaN(num)) {
+                if (num > 480) {
+                    input.value = '480';
+                } else {
+                    input.value = num.toString();
+                }
+            } else {
+                input.value = '';
+            }
+            
+            // Resetta lo stile di errore mentre l'utente digita
+            input.style.borderColor = '';
+            input.style.boxShadow = '';
+        });
         // Handle Enter key for custom count input
         document.getElementById('customCount').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -694,22 +741,29 @@ class QuizManagerFrontend {
                 timeLimitMinutes = selectedPreset ? parseInt(selectedPreset.dataset.minutes) : 60;
                 const customInput = document.getElementById('customMinutes');
                 if (customInput.value) {
-                    timeLimitMinutes = parseInt(customInput.value) || 60;
+                    const customMinutes = parseInt(customInput.value);
+                    const isValid = customInput.value !== '' && !isNaN(customMinutes) && customMinutes > 0 && customMinutes <= 480 && Number.isInteger(customMinutes);
+                    if (isValid) {
+                        timeLimitMinutes = customMinutes;
+                    } else {
+                        this.showStatus('Il tempo limite deve essere un valore intero tra 1 e 480 minuti', 'error');
+                        return;
+                    }
                 }
             }
-            
-            const response = await fetch('/api/quiz/start', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    categories: this.selectedCategories,
-                    num_questions: this.selectedCount,
-                    subdomains_by_primary: this.selectedSubdomainsByPrimary,
-                    smart_review: selectionMode === 'smart'
-                })
-            });
+             const response = await fetch('/api/quiz/start', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json'
+                 },
+                 body: JSON.stringify({
+                     categories: this.selectedCategories,
+                     num_questions: this.selectedCount,
+                     subdomains_by_primary: this.selectedSubdomainsByPrimary,
+                     smart_review: selectionMode === 'smart',
+                     time_limit_minutes: timeLimitMinutes
+                 })
+             });
 
             if (!response.ok) {
                 const error = await response.json();
