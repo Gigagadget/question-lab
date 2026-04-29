@@ -181,16 +181,17 @@ class QuizManagerFrontend {
         // Applica tempo personalizzato
         document.getElementById('applyCustomTime').addEventListener('click', () => {
             const input = document.getElementById('customMinutes');
+            const inputWithIcon = input.parentElement;
             const minutes = parseInt(input.value);
             const isValid = input.value !== '' && !isNaN(minutes) && minutes > 0 && minutes <= 480 && Number.isInteger(minutes);
-            
+
             if (isValid) {
                 document.querySelectorAll('.time-preset-card').forEach(b => b.classList.remove('selected'));
-                input.style.borderColor = '';
-                input.style.boxShadow = '';
+                inputWithIcon.style.border = '';
+                inputWithIcon.style.boxShadow = '';
             } else {
-                input.style.borderColor = '#dc3545';
-                input.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.15)';
+                inputWithIcon.style.border = '1px solid #dc3545';
+                inputWithIcon.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.15)';
                 this.showStatus('Inserisci un valore intero tra 1 e 480 minuti', 'warning');
             }
         });
@@ -198,20 +199,21 @@ class QuizManagerFrontend {
         // Validazione in tempo reale per input minuti personalizzati
         document.getElementById('customMinutes').addEventListener('input', (e) => {
             const input = e.target;
+            const inputWithIcon = input.parentElement;
             let value = input.value;
-            
+
             // Rimuove zeri iniziali
             value = value.replace(/^0+/, '');
             if (value === '') {
                 input.value = '';
-                input.style.borderColor = '';
-                input.style.boxShadow = '';
+                inputWithIcon.style.border = '';
+                inputWithIcon.style.boxShadow = '';
                 return;
             }
-            
+
             // Mantiene solo numeri interi
             value = value.replace(/[^0-9]/g, '');
-            
+
             const num = parseInt(value);
             if (!isNaN(num)) {
                 if (num > 480) {
@@ -222,10 +224,10 @@ class QuizManagerFrontend {
             } else {
                 input.value = '';
             }
-            
+
             // Resetta lo stile di errore mentre l'utente digita
-            input.style.borderColor = '';
-            input.style.boxShadow = '';
+            inputWithIcon.style.border = '';
+            inputWithIcon.style.boxShadow = '';
         });
         // Handle Enter key for custom count input
         document.getElementById('customCount').addEventListener('keypress', (e) => {

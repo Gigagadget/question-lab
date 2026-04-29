@@ -1631,14 +1631,28 @@ button.danger:hover {
 .custom-time-input input {
     flex: 1;
     padding: 10px 0;
-    border: none;
+    border: none !important;
     background: transparent;
     font-size: 14px;
     color: var(--text-primary);
 }
 
-.custom-time-input input:focus {
+.custom-time-input input:focus,
+.custom-time-input input:invalid {
     outline: none;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Hide number input spinner arrows */
+.custom-time-input input[type="number"]::-webkit-outer-spin-button,
+.custom-time-input input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.custom-time-input input[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
 }
 
 .quiz-timers {
