@@ -159,6 +159,7 @@ class QuizManagerFrontend {
             radio.addEventListener('change', (e) => {
                 const settings = document.getElementById('globalTimerSettings');
                 settings.style.display = e.target.value === 'global' ? 'block' : 'none';
+                this.updateTimerInfoBadge();
             });
         });
 
@@ -168,6 +169,7 @@ class QuizManagerFrontend {
         if (settings && currentTimerMode) {
             settings.style.display = currentTimerMode.value === 'global' ? 'block' : 'none';
         }
+        this.updateTimerInfoBadge();
 
         // Preset tempo
         document.querySelectorAll('.time-preset-card').forEach(btn => {
@@ -175,6 +177,7 @@ class QuizManagerFrontend {
                 document.querySelectorAll('.time-preset-card').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
                 document.getElementById('customMinutes').value = '';
+                this.updateTimerInfoBadge();
             });
         });
 
@@ -195,7 +198,9 @@ class QuizManagerFrontend {
                 applyButton.classList.add('success');
                 setTimeout(() => {
                     applyButton.classList.remove('success');
-                }, 1500);
+                }, 1000);
+                
+                this.updateTimerInfoBadge();
             } else {
                 inputWithIcon.style.border = '1px solid #dc3545';
                 inputWithIcon.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.15)';
@@ -668,7 +673,7 @@ class QuizManagerFrontend {
             applyButton.classList.add('success');
             setTimeout(() => {
                 applyButton.classList.remove('success');
-            }, 1500);
+            }, 1000);
         } else {
             // Invalid input - clear and show feedback
             customInput.style.borderColor = '#dc3545';
@@ -692,13 +697,55 @@ class QuizManagerFrontend {
         }
     }
 
+    updateTimerInfoBadge() {
+        const timerMode = document.querySelector('input[name="timerMode"]:checked')?.value;
+        const timerBadge = document.querySelector('.info-timer');
+        const timerLabel = document.getElementById('selectedTimerLabel');
+        const timerValue = document.getElementById('selectedTimer');
+        
+        if (!timerBadge || !timerLabel || !timerValue) return;
+        
+        if (timerMode === 'global') {
+            // Check for selected preset
+            const selectedPreset = document.querySelector('.time-preset-card.selected');
+            let minutes = null;
+            
+            if (selectedPreset) {
+                minutes = parseInt(selectedPreset.dataset.minutes);
+            }
+            
+            // Check for custom input
+            const customInput = document.getElementById('customMinutes');
+            if (customInput && customInput.value) {
+                const customMinutes = parseInt(customInput.value);
+                const isValid = customInput.value !== '' && !isNaN(customMinutes) && 
+                                customMinutes > 0 && customMinutes <= 480 && Number.isInteger(customMinutes);
+                if (isValid) {
+                    minutes = customMinutes;
+                }
+            }
+            
+            if (minutes !== null) {
+                timerValue.textContent = minutes;
+                timerLabel.textContent = minutes === 1 ? 'minuto' : 'minuti';
+                timerBadge.style.display = 'inline-flex';
+            } else {
+                timerValue.textContent = '--';
+                timerLabel.textContent = 'minuti';
+                timerBadge.style.display = 'inline-flex';
+            }
+        } else {
+            timerBadge.style.display = 'none';
+        }
+    }
+
     async updateAvailableQuestions() {
         if (this.selectedCategories.length === 0) {
             document.getElementById('availableQuestions').textContent = '--';
             document.getElementById('questionsToUse').textContent = '--';
             return;
         }
-
+        
         try {
             const selectionMode = document.querySelector('input[name="selectionMode"]:checked')?.value || 'random';
             const response = await fetch('/api/quiz/start', {
@@ -713,7 +760,7 @@ class QuizManagerFrontend {
                     smart_review: selectionMode === 'smart'
                 })
             });
-
+            
             if (response.ok) {
                 const data = await response.json();
                 this.availableCount = data.available_count;
