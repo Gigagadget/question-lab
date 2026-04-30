@@ -6,7 +6,8 @@
  * (#quizSetup, #quizGame, #quizReview, #quizLogs, #logReview).
  * La shell dell'app resta alta quanto la viewport: scorre solo il pannello
  * destro (.main-content), mentre la sidebar rimane ferma e non si allunga con
- * review/config molto lunghi. Il workspace resta un semplice wrapper del quiz.
+ * review/config molto lunghi. La topbar del quiz resta agganciata in alto
+ * dentro lo stesso scroller, così review/config scorrono sotto di lei.
  */
 body.page-quiz {
     height: 100vh;
@@ -41,6 +42,10 @@ body.page-quiz .main-content {
 
 body.page-quiz .top-bar {
     flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 0 var(--border-light);
 }
 
 body.page-quiz .quiz-workspace {
