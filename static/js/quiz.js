@@ -388,6 +388,11 @@ class QuizManagerFrontend {
         } else if (noResultsMsg) {
             noResultsMsg.style.display = 'none';
         }
+
+        // Dopo il cambio filtri il contenuto può ridursi molto: riportiamo la
+        // pagina in alto perché la review ora scorre sul documento, non su un
+        // workspace interno con overflow dedicato.
+        this.scrollWorkspaceToTop(false);
     }
 
     // ==================== CATEGORIES ====================
@@ -1606,6 +1611,7 @@ class QuizManagerFrontend {
     showLogReviewScreen() {
         this.hideAllScreens();
         document.getElementById('logReview').style.display = 'block';
+        this.scrollWorkspaceToTop();
     }
 
     async deleteLog(logId) {
@@ -1660,13 +1666,17 @@ class QuizManagerFrontend {
         document.getElementById('quizSetup').style.display = 'block';
         this.stopTimer();
         this.quizInProgress = false;
+        this.scrollWorkspaceToTop();
     }
 
     showQuiz() {
         this.hideAllScreens();
         const quizScreen = document.getElementById('quizGame');
         if (quizScreen) {
-            quizScreen.style.display = 'block';
+            // #quizGame è il vero contenitore della card domanda: lo mostriamo
+            // come flex così le regole CSS centrano .quiz-question-container qui,
+            // senza introdurre modalità/layout extra sul workspace esterno.
+            quizScreen.style.display = 'flex';
         }
         // Ensure submit button is visible (with null check)
         const submitBtn = document.getElementById('btnSubmitAnswer');
@@ -1674,6 +1684,7 @@ class QuizManagerFrontend {
             submitBtn.style.display = 'block';
             submitBtn.disabled = false;
         }
+        this.scrollWorkspaceToTop();
     }
 
     showResults() {
@@ -1685,16 +1696,19 @@ class QuizManagerFrontend {
         if (btnLogs) btnLogs.style.display = '';
         const btnEndQuiz = document.getElementById('btnEndQuiz');
         if (btnEndQuiz) btnEndQuiz.style.display = 'none';
+        this.scrollWorkspaceToTop();
     }
 
     showReviewScreen() {
         this.hideAllScreens();
         document.getElementById('quizReview').style.display = 'block';
+        this.scrollWorkspaceToTop();
     }
 
     showLogsScreen() {
         this.hideAllScreens();
         document.getElementById('quizLogs').style.display = 'block';
+        this.scrollWorkspaceToTop();
     }
 
     hideAllScreens() {
@@ -1704,6 +1718,23 @@ class QuizManagerFrontend {
         document.getElementById('quizReview').style.display = 'none';
         document.getElementById('quizLogs').style.display = 'none';
         document.getElementById('logReview').style.display = 'none';
+    }
+
+    scrollWorkspaceToTop(smooth = false) {
+        const scroller = document.querySelector('.page-quiz .main-content') || window;
+        scroller.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: smooth ? 'smooth' : 'auto'
+        });
+
+        // Fallback per browser vecchi / WebView mobile.
+        if (scroller !== window) {
+            scroller.scrollTop = 0;
+        } else {
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        }
     }
 
     // ==================== UTILITIES ====================

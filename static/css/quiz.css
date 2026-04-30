@@ -1,5 +1,61 @@
 /* ==================== QUIZ STYLES ==================== */
 
+/*
+ * La pagina quiz non usa i tre pannelli dell'editor: il wrapper
+ * .workspace.quiz-workspace contiene solo le schermate del quiz
+ * (#quizSetup, #quizGame, #quizReview, #quizLogs, #logReview).
+ * La shell dell'app resta alta quanto la viewport: scorre solo il pannello
+ * destro (.main-content), mentre la sidebar rimane ferma e non si allunga con
+ * review/config molto lunghi. Il workspace resta un semplice wrapper del quiz.
+ */
+body.page-quiz {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+body.page-quiz .app {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    align-items: stretch;
+}
+
+body.page-quiz .sidebar {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+}
+
+body.page-quiz .main-content {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.page-quiz .top-bar {
+    flex-shrink: 0;
+}
+
+body.page-quiz .quiz-workspace {
+    display: block;
+    /* Non deve riempire lo spazio verticale residuo: se la review/log review
+       contiene pochi elementi o solo il messaggio "nessun risultato", un flex
+       grow qui fa sembrare che il workspace si espanda sopra al contenuto. */
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+}
+
 .quiz-container {
     max-width: 850px;
     margin: 0 auto;
@@ -10,13 +66,29 @@
 
 /* Workspace centering for quiz */
 .quiz-workspace {
+    padding: 0;
+}
+
+/*
+ * Lo spazio interno va sulle schermate effettive, non sul wrapper workspace.
+ * In questo modo DevTools/non-layout non mostrano un'area vuota del workspace
+ * "sopra" risultati, review o messaggi senza risultati.
+ */
+.quiz-workspace > #quizSetup,
+.quiz-workspace > #quizGame,
+.quiz-workspace > #quizResults,
+.quiz-workspace > #quizReview,
+.quiz-workspace > #quizLogs,
+.quiz-workspace > #logReview {
+    width: 100%;
+    box-sizing: border-box;
     padding: 32px 24px;
-    overflow-y: auto;
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+}
+
+#quizReview,
+#logReview,
+#quizLogs {
+    padding-bottom: 32px;
 }
 
 /* Quiz game: fixed min-height for question container */
@@ -37,21 +109,44 @@
 
 @media (max-width: 768px) {
     .quiz-workspace {
-        height: calc(100vh - 57px);
-        padding: 16px 8px;
-        overflow-y: auto;
+        height: auto !important;
+        padding: 0;
+        overflow: visible !important;
         -webkit-overflow-scrolling: touch;
+    }
+
+    .quiz-workspace > #quizSetup,
+    .quiz-workspace > #quizGame,
+    .quiz-workspace > #quizResults,
+    .quiz-workspace > #quizReview,
+    .quiz-workspace > #quizLogs,
+    .quiz-workspace > #logReview {
+        padding: 16px 12px;
     }
 }
 
 /* Game container - quiz interface */
 .quiz-game {
     max-width: 850px;
+    min-height: calc(100dvh - 96px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Results container */
 .quiz-results {
     max-width: 850px;
+    min-height: calc(100dvh - 96px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.quiz-results .results-card {
+    width: 100%;
 }
 
 /* Setup card - wider for configuration */
@@ -478,10 +573,6 @@
     .quiz-question-container {
         padding: 16px 12px;
         border-radius: 16px;
-    }
-
-    .quiz-workspace {
-        padding: 16px 8px;
     }
 
     .quiz-container {
@@ -1241,7 +1332,16 @@ button.danger:hover {
     /* Workspace: full width on mobile, no flex to allow proper scrolling */
     .quiz-workspace {
         display: block;
-        padding: 16px 12px;
+        height: auto !important;
+        min-height: 0;
+        padding: 0;
+        overflow: visible !important;
+    }
+
+    .quiz-game,
+    .quiz-results {
+        min-height: calc(100dvh - 112px);
+        padding: 0;
     }
 
     .quiz-container {
