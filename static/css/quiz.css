@@ -1722,10 +1722,6 @@ button.danger:hover {
     background: var(--bg-secondary);
 }
 
-[data-theme="dark"] .time-preset-card {
-    background: var(--bg-tertiary);
-}
-
 /* Responsive mobile */
 @media (max-width: 768px) {
     .selection-mode-options,

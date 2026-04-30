@@ -182,6 +182,7 @@ class QuizManagerFrontend {
         document.getElementById('applyCustomTime').addEventListener('click', () => {
             const input = document.getElementById('customMinutes');
             const inputWithIcon = input.parentElement;
+            const applyButton = document.getElementById('applyCustomTime');
             const minutes = parseInt(input.value);
             const isValid = input.value !== '' && !isNaN(minutes) && minutes > 0 && minutes <= 480 && Number.isInteger(minutes);
 
@@ -189,6 +190,12 @@ class QuizManagerFrontend {
                 document.querySelectorAll('.time-preset-card').forEach(b => b.classList.remove('selected'));
                 inputWithIcon.style.border = '';
                 inputWithIcon.style.boxShadow = '';
+
+                // Show success feedback
+                applyButton.classList.add('success');
+                setTimeout(() => {
+                    applyButton.classList.remove('success');
+                }, 1500);
             } else {
                 inputWithIcon.style.border = '1px solid #dc3545';
                 inputWithIcon.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.15)';
@@ -643,6 +650,7 @@ class QuizManagerFrontend {
 
     applyCustomCount() {
         const customInput = document.getElementById('customCount');
+        const applyButton = document.getElementById('applyCustomCount');
         const value = parseInt(customInput.value, 10);
 
         if (value && value > 0 && value <= 1000) {
@@ -655,6 +663,12 @@ class QuizManagerFrontend {
 
             this.updateCountDisplay();
             this.updateAvailableQuestions();
+
+            // Show success feedback
+            applyButton.classList.add('success');
+            setTimeout(() => {
+                applyButton.classList.remove('success');
+            }, 1500);
         } else {
             // Invalid input - clear and show feedback
             customInput.style.borderColor = '#dc3545';

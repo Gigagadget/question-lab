@@ -68,8 +68,8 @@ button.primary:hover { background: #1f5e7a; }
 button.danger { background: #c44536; }
 button.danger:hover { background: #a23426; }
 
-button.success { background: #2c6e2f; }
-button.success:hover { background: #235826; }
+/*button.success { background: #2c6e2f; }
+button.success:hover { background: #235826; }*/
 
 button.warning { background: #e67e22; }
 button.warning:hover { background: #d35400; }

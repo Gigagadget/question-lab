@@ -1457,6 +1457,12 @@ textarea.form-input {
     color: var(--accent-blue);
 }
 
+.btn-outline.success {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: var(--text-on-accent);
+}
+
 .btn-icon-modern {
     background: transparent;
     border: 1px solid var(--border-color);
